@@ -157,7 +157,7 @@
   .page-title {
     font-size: 3rem;
     font-weight: 900;
-    color: #1e293b;
+    color: #5a4633;
     text-transform: uppercase;
     letter-spacing: -2px;
     margin-bottom: 0.5rem;
@@ -201,9 +201,9 @@
     border-radius: 20px 20px 0 0;
   }
   
-  .goal-card.fitness::before { background: #06b6d4; }
-  .goal-card.nutrition::before { background: #10b981; }
-  .goal-card.wellness::before { background: #8b5cf6; }
+  .goal-card.fitness::before { background: #B8D7DF; }
+  .goal-card.nutrition::before { background: #EDB6B6; }
+  .goal-card.wellness::before { background: #DED8B4; }
   
   .goal-card:hover {
     transform: translateY(-5px);
@@ -223,9 +223,9 @@
     font-weight: bold;
   }
   
-  .goal-card.fitness .goal-icon { background: linear-gradient(135deg, #06b6d4, #0891b2); }
-  .goal-card.nutrition .goal-icon { background: linear-gradient(135deg, #10b981, #059669); }
-  .goal-card.wellness .goal-icon { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+  .goal-card.fitness .goal-icon { background: linear-gradient(135deg,#B8D7DF); }
+  .goal-card.nutrition .goal-icon { background: linear-gradient(135deg, #EDB6B6); }
+  .goal-card.wellness .goal-icon { background: linear-gradient(135deg, #DED8B4); }
   
   .goal-title {
     font-size: 1.5rem;
@@ -281,7 +281,7 @@
   }
   
   .select-btn {
-    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    background: linear-gradient(135deg, #609da1);
     color: white;
     border: none;
     padding: 0.75rem 2rem;

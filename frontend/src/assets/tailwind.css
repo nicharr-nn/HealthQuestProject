@@ -1,0 +1,17 @@
+/* src/assets/tailwind.css */
+@import url('https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Tilt+Warp&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Luckiest Guy", cursive;
+  --font-subtitle: "Tilt Warp", sans-serif;
+  --font-body: "Nunito", sans-serif;
+
+  --color-cardKhaki: #DED8B4;
+  --color-cardBlue:  #B8D7DF;
+  --color-cardPink:  #EDB6B6;
+  --color-paper:     #FAF4E8;
+
+  --radius-xl2: 1.25rem;
+}
