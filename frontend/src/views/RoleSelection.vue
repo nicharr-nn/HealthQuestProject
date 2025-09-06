@@ -46,6 +46,9 @@
 
 <script setup>
 import RoleCard from '../components/RoleCard.vue'
+import { useRouter } from 'vue-router' // Import router
+
+const router = useRouter() // Get router instance
 
 const memberPoints = [
   "All Normal User features (XP, levels, goals)",
@@ -71,6 +74,7 @@ const coachPoints = [
 
 function select(role) {
   console.log('Selected:', role)
+  router.push('/about-you')
 }
 
 async function selectRole(role) {
