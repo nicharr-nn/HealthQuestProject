@@ -1,0 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Tilt+Warp&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Luckiest Guy", cursive;
+}
