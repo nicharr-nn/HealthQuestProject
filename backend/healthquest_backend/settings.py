@@ -95,17 +95,10 @@ WSGI_APPLICATION = 'healthquest_backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-<<<<<<< HEAD
-        'NAME': os.environ.get('DATABASE_NAME'),
-        'USER': os.environ.get('DATABASE_USER'),
-        'PASSWORD': os.environ.get('DATABASE_PASSWORD'),
-        'HOST': os.environ.get('DATABASE_HOST'),
-=======
         'NAME': env('DATABASE_NAME', default='healthquest_db'),
         'USER': env('DATABASE_USER', default='healthquest_user'),
         'PASSWORD': env('DATABASE_PASSWORD', default='defaultpassword'),
         'HOST': env('DATABASE_HOST', default='localhost'),
->>>>>>> 07e2e1d (Implement landing page UI and Google login)
         'PORT': '5432',
     }
 }
