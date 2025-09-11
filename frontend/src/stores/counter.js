@@ -1,12 +1,13 @@
-import { ref, computed } from 'vue'
-import { defineStore } from 'pinia'
-
-export const useCounterStore = defineStore('counter', () => {
-  const count = ref(0)
-  const doubleCount = computed(() => count.value * 2)
-  function increment() {
-    count.value++
+async function logout() {
+  try {
+    await fetch("http://localhost:8000/api/logout/", {
+      method: "POST",
+      credentials: "include", // important to send cookies!
+    });
+    // Clear any local state (if you store user info)
+    localStorage.removeItem("user");
+    window.location.href = "/"; // redirect to homepage/login page
+  } catch (err) {
+    console.error("Logout failed", err);
   }
-
-  return { count, doubleCount, increment }
-})
+}

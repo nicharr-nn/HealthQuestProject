@@ -12,9 +12,12 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 import os
 from pathlib import Path
+import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+env = environ.Env()
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 
 # Quick-start development settings - unsuitable for production
@@ -38,14 +41,25 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'django.contrib.sites',
+    'login_page', 
+
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount', 
+    'allauth.socialaccount.providers.google',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -77,10 +91,10 @@ WSGI_APPLICATION = 'healthquest_backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DATABASE_NAME'),
-        'USER': os.environ.get('DATABASE_USER'),
-        'PASSWORD': os.environ.get('DATABASE_PASSWORD'),
-        'HOST': os.environ.get('DATABASE_HOST'),
+        'NAME': env('DATABASE_NAME', default='healthquest_db'),
+        'USER': env('DATABASE_USER', default='healthquest_user'),
+        'PASSWORD': env('DATABASE_PASSWORD', default='defaultpassword'),
+        'HOST': env('DATABASE_HOST', default='localhost'),
         'PORT': '5432',
     }
 }
@@ -127,3 +141,61 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+AUTHENTICATION_BACKENDS = (
+ 'django.contrib.auth.backends.ModelBackend',
+ 'allauth.account.auth_backends.AuthenticationBackend',
+)
+
+SITE_ID = 2
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        },
+        'APP': {
+            'client_id': env('GOOGLE_CLIENT_ID', default='dummy-client-id'),
+            'secret': env('GOOGLE_SECRET', default='dummy-google-secret'),
+        }
+    }
+}
+SOCIALACCOUNT_LOGIN_ON_GET = True
+SOCIALACCOUNT_AUTO_SIGNUP = True
+ACCOUNT_LOGOUT_ON_GET = True
+
+SOCIALACCOUNT_EMAIL_REQUIRED = False
+SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
+
+ACCOUNT_EMAIL_VERIFICATION = "none"
+ACCOUNT_EMAIL_REQUIRED = False
+ACCOUNT_USERNAME_REQUIRED = False
+
+SOCIALACCOUNT_ADAPTER = 'allauth.socialaccount.adapter.DefaultSocialAccountAdapter'
+
+LOGIN_REDIRECT_URL = 'http://127.0.0.1:5173/about'
+
+LOGOUT_REDIRECT_URL = 'http://127.0.0.1:5173/'
+
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://127.0.0.1:5173",
+]
+CSRF_TRUSTED_ORIGINS = [
+    "http://127.0.0.1:5173",
+]
+
+# Session settings for cross-origin requestsx
+SESSION_COOKIE_SAMESITE = None
+SESSION_COOKIE_SECURE = False 
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_AGE = 86400  # 24 hours
+
+# CSRF settings
+CSRF_COOKIE_SAMESITE = None
+CSRF_COOKIE_SECURE = False
+
