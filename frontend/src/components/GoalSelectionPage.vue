@@ -110,25 +110,43 @@
         }
       ])
   
-      const selectGoal = (goal) => {
-        selectedGoal.value = goal
-        showSuccessModal.value = true
+const selectGoal = (goal) => {
+    selectedGoal.value = goal
+    showSuccessModal.value = true
+
+    // Save selection to backend
+    fetch("http://127.0.0.1:8000/api/select-goal/", {
+  method: "POST", // must be POST
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    user_id: 1, // replace with logged-in user ID
+    role: goal.id // or goal.type depending on your model
+  })
+})
+.then(res => res.json())
+.then(data => {
+  console.log("Backend response:", data)
+})
+.catch(err => console.error(err))
+
+
+    // Animate progress bar
+    let progress = 0
+    const interval = setInterval(() => {
+        progress += 2
+        progressWidth.value = progress
         
-        // Animate progress bar
-        let progress = 0
-        const interval = setInterval(() => {
-          progress += 2
-          progressWidth.value = progress
-          
-          if (progress >= 100) {
+        if (progress >= 100) {
             clearInterval(interval)
             setTimeout(() => {
-              emit('goal-selected', goal)
-              closeModal()
+                emit('goal-selected', goal)
+                closeModal()
             }, 500)
-          }
-        }, 30)
-      }
+        }
+    }, 30)
+}
   
       const closeModal = () => {
         showSuccessModal.value = false
