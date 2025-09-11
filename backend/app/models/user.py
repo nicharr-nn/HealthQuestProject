@@ -10,8 +10,8 @@ class User(models.Model):
     ]
     
     user_id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=150, unique=True)
-    email = models.EmailField(unique=True)
+    name = models.CharField(max_length=150, unique=True, default='New User')
+    email = models.EmailField(unique=True, default='-')
     role = models.CharField(max_length=50, choices=ROLE_CHOICES, default='normal user')
     date_joined = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
