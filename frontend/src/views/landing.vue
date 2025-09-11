@@ -1,6 +1,5 @@
 <template>
-  <div class="grid grid-rows-[auto_1fr] h-screen">
-    <!-- Navbar -->
+  <div id ="home" class="grid grid-rows-[auto_1fr] h-screen">
     <nav class="bg-[#88ACEA] text-white shadow-lg">
       <div class="max-w-7xl mx-auto px-4">
         <div class="flex justify-between items-center h-16">
@@ -8,9 +7,9 @@
             <span class="text-xl font-bold">HealthQuest</span>
           </div>
           <div class="flex space-x-4">
-            <a href="#" class="hover:bg-red-500 px-3 py-2 rounded">Home</a>
-            <a href="#" class="hover:bg-red-500 px-3 py-2 rounded">About</a>
-            <a href="#" class="hover:bg-red-500 px-3 py-2 rounded">Contact</a>
+            <a href="#home" class="hover:bg-red-500 px-3 py-2 rounded">Home</a>
+            <a href="#about" class="hover:bg-red-500 px-3 py-2 rounded">About</a>
+            <a href="#contract" class="hover:bg-red-500 px-3 py-2 rounded">Contact</a>
           </div>
         </div>
       </div>
@@ -30,6 +29,33 @@
       </div>
     </div>
   </div>
+  <div id="about"class="bg-[#E99D7D] p-4">
+  </div>
+  <div class="bg-[#A75B3A] p-8">
+        <div class="max-w-7xl mx-auto flex flex-row gap-6">
+          <div class="bg-[#FAF4E6] rounded-lg p-6 basis-1/2">
+            <h3 class="text-[#846757] font-bold text-2xl mb-4 border-b-2">About</h3>
+            <p class="text-[#846757]">HealthQuest is a fitness platform that combines structured workouts, 
+              nutrition tracking, and gamified progression. Users earn XP, set goals, 
+              and unlock new features. With personalized coaching and private recipe sharing, 
+              it fosters long-term healthy habits in a supportive community.</p>
+          </div>
+          <div class="bg-[#FAF4E6] rounded-lg p-6 basis-1/2">
+            <h3 class="text-[#846757] font-bold text-2xl mb-4 border-b-2">Gamified Experience</h3>
+            <ul class="list-disc list-inside text-[#846757]">
+              <li>Level up your character</li>
+              <li>Complete epic quests</li>
+              <li>Earn achievements for every healthy choice you make</li>
+            </ul>
+          </div>
+        </div>
+  </div>
+  <div id="contract" class="bg-[#FAF4E6] p-4">
+    <h2>Contact Us</h2>
+  <p>Get in touch with us!</p>
+
+  </div>
+
 </template>
 <script setup>
 
