@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
     'django.contrib.sites',
     'login_page', 
 
@@ -50,7 +49,12 @@ INSTALLED_APPS = [
     'allauth.socialaccount', 
     'allauth.socialaccount.providers.google',
     'corsheaders',
+    # custom apps
+    'rest_framework',
+    'corsheaders',
+    'users'
 ]
+
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -91,10 +95,10 @@ WSGI_APPLICATION = 'healthquest_backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': env('DATABASE_NAME', default='healthquest_db'),
-        'USER': env('DATABASE_USER', default='healthquest_user'),
-        'PASSWORD': env('DATABASE_PASSWORD', default='defaultpassword'),
-        'HOST': env('DATABASE_HOST', default='localhost'),
+        'NAME': os.environ.get('DATABASE_NAME', 'healthquest_db'),
+        'USER': os.environ.get('DATABASE_USER', 'healthquest_user'),
+        'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'hqpswd123'),
+        'HOST': os.environ.get('DATABASE_HOST', 'localhost'),
         'PORT': '5432',
     }
 }
@@ -199,3 +203,22 @@ SESSION_COOKIE_AGE = 86400  # 24 hours
 CSRF_COOKIE_SAMESITE = None
 CSRF_COOKIE_SECURE = False
 
+AUTH_USER_MODEL = 'users.User'
+
+# CORS settings (for Vue.js frontend communication)
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",    # Vite development server (port 5173)
+    "http://127.0.0.1:5173",
+]
+CORS_ALLOW_CREDENTIALS = True
+
+# Django REST Framework configuration
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
