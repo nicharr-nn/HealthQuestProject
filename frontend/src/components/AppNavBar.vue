@@ -4,40 +4,26 @@
       <div class="flex justify-between h-16 items-center">
         <!-- Left: Brand -->
         <div class="flex items-center">
-          <RouterLink to="/" class="text-2xl font-subtitle text-white hover:text-indigo-200">
+          <a href="#home" class="text-2xl font-subtitle text-white hover:text-[#c7d2fe]">
             HealthQuest
-          </RouterLink>
+          </a>
         </div>
 
         <!-- Right: Navigation links -->
         <div class="hidden md:flex items-center space-x-6">
-          <RouterLink to="/" class="text-white hover:text-indigo-200 font-body">
+          <a href="#home" class="text-white hover:text-[#c7d2fe] font-body">
             Home
-          </RouterLink>
+          </a>
 
-          <RouterLink to="/service" class="text-white hover:text-indigo-200 font-body">
-            Service
-          </RouterLink>
-
-          <RouterLink to="/about-us" class="text-white hover:text-indigo-200 font-body">
-            About us
-          </RouterLink>
+          <a href="#about" class="text-white hover:text-[#c7d2fe] font-body">
+            About
+          </a>
           
-          <RouterLink to="/select-role" class="text-white hover:text-indigo-200 font-body">
-            Get Started
-          </RouterLink>
+          <a href="#contract" class="text-white hover:text-[#c7d2fe] font-body">
+            Contact us
+          </a>
         </div>
       </div>
     </div>
   </nav>
 </template>
-
-<script setup>
-import { RouterLink } from 'vue-router'
-</script>
-
-<style scoped>
-.router-link-active {
-  @apply text-indigo-200 font-bold;
-}
-</style>

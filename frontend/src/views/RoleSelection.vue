@@ -11,7 +11,7 @@
 
     <!-- Cards -->
     <div class="mt-10 grid grid-cols-1 md:grid-cols-3 gap-8">
-      <button @click="select('member')" class="text-left">
+      <button @click="selectRole('member')" class="text-left">
         <RoleCard
           title="MEMBER"
           :points="memberPoints"
@@ -21,7 +21,7 @@
         />
       </button>
 
-      <button @click="select('normal')" class="text-left">
+      <button @click="selectRole('normal')" class="text-left">
         <RoleCard
           title="NORMAL USER"
           :points="normalUserPoints"
@@ -31,7 +31,7 @@
         />
       </button>
 
-      <button @click="select('coach')" class="text-left">
+      <button @click="selectRole('coach')" class="text-left">
         <RoleCard
           title="COACH"
           :points="coachPoints"
@@ -40,15 +40,17 @@
           titleColor="text-[#9C6963]"
         />
       </button>
+
+      <button @click="logout">Sign Out</button>
     </div>
   </section>
 </template>
 
 <script setup>
 import RoleCard from '../components/RoleCard.vue'
-import { useRouter } from 'vue-router' // Import router
+import { useRouter } from 'vue-router'
 
-const router = useRouter() // Get router instance
+const router = useRouter()
 
 const memberPoints = [
   "All Normal User features (XP, levels, goals)",
@@ -77,21 +79,36 @@ function select(role) {
   router.push('/about-you')
 }
 
+function getCsrfToken() {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; csrftoken=`);
+  if (parts.length === 2) return parts.pop().split(";").shift();
+}
+
 async function selectRole(role) {
   try {
-    await fetch("/api/set-role/", {
+    const response = await fetch("http://127.0.0.1:8000/api/select-role/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
       body: JSON.stringify({ role }),
-    })
+    });
 
-    // after setting role, go to About You page
-    router.push("/about-you")
+    if (response.ok) {
+      router.push("/about-you");
+    } else {
+      const error = await response.json();
+      console.error("Error setting role:", error);
+      alert("Failed to set role");
+    }
   } catch (error) {
-    console.error(error)
-    alert("Error setting role")
+    console.error(error);
+    alert("Error setting role");
   }
+}
+
+async function logout() {
+  window.location.href = "http://127.0.0.1:8000/accounts/logout/"
 }
 
 </script>

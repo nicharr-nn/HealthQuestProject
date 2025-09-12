@@ -10,27 +10,27 @@
         <!-- Right: Navigation Links -->
         <ul class="nav-links hidden md:flex items-center space-x-8">
           <li>
-            <RouterLink to="/progress" class="nav-link font-subtitle text-white hover:text-indigo-200 transition-colors">
+            <RouterLink to="/progress" class="nav-link font-subtitle text-white hover:text-[#c7d2fe] transition-colors">
               Progress
             </RouterLink>
           </li>
           <li>
-            <RouterLink to="/workout-program" class="nav-link font-subtitle text-white hover:text-indigo-200 transition-colors">
+            <RouterLink to="/workout-program" class="nav-link font-subtitle text-white hover:text-[#c7d2fe] transition-colors">
               Workout Program
             </RouterLink>
           </li>
           <li>
-            <RouterLink to="/workout" class="nav-link font-subtitle text-white hover:text-indigo-200 transition-colors">
+            <RouterLink to="/workout" class="nav-link font-subtitle text-white hover:text-[#c7d2fe] transition-colors">
               Workout
             </RouterLink>
           </li>
           <li>
-            <RouterLink to="/food-recipe" class="nav-link font-subtitle text-white hover:text-indigo-200 transition-colors">
+            <RouterLink to="/food-recipe" class="nav-link font-subtitle text-white hover:text-[#c7d2fe] transition-colors">
               Food Recipe
             </RouterLink>
           </li>
           <li>
-            <RouterLink to="/profile" class="nav-link font-subtitle text-white hover:text-indigo-200 transition-colors">
+            <RouterLink to="/profile" class="nav-link font-subtitle text-white hover:text-[#c7d2fe] transition-colors">
               Profile
             </RouterLink>
           </li>
@@ -47,7 +47,7 @@ import { RouterLink } from 'vue-router'
 <style scoped>
 /* Active link styling */
 .router-link-active {
-  @apply text-indigo-200 font-bold underline;
+  @apply text-[#c7d2fe] underline;
 }
 
 /* Optional: Add mobile hamburger menu for smaller screens */

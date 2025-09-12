@@ -49,12 +49,9 @@ INSTALLED_APPS = [
     'allauth.socialaccount', 
     'allauth.socialaccount.providers.google',
     'corsheaders',
-    # custom apps
+    'users',
     'rest_framework',
-    'corsheaders',
-    'users'
 ]
-
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -95,10 +92,10 @@ WSGI_APPLICATION = 'healthquest_backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DATABASE_NAME', 'healthquest_db'),
-        'USER': os.environ.get('DATABASE_USER', 'healthquest_user'),
-        'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'hqpswd123'),
-        'HOST': os.environ.get('DATABASE_HOST', 'localhost'),
+        'NAME': env('DATABASE_NAME', default='healthquest_db'),
+        'USER': env('DATABASE_USER', default='healthquest_user'),
+        'PASSWORD': env('DATABASE_PASSWORD', default='defaultpassword'),
+        'HOST': env('DATABASE_HOST', default='localhost'),
         'PORT': '5432',
     }
 }
@@ -172,16 +169,16 @@ SOCIALACCOUNT_LOGIN_ON_GET = True
 SOCIALACCOUNT_AUTO_SIGNUP = True
 ACCOUNT_LOGOUT_ON_GET = True
 
-SOCIALACCOUNT_EMAIL_REQUIRED = False
+SOCIALACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_LOGIN_METHOD = 'email'
+
 SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
 
 ACCOUNT_EMAIL_VERIFICATION = "none"
-ACCOUNT_EMAIL_REQUIRED = False
-ACCOUNT_USERNAME_REQUIRED = False
 
 SOCIALACCOUNT_ADAPTER = 'allauth.socialaccount.adapter.DefaultSocialAccountAdapter'
 
-LOGIN_REDIRECT_URL = 'http://127.0.0.1:5173/about'
+LOGIN_REDIRECT_URL = 'http://127.0.0.1:5173/select-role'
 
 LOGOUT_REDIRECT_URL = 'http://127.0.0.1:5173/'
 
@@ -194,28 +191,20 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 # Session settings for cross-origin requestsx
-SESSION_COOKIE_SAMESITE = None
+SESSION_COOKIE_SAMESITE = "Lax"
 SESSION_COOKIE_SECURE = False 
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_AGE = 86400  # 24 hours
 
 # CSRF settings
-CSRF_COOKIE_SAMESITE = None
+CSRF_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SECURE = False
 
-AUTH_USER_MODEL = 'users.User'
-
-# CORS settings (for Vue.js frontend communication)
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",    # Vite development server (port 5173)
-    "http://127.0.0.1:5173",
-]
-CORS_ALLOW_CREDENTIALS = True
 
 # Django REST Framework configuration
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
+        'users.authentication.CsrfExemptSessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [

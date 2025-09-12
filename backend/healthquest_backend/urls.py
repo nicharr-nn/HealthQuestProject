@@ -58,7 +58,6 @@ def about_view(request):
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),
-    path("api/user-info/", views.user_info, name="user_info"),
     path('', home_view, name='home'),
     path('about/', about_view, name='about'), 
     path("api/", include("users.urls"))

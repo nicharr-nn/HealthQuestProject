@@ -15,15 +15,13 @@
                 <!-- Profile Picture -->
                 <div class="flex-shrink-0">
                   <div class="relative">
-                    <div class="w-64 h-64 rounded-full bg-gray-200 overflow-hidden shadow-lg">
-                      <img :src="profileImage" alt="Profile" class="w-full h-full object-cover" />
-                    </div>
+                    <div class="w-64 h-64 rounded-full bg-gray-200 overflow-hidden shadow-lg"></div>
                     <button
                       class="absolute bottom-2 right-4 bg-white p-3 rounded-full hover:shadow-xl transition-shadow"
                     >
-                      <span class="material-symbols-outlined text-gray-600 text-xl"
-                        >edit_square</span
-                      >
+                      <span class="material-symbols-outlined text-gray-600 text-xl">
+                        image_arrow_up
+                      </span>
                     </button>
                   </div>
                 </div>
@@ -109,14 +107,14 @@
                     <div class="flex justify-between items-center border-b border-gray-200 pb-4">
                       <label class="text-gray-600 font-medium text-lg w-32">Goal</label>
                       <template v-if="isEditing">
-                        <select 
-                        v-model="editProfile.goal"
-                        class="flex-1 text-teal-600 text-lg font-medium bg-transparent border-none outline-none focus:bg-gray-50 px-2 py-1 rounded"
+                        <select
+                          v-model="editProfile.goal"
+                          class="flex-1 text-teal-600 text-lg font-medium bg-transparent border-none outline-none focus:bg-gray-50 px-2 py-1 rounded"
                         >
-                        <option value="">Select a goal</option>
-                        <option value="WEIGHT_LOSS">Weight Loss</option>
-                        <option value="MUSCLE_GAIN">Muscle Gain</option>
-                        <option value="MAINTENANCE">Maintenance</option>
+                          <option value="">Select a goal</option>
+                          <option value="WEIGHT_LOSS">Weight Loss</option>
+                          <option value="MUSCLE_GAIN">Muscle Gain</option>
+                          <option value="MAINTENANCE">Maintenance</option>
                         </select>
                       </template>
                       <template v-else>
@@ -145,7 +143,7 @@
 
                     <!-- Join Date -->
                     <div class="flex justify-between items-center border-b border-gray-200 pb-4">
-                      <label class="text-gray-600 font-medium text-lg w-32">Join date</label>
+                      <label class="text-gray-600 font-medium text-lg w-32">Join Date</label>
                       <span class="flex-1 text-teal-600 text-lg font-medium text-right">{{
                         profile.joinDate
                       }}</span>
@@ -197,7 +195,9 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import axios from 'axios'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const profile = ref({
   name: '',
@@ -213,30 +213,108 @@ const editProfile = ref({ ...profile.value })
 const isEditing = ref(false)
 const loading = ref(true)
 const error = ref(null)
-const profileImage = ref("https://via.placeholder.com/256") 
+const profileImage = ref('https://via.placeholder.com/256')
 
-onMounted(async () => {
+async function fetchUserProfile() {
   try {
-    console.log('Fetching profile from:', 'http://127.0.0.1:8000/api/mock-user/')
-    const res = await axios.get('http://127.0.0.1:8000/api/mock-user/')
-    console.log('Response:', res.data)
-    profile.value = res.data
-    editProfile.value = { ...res.data }
+    const response = await fetch('http://127.0.0.1:8000/api/user-info/', {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        Accept: 'application/json',
+      },
+    })
+
+    console.log('Response status:', response.status)
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    const data = await response.json()
+    console.log('Response data:', data)
+
+    if (data) {
+      const userData = data
+      const profileData = userData.profile || {}
+
+      profile.value = {
+        name:
+          userData.first_name && userData.last_name
+            ? `${userData.first_name} ${userData.last_name}`
+            : userData.username || '',
+        email: userData.email || '',
+        height: profileData.height || '',
+        weight: profileData.weight || '',
+        goal: profileData.goal || '', // 确保มี field นี้ใน backend
+        location: profileData.location || profileData.country || '', // ใช้ location จาก backend
+        joinDate: new Date().toLocaleDateString(), // หรือใช้ userData.date_joined
+      }
+    }
+
+    editProfile.value = { ...profile.value }
   } catch (err) {
     console.error('Error details:', err)
-    error.value = 'Failed to load profile: ' + (err.response?.data?.message || err.message)
+    error.value = 'Failed to load profile: ' + err.message
   } finally {
     loading.value = false
   }
-})
+}
 
-function saveChanges() {
-  profile.value = { ...editProfile.value }
-  isEditing.value = false
+function getCsrfToken() {
+  const value = `; ${document.cookie}`
+  const parts = value.split(`; csrftoken=`)
+  if (parts.length === 2) return parts.pop().split(';').shift()
+}
+
+async function saveChanges() {
+  try {
+    loading.value = true
+
+    const payload = {
+      height: parseFloat(editProfile.value.height) || null,
+      weight: parseFloat(editProfile.value.weight) || null,
+      goal: editProfile.value.goal,
+      location: editProfile.value.location,
+    }
+
+    console.log('Saving payload:', payload)
+
+    const response = await fetch('http://127.0.0.1:8000/api/update-profile/', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCsrfToken(),
+      },
+      body: JSON.stringify(payload),
+    })
+
+    const responseData = await response.json()
+    console.log('Save response:', responseData)
+
+    if (response.ok) {
+      profile.value = { ...editProfile.value }
+      isEditing.value = false
+      alert('Profile updated successfully!')
+    } else {
+      throw new Error(responseData.message || 'Failed to save profile')
+    }
+  } catch (err) {
+    console.error('Error saving profile:', err)
+    error.value = 'Failed to save profile: ' + err.message
+    alert('Error saving profile: ' + err.message)
+  } finally {
+    loading.value = false
+  }
 }
 
 function cancelEdit() {
   editProfile.value = { ...profile.value }
   isEditing.value = false
 }
+
+onMounted(() => {
+  fetchUserProfile()
+})
 </script>
