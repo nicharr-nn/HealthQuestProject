@@ -109,10 +109,9 @@ function handleGoalSelection(goal) {
 </script>
 
 <style>
-/* (same styles you had)  ✅ คงสัดส่วน/spacing เดิมทั้งหมด */
-/* * { margin: 0; padding: 0; box-sizing: border-box; } */
+
 body {
-  /* ฟอนต์/สีจะถูกกำหนดด้วย Tailwind class บน #app แทน */
+  
   line-height: 1.6;
 }
 
@@ -121,7 +120,7 @@ body {
 .logo { color: white; font-weight: 700; font-size: 1.25rem; }
 .nav-links { display: flex; gap: 1rem; list-style: none; }
 
-/* ปล่อย proportion เดิมไว้, เปลี่ยนสีด้วย Tailwind utility ผ่าน class บน element แล้ว */
+
 .nav-link {
   color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 20px;
   background: rgba(255,255,255,0.1); transition: background 0.2s ease; font-weight: 500;
@@ -138,7 +137,7 @@ body {
   border-radius: 25px; cursor: pointer; font-weight: 600; transition: all 0.2s ease;
 }
 .page-btn:hover, .page-btn.active {
-  /* ใช้คู่สีเข้ากับธีมมากขึ้นโดยไม่แตะสัดส่วน */
+ 
   background: #1e293b; /* ใกล้เคียง text-slate-800 */
   color: white;
   border-color: #1e293b;
