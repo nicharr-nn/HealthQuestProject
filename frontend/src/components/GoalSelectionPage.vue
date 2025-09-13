@@ -1,56 +1,77 @@
 <!-- GoalSelectionPage.vue -->
 <template>
   <div class="goal-selection-page">
-    <div class="page-header">
-      <h1 class="page-title">Select Goal</h1>
-      <p class="page-subtitle">To Start Your Journey</p>
+    <div class="mb-12 text-center">
+      <h1 class="text-5xl font-black text-[#5a4633] uppercase tracking-[-2px] mb-2 max-md:text-[2rem]">
+        Select Goal
+      </h1>
+      <p class="text-[1.2rem] text-[#64748b] font-medium uppercase tracking-[1px]">
+        To Start Your Journey
+      </p>
     </div>
 
-    <div class="goal-grid">
-      <div 
-        v-for="goal in goals" 
+    <div class="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-8 mt-8 max-md:grid-cols-[1fr]">
+      <div
+        v-for="goal in goals"
         :key="goal.id"
-        class="goal-card" 
-        :class="goal.type"
+        class="cursor-pointer relative bg-[#FFF] shadow-[0_10px_30px_rgba(0,0,0,0.1)] text-center overflow-hidden p-8 rounded-[20px] transition-all duration-300 ease-in-out before:content-[''] before:absolute before:h-1.5 before:rounded-[20px_20px_0_0] before:top-0 before:inset-x-0 hover:translate-y-[-5px] hover:shadow-[0_20px_40px_rgba(0,0,0,0.15)]"
+        :class="{
+          'before:bg-[#B8D7DF]': goal.type === 'fitness',
+          'before:bg-[#EDB6B6]': goal.type === 'nutrition',
+          'before:bg-[#DED8B4]': goal.type === 'wellness',
+        }"
         @click="selectGoal(goal)"
       >
-        <div class="goal-icon">{{ goal.icon }}</div>
-        <h3 class="goal-title">{{ goal.title }}</h3>
-        <p class="goal-description">{{ goal.description }}</p>
-        
-        <div class="goal-features">
-          <span 
-            v-for="feature in goal.features" 
+        <div
+          class="w-[80px] h-[80px] flex items-center justify-center text-[2rem] text-[#FFF] font-[bold] mt-0 mb-6 mx-auto rounded-[50%]"
+          :class="{
+            'bg-[linear-gradient(135deg,#B8D7DF)]': goal.type === 'fitness',
+            'bg-[linear-gradient(135deg,#EDB6B6)]': goal.type === 'nutrition',
+            'bg-[linear-gradient(135deg,#DED8B4)]': goal.type === 'wellness',
+          }">
+          {{ goal.icon }}
+        </div>
+
+        <h3 class="text-2xl font-extrabold text-[#1e293b] uppercase tracking-[-1px] mb-4">
+          {{ goal.title }}
+        </h3>
+        <p class="text-[#64748b] leading-normal mb-6">
+          {{ goal.description }}
+        </p>
+
+        <div class="flex justify-center gap-3 flex-wrap mb-6">
+          <span
+            v-for="feature in goal.features"
             :key="feature"
-            class="feature-tag"
+            class="text-[#475569] bg-[#f1f5f9] text-[0.8rem] font-semibold px-3 py-1 rounded-[15px]"
           >
             {{ feature }}
           </span>
         </div>
-        
-        <div class="goal-details">
-          <div 
-            v-for="detail in goal.details" 
+
+        <div class="text-left mb-8">
+          <div
+            v-for="detail in goal.details"
             :key="detail"
-            class="detail-item"
+            class="flex items-center text-[#64748b] text-[0.9rem] mb-2 before:content-['•'] before:text-[#10b981] before:font-[bold] before:w-[1em] before:mr-2"
           >
             {{ detail }}
           </div>
         </div>
-        
-        <button class="select-btn">Click to Select</button>
+
+        <button class="text-[#FFF] bg-[#609da1] font-semibold cursor-pointer transition-transform duration-[0.2s] ease-[ease] w-full text-base px-8 py-3 rounded-[25px] border-[none] hover:translate-y-[-2px]">Click to Select</button>
       </div>
     </div>
 
     <!-- Success Modal -->
-    <div v-if="showSuccessModal" class="modal-overlay" @click="closeModal">
-      <div class="modal-content" @click.stop>
-        <div class="success-icon">✨</div>
-        <h2>Goal Selected!</h2>
-        <p>You selected: <strong>{{ selectedGoal?.title }}</strong></p>
-        <p class="redirect-text">Redirecting to dashboard...</p>
-        <div class="progress-bar">
-          <div class="progress-fill" :style="{ width: progressWidth + '%' }"></div>
+    <div v-if="showSuccessModal" class="fixed flex items-center justify-center bg-[rgba(0,0,0,0.8)] z-[1000] inset-0 animate-fadeIn" @click="closeModal">
+      <div class="bg-[#FFF] text-center max-w-[400px] w-[90%] p-8 rounded-[20px] animate-slideUp max-md:w-[calc(100%_-_2rem)] max-md:m-4" @click.stop>
+        <div class="text-5xl mb-4">✨</div>
+        <h2 class="text-[#1e293b] font-bold mb-4">Goal Selected!</h2>
+        <p class="text-[#6b7280] mb-2">You selected: <strong>{{ selectedGoal?.title }}</strong></p>
+        <p class="text-[#10b981] font-semibold mx-0 my-4">Redirecting to dashboard...</p>
+        <div class="h-1.5 bg-[#e5e7eb] overflow-hidden mt-4 rounded-[3px]">
+          <div class="h-full bg-[linear-gradient(90deg,#10b981,#059669)] transition-[width] duration-300 ease-[ease] rounded-[3px]" :style="{ width: progressWidth + '%' }"></div>
         </div>
       </div>
     </div>
@@ -113,13 +134,13 @@ export default {
     const selectGoal = (goal) => {
       selectedGoal.value = goal
       showSuccessModal.value = true
-      
+
       // Animate progress bar
       let progress = 0
       const interval = setInterval(() => {
         progress += 2
         progressWidth.value = progress
-        
+
         if (progress >= 100) {
           clearInterval(interval)
           setTimeout(() => {
@@ -146,249 +167,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-/* Page Header */
-.page-header {
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
-.page-title {
-  font-size: 3rem;
-  font-weight: 900;
-  color: #5a4633;
-  text-transform: uppercase;
-  letter-spacing: -2px;
-  margin-bottom: 0.5rem;
-}
-
-.page-subtitle {
-  font-size: 1.2rem;
-  color: #64748b;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-/* Goal Grid */
-.goal-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-  margin-top: 2rem;
-}
-
-.goal-card {
-  background: white;
-  border-radius: 20px;
-  padding: 2rem;
-  text-align: center;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-}
-
-.goal-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 6px;
-  border-radius: 20px 20px 0 0;
-}
-
-.goal-card.fitness::before { background: #B8D7DF; }
-.goal-card.nutrition::before { background: #EDB6B6; }
-.goal-card.wellness::before { background: #DED8B4; }
-
-.goal-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-}
-
-.goal-icon {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  margin: 0 auto 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-  color: white;
-  font-weight: bold;
-}
-
-.goal-card.fitness .goal-icon { background: linear-gradient(135deg,#B8D7DF); }
-.goal-card.nutrition .goal-icon { background: linear-gradient(135deg, #EDB6B6); }
-.goal-card.wellness .goal-icon { background: linear-gradient(135deg, #DED8B4); }
-
-.goal-title {
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: #1e293b;
-  margin-bottom: 1rem;
-  text-transform: uppercase;
-  letter-spacing: -1px;
-}
-
-.goal-description {
-  color: #64748b;
-  margin-bottom: 1.5rem;
-  line-height: 1.5;
-}
-
-.goal-features {
-  display: flex;
-  justify-content: center;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-}
-
-.feature-tag {
-  background: #f1f5f9;
-  color: #475569;
-  padding: 0.25rem 0.75rem;
-  border-radius: 15px;
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-
-.goal-details {
-  text-align: left;
-  margin-bottom: 2rem;
-}
-
-.detail-item {
-  display: flex;
-  align-items: center;
-  margin-bottom: 0.5rem;
-  color: #64748b;
-  font-size: 0.9rem;
-}
-
-.detail-item::before {
-  content: '•';
-  color: #10b981;
-  font-weight: bold;
-  width: 1em;
-  margin-right: 0.5rem;
-}
-
-.select-btn {
-  background: linear-gradient(135deg, #609da1);
-  color: white;
-  border: none;
-  padding: 0.75rem 2rem;
-  border-radius: 25px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-  width: 100%;
-  font-size: 1rem;
-}
-
-.select-btn:hover {
-  transform: translateY(-2px);
-}
-
-/* Modal Styles */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  animation: fadeIn 0.3s ease-out;
-}
-
-.modal-content {
-  background: white;
-  border-radius: 20px;
-  padding: 2rem;
-  text-align: center;
-  max-width: 400px;
-  width: 90%;
-  animation: slideUp 0.3s ease-out;
-}
-
-.success-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-}
-
-.modal-content h2 {
-  color: #1e293b;
-  margin-bottom: 1rem;
-  font-weight: 700;
-}
-
-.modal-content p {
-  color: #6b7280;
-  margin-bottom: 0.5rem;
-}
-
-.redirect-text {
-  color: #10b981;
-  font-weight: 600;
-  margin: 1rem 0;
-}
-
-.progress-bar {
-  height: 6px;
-  background: #e5e7eb;
-  border-radius: 3px;
-  overflow: hidden;
-  margin-top: 1rem;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #10b981, #059669);
-  border-radius: 3px;
-  transition: width 0.3s ease;
-}
-
-/* Animations */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideUp {
-  from { 
-    opacity: 0; 
-    transform: translateY(30px); 
-  }
-  to { 
-    opacity: 1; 
-    transform: translateY(0); 
-  }
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .page-title {
-    font-size: 2rem;
-  }
-
-  .goal-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .modal-content {
-    margin: 1rem;
-    width: calc(100% - 2rem);
-  }
-}
-</style>
