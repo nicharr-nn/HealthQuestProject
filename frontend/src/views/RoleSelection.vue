@@ -41,7 +41,6 @@
         />
       </button>
 
-      <button @click="logout">Sign Out</button>
     </div>
   </section>
 </template>
@@ -105,10 +104,6 @@ async function selectRole(role) {
     console.error(error);
     alert("Error setting role");
   }
-}
-
-async function logout() {
-  window.location.href = "http://127.0.0.1:8000/accounts/logout/"
 }
 
 </script>

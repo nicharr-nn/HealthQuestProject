@@ -194,10 +194,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
+const userStore = useUserStore()
 
 const profile = ref({
   name: '',
@@ -213,26 +215,21 @@ const editProfile = ref({ ...profile.value })
 const isEditing = ref(false)
 const loading = ref(true)
 const error = ref(null)
-const profileImage = ref('https://via.placeholder.com/256')
+
+const profileComplete = ref(userStore.profile_complete)
+const isAuthenticated = computed(() => userStore.isAuthenticated)
 
 async function fetchUserProfile() {
   try {
     const response = await fetch('http://127.0.0.1:8000/api/user-info/', {
-      method: 'GET',
       credentials: 'include',
-      headers: {
-        Accept: 'application/json',
-      },
     })
 
-    console.log('Response status:', response.status)
-
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
+      throw new Error(`HTTP error: ${response.status}`)
     }
 
     const data = await response.json()
-    console.log('Response data:', data)
 
     if (data) {
       const userData = data
@@ -246,64 +243,19 @@ async function fetchUserProfile() {
         email: userData.email || '',
         height: profileData.height || '',
         weight: profileData.weight || '',
-        goal: profileData.goal || '', // 确保มี field นี้ใน backend
-        location: profileData.location || profileData.country || '', // ใช้ location จาก backend
-        joinDate: new Date().toLocaleDateString(), // หรือใช้ userData.date_joined
+        goal: profileData.goal || '',
+        location: profileData.location || '',
+        joinDate: new Date().toLocaleDateString(),
       }
+
+      profileComplete.value = userData.profile_complete
+      userStore.setProfileComplete(userData.profile_complete)
     }
 
     editProfile.value = { ...profile.value }
   } catch (err) {
-    console.error('Error details:', err)
+    console.error('Error fetching user profile:', err)
     error.value = 'Failed to load profile: ' + err.message
-  } finally {
-    loading.value = false
-  }
-}
-
-function getCsrfToken() {
-  const value = `; ${document.cookie}`
-  const parts = value.split(`; csrftoken=`)
-  if (parts.length === 2) return parts.pop().split(';').shift()
-}
-
-async function saveChanges() {
-  try {
-    loading.value = true
-
-    const payload = {
-      height: parseFloat(editProfile.value.height) || null,
-      weight: parseFloat(editProfile.value.weight) || null,
-      goal: editProfile.value.goal,
-      location: editProfile.value.location,
-    }
-
-    console.log('Saving payload:', payload)
-
-    const response = await fetch('http://127.0.0.1:8000/api/update-profile/', {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCsrfToken(),
-      },
-      body: JSON.stringify(payload),
-    })
-
-    const responseData = await response.json()
-    console.log('Save response:', responseData)
-
-    if (response.ok) {
-      profile.value = { ...editProfile.value }
-      isEditing.value = false
-      alert('Profile updated successfully!')
-    } else {
-      throw new Error(responseData.message || 'Failed to save profile')
-    }
-  } catch (err) {
-    console.error('Error saving profile:', err)
-    error.value = 'Failed to save profile: ' + err.message
-    alert('Error saving profile: ' + err.message)
   } finally {
     loading.value = false
   }

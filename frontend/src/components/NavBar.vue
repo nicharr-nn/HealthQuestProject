@@ -1,5 +1,5 @@
 <template>
-  <DashboardNavbar v-if="userStore.role && userStore.role !== 'user'" />
+  <DashboardNavbar v-if="userStore.profile_complete" />
   <AppNavbar v-else />
 </template>
 

@@ -4,9 +4,7 @@
       <div class="flex justify-between h-16 items-center">
         <!-- Left: Brand -->
         <div class="flex items-center">
-          <a href="#home" class="text-2xl font-subtitle text-white hover:text-[#c7d2fe]">
-            HealthQuest
-          </a>
+        <RouterLink to="/" class="font-subtitle text-2xl text-white">HealthQuest</RouterLink>
         </div>
 
         <!-- Right: Navigation links -->
@@ -19,7 +17,7 @@
             About
           </a>
           
-          <a href="#contract" class="text-white hover:text-[#c7d2fe] font-body">
+          <a href="#contact" class="text-white hover:text-[#c7d2fe] font-body">
             Contact us
           </a>
         </div>
