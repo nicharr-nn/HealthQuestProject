@@ -215,3 +215,4 @@ frontend/.env
 .DS_Store
 .vscode/
 .idea/
+backend/media/profile_photos/

@@ -22,6 +22,8 @@ from django.urls import path, include
 from django.views.generic import TemplateView
 from django.http import JsonResponse
 from login_page import views
+from django.conf.urls.static import static
+from django.conf import settings
 
 def home_view(request):
     """Simple home page view that returns user info or login status"""
@@ -62,3 +64,6 @@ urlpatterns = [
     path('about/', about_view, name='about'), 
     path("api/", include("users.urls"))
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

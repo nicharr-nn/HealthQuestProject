@@ -48,6 +48,9 @@
 <script setup>
 import RoleCard from '../components/RoleCard.vue'
 import { useRouter } from 'vue-router'
+import { useUserStore } from '@/stores/user'
+
+const userStore = useUserStore()
 
 const router = useRouter()
 
@@ -73,10 +76,6 @@ const coachPoints = [
   "Post recipes for the community"
 ]
 
-function select(role) {
-  console.log('Selected:', role)
-  router.push('/about-you')
-}
 
 function getCsrfToken() {
   const value = `; ${document.cookie}`;
@@ -85,7 +84,10 @@ function getCsrfToken() {
 }
 
 async function selectRole(role) {
+userStore.setRole(role);
+
   try {
+    console.log('Selected role:', role);
     const response = await fetch("http://127.0.0.1:8000/api/select-role/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -94,7 +96,12 @@ async function selectRole(role) {
     });
 
     if (response.ok) {
-      router.push("/about-you");
+      if (role === 'normal') {
+      router.push("/select-goal");
+      } else {
+        router.push("/about-you");
+      }
+
     } else {
       const error = await response.json();
       console.error("Error setting role:", error);

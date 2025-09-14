@@ -5,6 +5,8 @@ export const useUserStore = defineStore('user', {
     isAuthenticated: false,
     profile: null,
     profile_complete: false,
+    role:null,
+    goal:null
   }),
   actions: {
     setAuthStatus(isAuthenticated, profile = null, profileComplete = false) {
@@ -12,6 +14,13 @@ export const useUserStore = defineStore('user', {
       this.profile = profile
       this.profile_complete = profileComplete
     },
+    setRole(role){
+      this.role = role;
+    },
+    setGoal(goal){
+      this.goal = goal;
+    },
+
     setProfileComplete(value) {
       this.profile_complete = value
     },
@@ -19,6 +28,8 @@ export const useUserStore = defineStore('user', {
       this.isAuthenticated = false
       this.profile = null
       this.profile_complete = false
+      this.role = null
+      this.goal = null
     },
   },
 })

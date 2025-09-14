@@ -15,14 +15,37 @@
                 <!-- Profile Picture -->
                 <div class="flex-shrink-0">
                   <div class="relative">
-                    <div class="w-64 h-64 rounded-full bg-gray-200 overflow-hidden shadow-lg"></div>
-                    <button
-                      class="absolute bottom-2 right-4 bg-white p-3 rounded-full hover:shadow-xl transition-shadow"
-                    >
-                      <span class="material-symbols-outlined text-gray-600 text-xl">
-                        image_arrow_up
+                    <div class="w-64 h-64 rounded-full bg-gray-200 overflow-hidden shadow-lg">
+                      <img
+                        v-if="profile.photo"
+                        :src="profile.photo"
+                        alt="Profile Photo"
+                        class="w-full h-full object-cover"
+                      />
+                      <span v-else class="text-gray-500 flex items-center justify-center h-full">
+                        No Photo
                       </span>
-                    </button>
+                    </div>  
+                    <div class="upload-container">
+                      <div class="relative">
+                        <!-- Hidden File Input -->
+                        <input
+                          type="file"
+                          id="photo"
+                          @change="handleFileChange"
+                          class="hidden"
+                          :disabled="!isEditing"
+                        />
+
+                        <!-- Visible Upload Icon -->
+                        <label for="photo" class="absolute bottom-2 right-4 bg-white p-3 rounded-full hover:shadow-xl transition-shadow cursor-pointer">
+                          <span class="material-symbols-outlined text-gray-600 text-xl">
+                            image_arrow_up
+                          </span>
+                        </label>
+                      </div>
+                      <p v-if="uploadMessage" class="mt-4 text-gray-600">{{ uploadMessage }}</p>
+                    </div>
                   </div>
                 </div>
 
@@ -36,7 +59,7 @@
                         <input
                           v-model="editProfile.name"
                           type="text"
-                          class="flex-1 text-teal-600 text-lg font-medium bg-transparent border-none outline-none focus:bg-gray-50 px-2 py-1 rounded"
+                          class="flex-1 text-teal-600 text-lg font-medium bg-gray-100 border border-gray-300 outline-none focus:bg-gray-50 px-3 py-2 rounded"
                         />
                       </template>
                       <template v-else>
@@ -53,7 +76,7 @@
                         <input
                           v-model="editProfile.email"
                           type="email"
-                          class="flex-1 text-teal-600 text-lg font-medium bg-transparent border-none outline-none focus:bg-gray-50 px-2 py-1 rounded"
+                          class="flex-1 text-teal-600 text-lg font-medium bg-gray-100 border border-gray-300 outline-none focus:bg-gray-50 px-3 py-2 rounded"
                         />
                       </template>
                       <template v-else>
@@ -71,7 +94,7 @@
                           <input
                             v-model="editProfile.height"
                             type="text"
-                            class="text-teal-600 text-lg font-medium bg-transparent border-none outline-none focus:bg-gray-50 px-2 py-1 rounded w-32 text-right"
+                            class="text-teal-600 text-lg font-medium bg-gray-100 border border-gray-300 outline-none focus:bg-gray-50 px-3 py-2 rounded w-32 text-right"
                           />
                         </template>
                         <template v-else>
@@ -91,7 +114,7 @@
                           <input
                             v-model="editProfile.weight"
                             type="text"
-                            class="text-teal-600 text-lg font-medium bg-transparent border-none outline-none focus:bg-gray-50 px-2 py-1 rounded w-32 text-right"
+                            class="text-teal-600 text-lg font-medium bg-gray-100 border border-gray-300 outline-none focus:bg-gray-50 px-3 py-2 rounded w-32 text-right"
                           />
                         </template>
                         <template v-else>
@@ -104,23 +127,24 @@
                     </div>
 
                     <!-- Goal -->
-                    <div class="flex justify-between items-center border-b border-gray-200 pb-4">
-                      <label class="text-gray-600 font-medium text-lg w-32">Goal</label>
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-200 pb-4" v-if="userStore.role === 'normal'">
+                      <label class="text-gray-600 font-medium text-lg w-32 mb-2 md:mb-0">Goal</label>
                       <template v-if="isEditing">
                         <select
-                          v-model="editProfile.goal"
-                          class="flex-1 text-teal-600 text-lg font-medium bg-transparent border-none outline-none focus:bg-gray-50 px-2 py-1 rounded"
+                          v-model="editProfile.current_goal"
+                          class="flex-1 text-teal-600 text-lg font-medium bg-gray-100 border border-gray-300 outline-none focus:bg-gray-50 px-3 py-2 rounded"
                         >
                           <option value="">Select a goal</option>
-                          <option value="WEIGHT_LOSS">Weight Loss</option>
-                          <option value="MUSCLE_GAIN">Muscle Gain</option>
-                          <option value="MAINTENANCE">Maintenance</option>
+                          <option value="lose_weight">Lose Weight</option>
+                          <option value="build_muscle">Build Muscle</option>
+                          <option value="improve_endurance">Improve Endurance</option>
+                          <option value="general_fitness">General Fitness</option>
                         </select>
                       </template>
                       <template v-else>
-                        <span class="flex-1 text-teal-600 text-lg font-medium text-right">{{
-                          profile.goal
-                        }}</span>
+                        <span class="flex-1 text-teal-600 text-lg font-medium text-right">
+                          {{ formatGoalName(profile.current_goal) || 'No goal set' }}
+                        </span>
                       </template>
                     </div>
 
@@ -131,7 +155,7 @@
                         <input
                           v-model="editProfile.location"
                           type="text"
-                          class="flex-1 text-teal-600 text-lg font-medium bg-transparent border-none outline-none focus:bg-gray-50 px-2 py-1 rounded"
+                          class="flex-1 text-teal-600 text-lg font-medium bg-gray-100 border border-gray-300 outline-none focus:bg-gray-50 px-3 py-2 rounded"
                         />
                       </template>
                       <template v-else>
@@ -198,7 +222,6 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 
-const router = useRouter()
 const userStore = useUserStore()
 
 const profile = ref({
@@ -206,9 +229,10 @@ const profile = ref({
   email: '',
   height: '',
   weight: '',
-  goal: '',
+  current_goal: '',
   location: '',
   joinDate: '',
+  photo: null,
 })
 const editProfile = ref({ ...profile.value })
 
@@ -343,6 +367,9 @@ async function saveChanges() {
   }
 }
 
+const profileComplete = ref(userStore.profile_complete)
+const isAuthenticated = computed(() => userStore.isAuthenticated)
+
 async function fetchUserProfile() {
   try {
     const response = await fetch('http://127.0.0.1:8000/api/user-info/', {
@@ -367,9 +394,10 @@ async function fetchUserProfile() {
         email: userData.email || '',
         height: profileData.height || '',
         weight: profileData.weight || '',
-        goal: profileData.goal || '',
+        current_goal: profileData.current_goal || '',
         location: profileData.location || '',
         joinDate: new Date().toLocaleDateString(),
+        photo: profileData.photo ? `http://127.0.0.1:8000${profileData.photo}` : null,
       }
 
       profileComplete.value = userData.profile_complete
@@ -388,9 +416,21 @@ async function fetchUserProfile() {
 function cancelEdit() {
   editProfile.value = { ...profile.value }
   isEditing.value = false
+  selectedFile.value = null
+  uploadMessage.value = ''
 }
 
 onMounted(() => {
   fetchUserProfile()
 })
 </script>
+
+<style scoped>
+img {
+  object-fit: cover;
+}
+
+.upload-container {
+  margin-top: 1rem;
+}
+</style>

@@ -1,0 +1,166 @@
+<template>
+  <section class="max-w-6xl mx-auto px-6 py-12">
+    <!-- Heading - Use your configured font-display class -->
+    <h1 class="font-subtitle text-5xl md:text-7xl text-center tracking-wide text-[#846757]">
+      SELECT GOAL
+    </h1>
+    <p class="font-body text-center text-xl md:text-2xl text-gray-500 mt-4">
+      Choose your fitness goal to personalize your experience. Each goal offers different
+      workout programs and nutrition plans tailored to your objectives.
+    </p>
+
+    <!-- Cards -->
+    <div class="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <button @click="selectGoal('lose_weight')" class="text-left focus:outline-none">
+        <GoalCard
+          title="LOSE WEIGHT"
+          color="text-[#8C876A]"
+          bg="bg-cardKhaki"
+          titleColor="text-[#7D7858]"
+          :selected="selectedGoal === 'lose_weight'"
+        />
+      </button>
+
+      <button @click="selectGoal('build_muscle')" class="text-left focus:outline-none">
+        <GoalCard
+          title="BUILD MUSCLE"
+          color="text-[#417479]"
+          bg="bg-cardBlue"
+          titleColor="text-[#368492]"
+          :selected="selectedGoal === 'build_muscle'"
+        />
+      </button>
+
+      <button @click="selectGoal('improve_endurance')" class="text-left focus:outline-none">
+        <GoalCard
+          title="IMPROVE ENDURANCE"
+          color="text-[#C4847C]"
+          bg="bg-cardPink"
+          titleColor="text-[#9C6963]"
+          :selected="selectedGoal === 'improve_endurance'"
+        />
+      </button>
+
+      <button @click="selectGoal('general_fitness')" class="text-left focus:outline-none">
+        <GoalCard
+          title="GENERAL FITNESS"
+          color="text-[#7D6A8C]"
+          bg="bg-purple-200"
+          titleColor="text-[#5D4A6C]"
+          :selected="selectedGoal === 'general_fitness'"
+        />
+      </button>
+    </div>
+
+    <!-- Continue Button -->
+    <div class="mt-12 text-center">
+      <button 
+        @click="saveGoal" 
+        :disabled="!selectedGoal"
+        class="bg-[#88ACEA] hover:bg-[#6a96d3] disabled:bg-gray-400 text-white font-bold py-3 px-8 rounded-full text-lg shadow-lg transition-colors"
+      >
+        Continue
+      </button>
+    </div>
+  </section>
+</template>
+
+<script setup>
+import GoalCard from '../components/GoalCard.vue'
+import { useRouter } from 'vue-router'
+import { useUserStore } from '@/stores/user'
+import { ref } from 'vue'
+
+const userStore = useUserStore()
+const router = useRouter()
+const selectedGoal = ref(null)
+const isLoading = ref(false)
+
+function getCsrfToken() {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; csrftoken=`);
+  if (parts.length === 2) return parts.pop().split(";").shift();
+}
+
+function selectGoal(goal) {
+  selectedGoal.value = goal;
+  userStore.setGoal(goal);
+  console.log("Selected goal:", goal);
+}
+
+async function saveGoal() {
+  if (!selectedGoal.value) {
+    alert("Please select a goal first");
+    return;
+  }
+
+  isLoading.value = true;
+  
+  try {
+    const csrfToken = getCsrfToken();
+    const response = await fetch("http://127.0.0.1:8000/api/select-goal/", {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "X-CSRFToken": csrfToken || ""
+      },
+      credentials: "include",
+      body: JSON.stringify({ 
+        goal_type: selectedGoal.value,
+        end_date: calculateEndDate(selectedGoal.value)
+      }),
+    });
+
+    if (response.ok) {
+      const goalData = await response.json();
+      console.log("Goal set successfully:", goalData);
+      router.push("/about-you");
+    } else if (response.status === 400) {
+      const error = await response.json();
+      console.error("Error setting goal:", error);
+      
+      // Handle specific error for non-normal users
+      if (error.user_profile && error.user_profile.includes("normal role")) {
+        alert("Only normal users can set fitness goals. Please contact support if you believe this is an error.");
+        router.push("/about-you");
+      } else {
+        alert("Failed to set goal: " + (error.detail || JSON.stringify(error)));
+      }
+    } else {
+      const error = await response.text();
+      console.error("Error setting goal:", error);
+      alert("Failed to set goal. Please try again.");
+    }
+  } catch (error) {
+    console.error("Network error:", error);
+    alert("Network error. Please check your connection and try again.");
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+function calculateEndDate(goalType) {
+  const today = new Date();
+  const endDate = new Date();
+  
+  // Set different end dates based on goal type
+  switch(goalType) {
+    case 'lose_weight':
+      endDate.setMonth(today.getMonth() + 3); // 3 months for weight loss
+      break;
+    case 'build_muscle':
+      endDate.setMonth(today.getMonth() + 6); // 6 months for muscle building
+      break;
+    case 'improve_endurance':
+      endDate.setMonth(today.getMonth() + 2); // 2 months for endurance
+      break;
+    case 'general_fitness':
+      endDate.setMonth(today.getMonth() + 12); // 1 year for general fitness
+      break;
+    default:
+      endDate.setMonth(today.getMonth() + 3);
+  }
+  
+  return endDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+}
+</script>
