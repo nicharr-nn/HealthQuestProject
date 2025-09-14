@@ -216,8 +216,132 @@ const isEditing = ref(false)
 const loading = ref(true)
 const error = ref(null)
 
-const profileComplete = ref(userStore.profile_complete)
-const isAuthenticated = computed(() => userStore.isAuthenticated)
+const selectedFile = ref(null)
+const uploadMessage = ref('')
+
+function getCsrfToken() {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; csrftoken=`);
+  if (parts.length === 2) return parts.pop().split(";").shift();
+  return '';
+}
+
+function formatGoalName(goalValue) {
+  const goalMap = {
+    'lose_weight': 'Lose Weight',
+    'build_muscle': 'Build Muscle',
+    'improve_endurance': 'Improve Endurance',
+    'general_fitness': 'General Fitness'
+  };
+  return goalMap[goalValue] || goalValue;
+}
+
+function handleFileChange(event) {
+  selectedFile.value = event.target.files[0]
+  uploadMessage.value = `Selected file: ${selectedFile.value.name}`
+}
+
+async function uploadPhoto() {
+  if (!selectedFile.value) return null
+
+  const formData = new FormData()
+  formData.append('photo', selectedFile.value)
+
+  try {
+    const response = await fetch('http://127.0.0.1:8000/api/upload-photo/', {
+      method: 'POST',
+      body: formData,
+      credentials: 'include',
+      headers: {
+        'X-CSRFToken': getCsrfToken()
+      }
+    })
+
+    if (response.ok) {
+      const data = await response.json()
+      return data.photo_url || `http://127.0.0.1:8000${data.file_path}`
+    } else {
+      const errorData = await response.json()
+      uploadMessage.value = `Error: ${errorData.detail || 'Failed to upload photo.'}`
+      return null
+    }
+  } catch (error) {
+    console.error('Error uploading photo:', error)
+    uploadMessage.value = 'An error occurred while uploading the photo.'
+    return null
+  }
+}
+
+async function saveChanges() {
+  try {
+    // First, upload the photo if a new one was selected
+    let uploadedPhoto = null
+    if (selectedFile.value) {
+      uploadedPhoto = await uploadPhoto()
+    }
+
+    // Update profile information
+    const profileResponse = await fetch('http://127.0.0.1:8000/api/user-info/', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCsrfToken()
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        userprofile: {
+          height: parseFloat(editProfile.value.height),
+          weight: parseFloat(editProfile.value.weight),
+          location: editProfile.value.location,
+          photo: uploadedPhoto || profile.value.photo,
+        }
+      }),
+    })
+
+    if (!profileResponse.ok) {
+      throw new Error(`Failed to save profile changes. Status: ${profileResponse.status}`)
+    }
+
+    // Update goal if user is a normal user and a goal was selected
+    if (userStore.role === 'normal' && editProfile.value.current_goal) {
+      const goalResponse = await fetch("http://127.0.0.1:8000/api/select-goal/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCsrfToken()
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          goal_type: editProfile.value.current_goal
+        })
+      });
+
+      if (!goalResponse.ok) {
+        const errorData = await goalResponse.json();
+        if (goalResponse.status !== 400 || !errorData.user_profile) {
+          throw new Error("Failed to update goal");
+        }
+        // If it's just the "normal user only" error, we can continue
+        console.log("User is not a normal user, skipping goal update");
+      }
+    }
+
+    // Update local state with new values
+    if (uploadedPhoto) {
+      profile.value.photo = uploadedPhoto;
+    }
+    profile.value.height = editProfile.value.height;
+    profile.value.weight = editProfile.value.weight;
+    profile.value.location = editProfile.value.location;
+    profile.value.current_goal = editProfile.value.current_goal;
+    
+    isEditing.value = false
+    uploadMessage.value = 'Profile updated successfully!'
+  } catch (err) {
+    console.error('Error saving changes:', err)
+    uploadMessage.value = 'Error saving changes: ' + err.message
+  }
+}
 
 async function fetchUserProfile() {
   try {
