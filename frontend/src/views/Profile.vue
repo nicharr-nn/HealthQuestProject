@@ -283,7 +283,7 @@ async function uploadPhoto() {
 
     if (response.ok) {
       const data = await response.json()
-      return data.photo_url || `http://127.0.0.1:8000${data.file_path}`
+      return data.photo_url
     } else {
       const errorData = await response.json()
       uploadMessage.value = `Error: ${errorData.detail || 'Failed to upload photo.'}`
@@ -296,15 +296,16 @@ async function uploadPhoto() {
   }
 }
 
+
 async function saveChanges() {
   try {
-    // First, upload the photo if a new one was selected
+    // Upload photo (if new one selected)
     let uploadedPhoto = null
     if (selectedFile.value) {
       uploadedPhoto = await uploadPhoto()
     }
 
-    // Update profile information
+    // Update profile info
     const profileResponse = await fetch('http://127.0.0.1:8000/api/user-info/', {
       method: 'PATCH',
       headers: {
@@ -326,7 +327,7 @@ async function saveChanges() {
       throw new Error(`Failed to save profile changes. Status: ${profileResponse.status}`)
     }
 
-    // Update goal if user is a normal user and a goal was selected
+    // Update goal (only if user is normal)
     if (userStore.role === 'normal' && editProfile.value.current_goal) {
       const goalResponse = await fetch("http://127.0.0.1:8000/api/select-goal/", {
         method: "POST",
@@ -345,20 +346,20 @@ async function saveChanges() {
         if (goalResponse.status !== 400 || !errorData.user_profile) {
           throw new Error("Failed to update goal");
         }
-        // If it's just the "normal user only" error, we can continue
-        console.log("User is not a normal user, skipping goal update");
       }
     }
 
-    // Update local state with new values
+    // ✅ Update local state with new values
     if (uploadedPhoto) {
-      profile.value.photo = uploadedPhoto;
+      profile.value.photo = `${uploadedPhoto}?v=${Date.now()}`
+      editProfile.value.photo = profile.value.photo
     }
-    profile.value.height = editProfile.value.height;
-    profile.value.weight = editProfile.value.weight;
-    profile.value.location = editProfile.value.location;
-    profile.value.current_goal = editProfile.value.current_goal;
-    
+
+    profile.value.height = editProfile.value.height
+    profile.value.weight = editProfile.value.weight
+    profile.value.location = editProfile.value.location
+    profile.value.current_goal = editProfile.value.current_goal
+
     isEditing.value = false
     uploadMessage.value = 'Profile updated successfully!'
   } catch (err) {

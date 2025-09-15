@@ -1,49 +1,49 @@
 <template>
-  <section class="max-w-6xl mx-auto px-6 py-12">
-    <!-- Heading - Use your configured font-display class -->
-    <h1 class="font-subtitle text-5xl md:text-7xl text-center tracking-wide text-[#846757]">
+  <section class="max-w-6xl mx-auto px-4 sm:px-6 py-12">
+    <!-- Heading -->
+    <h1 class="font-subtitle text-3xl sm:text-4xl md:text-6xl lg:text-7xl text-center tracking-wide text-[#846757]">
       SELECT ROLE
     </h1>
-    <p class="font-subtitle text-center text-xl md:text-2xl text-gray-500 mt-4">
+    <p class="font-subtitle text-center text-base sm:text-lg md:text-2xl text-gray-500 mt-4 leading-relaxed">
       Choose your role to get started on your fitness journey. Each role offers different
       features and capabilities tailored to your needs.
     </p>
 
     <!-- Cards -->
-    <div class="mt-10 grid grid-cols-1 md:grid-cols-3 gap-8">
-      <button @click="selectRole('member')" class="text-left">
+    <div class="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+      <button @click="selectRole('member')" class="text-left w-full">
         <RoleCard
           title="MEMBER"
           :points="memberPoints"
-          color= "text-[#8C876A]"
+          color="text-[#8C876A]"
           bg="bg-cardKhaki"
           titleColor="text-[#7D7858]"
         />
       </button>
 
-      <button @click="selectRole('normal')" class="text-left">
+      <button @click="selectRole('normal')" class="text-left w-full">
         <RoleCard
           title="NORMAL USER"
           :points="normalUserPoints"
-          color= "text-[#417479]"
+          color="text-[#417479]"
           bg="bg-cardBlue"
           titleColor="text-[#368492]"
         />
       </button>
 
-      <button @click="selectRole('coach')" class="text-left">
+      <button @click="selectRole('coach')" class="text-left w-full">
         <RoleCard
           title="COACH"
           :points="coachPoints"
-          color= "text-[#C4847C]"
+          color="text-[#C4847C]"
           bg="bg-cardPink"
           titleColor="text-[#9C6963]"
         />
       </button>
-
     </div>
   </section>
 </template>
+
 
 <script setup>
 import RoleCard from '../components/RoleCard.vue'

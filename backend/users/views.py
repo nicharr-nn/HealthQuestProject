@@ -6,16 +6,22 @@ from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 
 
-@api_view(['GET'])
+@api_view(['GET', 'PUT', 'PATCH'])
 @permission_classes([IsAuthenticated])
 def user_info(request):
-    """Get current user information"""
-    if request.user.is_authenticated:
-        user = request.user
+    user = request.user
+
+    if request.method == 'GET':
         serializer = UserSerializer(user)
         return Response(serializer.data)
-    else:
-        return Response({'error': 'Not authenticated'}, status=401)
+
+    elif request.method in ['PUT', 'PATCH']:
+        serializer = UserSerializer(user, data=request.data, partial=(request.method == 'PATCH'))
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -106,5 +112,10 @@ def upload_photo(request):
         user.userprofile.photo = file_path
         user.userprofile.save()
 
-    
-    return Response({'detail': 'Photo uploaded successfully!', 'file_path': file_path})
+    full_url = request.build_absolute_uri(default_storage.url(file_path))
+
+    return Response({
+        'detail': 'Photo uploaded successfully!',
+        'file_path': file_path,
+        'photo_url': full_url
+    })
