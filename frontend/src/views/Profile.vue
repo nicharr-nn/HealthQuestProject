@@ -127,7 +127,7 @@
                     </div>
 
                     <!-- Goal -->
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-200 pb-4" v-if="userStore.role === 'normal'">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-200 pb-4" v-if="profile.current_goal !== undefined">
                       <label class="text-gray-600 font-medium text-lg w-32 mb-2 md:mb-0">Goal</label>
                       <template v-if="isEditing">
                         <select
@@ -349,7 +349,7 @@ async function saveChanges() {
       }
     }
 
-    // ✅ Update local state with new values
+    // Update local state with new values
     if (uploadedPhoto) {
       profile.value.photo = `${uploadedPhoto}?v=${Date.now()}`
       editProfile.value.photo = profile.value.photo
@@ -386,6 +386,8 @@ async function fetchUserProfile() {
     if (data) {
       const userData = data
       const profileData = userData.profile || {}
+
+      console.log('Current goal:', profileData.current_goal) // Debug log
 
       profile.value = {
         name:

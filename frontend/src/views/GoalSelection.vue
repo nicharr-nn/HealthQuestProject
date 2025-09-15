@@ -1,12 +1,11 @@
 <template>
   <section class="max-w-6xl mx-auto px-6 py-12">
-    <!-- Heading - Use your configured font-display class -->
+    <!-- Heading  -->
     <h1 class="font-subtitle text-5xl md:text-7xl text-center tracking-wide text-[#846757]">
       SELECT GOAL
     </h1>
-    <p class="font-body text-center text-xl md:text-2xl text-gray-500 mt-4">
-      Choose your fitness goal to personalize your experience. Each goal offers different
-      workout programs and nutrition plans tailored to your objectives.
+    <p class="font-subtitle text-center text-xl md:text-2xl text-gray-500 mt-4">
+      TO START YOUR JOURNEY
     </p>
 
     <!-- Cards -->
@@ -18,6 +17,11 @@
           bg="bg-cardKhaki"
           titleColor="text-[#7D7858]"
           :selected="selectedGoal === 'lose_weight'"
+          description="Shed pounds, and feel lighter."
+          duration="3 months"
+          focus="Weight Loss"
+          level="Beginner"
+          :benefits="['3 workout days/week', 'Weekly check-ins']"
         />
       </button>
 
@@ -28,6 +32,11 @@
           bg="bg-cardBlue"
           titleColor="text-[#368492]"
           :selected="selectedGoal === 'build_muscle'"
+          description="Gain strength, and feel powerful."
+          duration="6 months"
+          focus="Strength Training"
+          level="Intermediate"
+          :benefits="['4 workout days/week', 'Video-guided exercises']"
         />
       </button>
 
@@ -38,6 +47,11 @@
           bg="bg-cardPink"
           titleColor="text-[#9C6963]"
           :selected="selectedGoal === 'improve_endurance'"
+          description="Boost stamina, and feel unstoppable."
+          duration="2 months"
+          focus="Cardio + Stamina"
+          level="All Levels"
+          :benefits="['5 cardio sessions/week', 'Endurance challenges']"
         />
       </button>
 
@@ -48,6 +62,11 @@
           bg="bg-purple-200"
           titleColor="text-[#5D4A6C]"
           :selected="selectedGoal === 'general_fitness'"
+          description="Maintain health, and feel great."
+          duration="1 year"
+          focus="Overall Wellness"
+          level="All Levels"
+          :benefits="['Balanced workout plan', 'Monthly wellness check']"
         />
       </button>
     </div>
