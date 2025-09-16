@@ -38,9 +38,9 @@ def user_info(request):
 @permission_classes([IsAuthenticated])
 def set_role(request):
     """Set user role"""
-
+    from .models import UserProfile
     try:
-        profile = request.user.userprofile
+        profile, created = UserProfile.objects.get_or_create(user=request.user)
         profile.role = request.data.get("role")
         profile.save()
         return Response({"status": "success", "role": profile.role})

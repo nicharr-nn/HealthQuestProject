@@ -92,6 +92,7 @@ userStore.setRole(role);
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
+      "X-CSRFToken": getCsrfToken(),
       body: JSON.stringify({ role }),
     });
 
