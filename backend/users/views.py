@@ -1,5 +1,5 @@
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from .serializers import UserProfileSerializer, UserSerializer
 from django.core.files.storage import default_storage
@@ -7,20 +7,39 @@ from django.core.files.base import ContentFile
 
 
 @api_view(['GET', 'PUT', 'PATCH'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])  # allow GET without auth, require auth for PUT/PATCH
 def user_info(request):
+    """
+    Return user info and authentication status.
+    """
     user = request.user
 
     if request.method == 'GET':
-        serializer = UserSerializer(user)
-        return Response(serializer.data)
+        if user.is_authenticated:
+            serializer = UserSerializer(user)
+            return Response({
+                "isAuthenticated": True,
+                "user": serializer.data
+            })
+        else:
+            return Response({
+                "isAuthenticated": False,
+                "user": None
+            })
 
     elif request.method in ['PUT', 'PATCH']:
+        if not user.is_authenticated:
+            return Response({"detail": "Authentication required."}, status=401)
+
         serializer = UserSerializer(user, data=request.data, partial=(request.method == 'PATCH'))
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
+            return Response({
+                "isAuthenticated": True,
+                "user": serializer.data
+            })
         return Response(serializer.errors, status=400)
+
 
 
 @api_view(['POST'])

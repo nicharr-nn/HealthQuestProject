@@ -157,7 +157,7 @@ SOCIALACCOUNT_PROVIDERS = {
             'email',
         ],
         'AUTH_PARAMS': {
-            'access_type': 'online',
+            'prompt': 'select_account',
         },
         'APP': {
             'client_id': env('GOOGLE_CLIENT_ID', default='dummy-client-id'),
@@ -178,7 +178,7 @@ ACCOUNT_EMAIL_VERIFICATION = "none"
 
 SOCIALACCOUNT_ADAPTER = 'allauth.socialaccount.adapter.DefaultSocialAccountAdapter'
 
-LOGIN_REDIRECT_URL = 'http://127.0.0.1:5173/select-role'
+LOGIN_REDIRECT_URL = 'http://127.0.0.1:5173/dashboard'
 
 LOGOUT_REDIRECT_URL = 'http://127.0.0.1:5173/'
 

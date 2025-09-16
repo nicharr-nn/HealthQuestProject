@@ -384,7 +384,7 @@ async function fetchUserProfile() {
     const data = await response.json()
 
     if (data) {
-      const userData = data
+      const userData = data.user || {}
       const profileData = userData.profile || {}
 
       console.log('Current goal:', profileData.current_goal) // Debug log

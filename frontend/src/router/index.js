@@ -53,7 +53,6 @@ router.beforeEach(async (to, from, next) => {
         const user = await response.json()
 
         if (user.profile_complete) {
-          // 🚀 User already has a profile, skip setup
           return next("/dashboard")
         }
       }
