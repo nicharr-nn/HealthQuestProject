@@ -178,7 +178,7 @@ ACCOUNT_EMAIL_VERIFICATION = "none"
 
 SOCIALACCOUNT_ADAPTER = "allauth.socialaccount.adapter.DefaultSocialAccountAdapter"
 
-LOGIN_REDIRECT_URL = "http://127.0.0.1:5173/dashboard"
+LOGIN_REDIRECT_URL = "http://127.0.0.1:5173/select-role"
 
 LOGOUT_REDIRECT_URL = "http://127.0.0.1:5173/"
 
