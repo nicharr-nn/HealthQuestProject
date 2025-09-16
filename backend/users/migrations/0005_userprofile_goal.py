@@ -6,13 +6,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0004_userprofile_photo'),
+        ("users", "0004_userprofile_photo"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='userprofile',
-            name='goal',
-            field=models.CharField(choices=[('lose_weight', 'Lose Weight'), ('build_muscle', 'Build Muscle'), ('improve_endurance', 'Improve Endurance'), ('general_fitness', 'General Fitness')], default='general_fitness', max_length=255),
+            model_name="userprofile",
+            name="goal",
+            field=models.CharField(
+                choices=[
+                    ("lose_weight", "Lose Weight"),
+                    ("build_muscle", "Build Muscle"),
+                    ("improve_endurance", "Improve Endurance"),
+                    ("general_fitness", "General Fitness"),
+                ],
+                default="general_fitness",
+                max_length=255,
+            ),
         ),
     ]

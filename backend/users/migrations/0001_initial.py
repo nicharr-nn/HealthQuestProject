@@ -15,18 +15,51 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='UserProfile',
+            name="UserProfile",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('role', models.CharField(choices=[('normal', 'Normal User'), ('coach', 'Coach'), ('member', 'Member')], default='normal', max_length=10)),
-                ('height', models.FloatField(blank=True, null=True)),
-                ('weight', models.FloatField(blank=True, null=True)),
-                ('age', models.IntegerField(blank=True, null=True)),
-                ('gender', models.CharField(blank=True, choices=[('M', 'Male'), ('F', 'Female')], max_length=1, null=True)),
-                ('location', models.CharField(blank=True, max_length=100, null=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "role",
+                    models.CharField(
+                        choices=[
+                            ("normal", "Normal User"),
+                            ("coach", "Coach"),
+                            ("member", "Member"),
+                        ],
+                        default="normal",
+                        max_length=10,
+                    ),
+                ),
+                ("height", models.FloatField(blank=True, null=True)),
+                ("weight", models.FloatField(blank=True, null=True)),
+                ("age", models.IntegerField(blank=True, null=True)),
+                (
+                    "gender",
+                    models.CharField(
+                        blank=True,
+                        choices=[("M", "Male"), ("F", "Female")],
+                        max_length=1,
+                        null=True,
+                    ),
+                ),
+                ("location", models.CharField(blank=True, max_length=100, null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
     ]
