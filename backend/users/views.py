@@ -38,7 +38,6 @@ def user_info(request):
 @permission_classes([IsAuthenticated])
 def set_role(request):
     """Set user role"""
-    from .models import UserProfile
 
     try:
         profile = request.user.userprofile
@@ -55,7 +54,6 @@ def set_goal(request):
     """Set user fitness goal"""
     from django.apps import apps
 
-    UserProfile = apps.get_model("users", "UserProfile")
     FitnessGoal = apps.get_model("users", "FitnessGoal")
 
     try:
