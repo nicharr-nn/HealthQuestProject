@@ -91,10 +91,10 @@ WSGI_APPLICATION = "healthquest_backend.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": env("DATABASE_NAME"),
-        "USER": env("DATABASE_USER"),
-        "PASSWORD": env("DATABASE_PASSWORD"),
-        "HOST": env("DATABASE_HOST"),
+        "NAME": env("DATABASE_NAME", default="healthquest_db"),
+        "USER": env("DATABASE_USER", default="healthquest_user"),
+        "PASSWORD": env("DATABASE_PASSWORD", default="defaultpassword"),
+        "HOST": env("DATABASE_HOST", default="localhost"),
         "PORT": "5432",
     }
 }
@@ -160,8 +160,8 @@ SOCIALACCOUNT_PROVIDERS = {
             "prompt": "select_account",
         },
         "APP": {
-            "client_id": env("GOOGLE_CLIENT_ID"),
-            "secret": env("GOOGLE_SECRET"),
+            "client_id": env("GOOGLE_CLIENT_ID", default="dummy-client-id"),
+            "secret": env("GOOGLE_SECRET", default="dummy-google-secret"),
         },
     }
 }

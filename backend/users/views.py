@@ -39,6 +39,7 @@ def user_info(request):
 def set_role(request):
     """Set user role"""
     from .models import UserProfile
+
     try:
         profile, created = UserProfile.objects.get_or_create(user=request.user)
         profile.role = request.data.get("role")
