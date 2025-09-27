@@ -99,7 +99,11 @@ userStore.setRole(role);
     if (response.ok) {
       if (role === 'normal') {
       router.push("/select-goal");
-      } else {
+      }
+      else if (role === 'coach') {
+        router.push("/coach-portal");
+      } 
+      else {
         router.push("/about-you");
       }
 
