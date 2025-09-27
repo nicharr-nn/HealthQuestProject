@@ -11,6 +11,17 @@ urlpatterns = [
     path("users/<int:id>/", views.get_user_by_id, name="get-user-by-id"),
     path("users/<int:id>/update/", views.update_user_by_id, name="update-user-by-id"),
     path("users/<int:id>/delete/", views.delete_user_by_id, name="delete-user-by-id"),
-    path("workout-programs/", views.workout_programs, name="workout-programs"),
-    path("workout-assignments/<int:id>/", views.workout_assignment_detail, name="workout-assignment-detail"),
+
+    # workout program and assignment endpoints
+    path("programs/", views.workout_programs, name="workout-programs"),
+    path("assignments/<int:id>/", views.workout_assignment_detail, name="workout-assignment-detail"),
+    path("assignments/", views.workout_assignments, name="workout-assignments"),
+
+    # Levels & Achievements
+    path("achievements/", views.achievements, name="all-achievements"),
+    path("user/achievements/", views.user_achievements, name="user-achievements"),
+
+    # Food post
+    path("food-posts/", views.food_posts, name="food-posts"),
+    
 ]
