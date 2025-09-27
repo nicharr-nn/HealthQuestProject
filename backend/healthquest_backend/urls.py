@@ -44,30 +44,12 @@ def home_view(request):
         return JsonResponse({"message": "Please log in"})
 
 
-def about_view(request):
-    """About page view that returns user info and about message"""
-    if request.user.is_authenticated:
-        return JsonResponse(
-            {
-                "message": "Welcome to HealthQuest About Page!",
-                "user": {
-                    "id": request.user.id,
-                    "username": request.user.username,
-                    "email": request.user.email,
-                    "first_name": request.user.first_name,
-                    "last_name": request.user.last_name,
-                },
-            }
-        )
-    else:
-        return JsonResponse({"message": "Please log in to access the about page"})
 
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include("allauth.urls")),
     path("", home_view, name="home"),
-    path("about/", about_view, name="about"),
     path("api/", include("users.urls")),
 ]
 
