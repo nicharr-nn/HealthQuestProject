@@ -6,6 +6,7 @@ import AboutYou from "../views/AboutYou.vue"
 import Profile from "../views/Profile.vue"
 import DashBoard  from "../views/DashBoard.vue"
 import SelectGoal from "../views/GoalSelection.vue"
+import CoachPortal from "../views/CoachPortal.vue"
 
 const routes = [
   { path: "/", 
@@ -32,10 +33,16 @@ const routes = [
   },
   { path: "/dashboard", 
     name: "DashBoard",
-    component: DashBoard },
-    { path: "/select-goal", 
-    name: "SelectGoal",
-    component: SelectGoal },
+    component: DashBoard 
+  },
+  { path: "/select-goal", 
+  name: "SelectGoal",
+  component: SelectGoal 
+  },
+  { path: "/coach-portal",
+  name: "CoachPortal",
+  component: CoachPortal 
+  },
 ]
 
 const router = createRouter({
