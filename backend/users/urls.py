@@ -8,12 +8,12 @@ urlpatterns = [
     path("select-goal/", views.set_goal, name="select-goal"),
     path("update-profile/", views.update_profile, name="update-profile"),
     path("upload-photo/", views.upload_photo, name="upload-photo"),
-    path("users/<int:id>/", views.user_detail, name="user_detail"),
+    path("user/<int:id>/", views.user_detail, name="user_detail"),
 
     # workout program and assignment endpoints
     path("programs/", views.workout_programs, name="workout-programs"),
-    path("assignments/", views.workout_assignments, name="workout-assignments"),
-    path("assignments/<int:id>/", views.workout_assignments_update, name="workout-assignment-detail"),
+    path("assignment/<int:id>/", views.workout_assignments, name="workout-assignments"),
+    path("assignment-update/<int:id>/", views.workout_assignments_update, name="workout-assignment-update"),
     
     # Levels & Achievements
     path("achievements/", views.achievements, name="all-achievements"),

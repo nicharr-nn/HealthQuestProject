@@ -2,6 +2,8 @@ from django.db.models.signals import post_save
 from django.contrib.auth.models import User
 from django.db import models
 from django.core.exceptions import ValidationError
+from django.utils import timezone
+from .xp_rules import level_for_xp
 
 
 class UserProfile(models.Model):
@@ -37,6 +39,17 @@ class UserProfile(models.Model):
     def can_have_fitness_goals(self):
         """Check if this user can have fitness goals (only normal users can)"""
         return self.role == "normal"
+    
+    def get_current_level(self):
+        """
+        Return the most recent UserLevel row (current) or create default one.
+        """
+        ul = self.user_levels.order_by('-level_rank', '-updated_at').first()
+        if not ul:
+            # create default Bronze level row
+            ul = UserLevel.objects.create(user_profile=self, level="Bronze", level_rank=1, xp=0)
+        return ul
+
 
 
 def create_user_profile(sender, instance, created, **kwargs):
@@ -90,3 +103,112 @@ class FitnessGoal(models.Model):
 
     def __str__(self):
         return f"{self.user_profile.user.username} - {self.goal_type}"
+    
+
+class UserLevel(models.Model):
+    level = models.CharField(max_length=20)
+    level_rank = models.IntegerField(default=1)
+    user_profile = models.ForeignKey(
+        'UserProfile', on_delete=models.CASCADE, related_name="user_levels"
+    )
+    xp = models.IntegerField(default=0)
+    goal_achieved = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user_profile.user.username} - {self.level} (xp={self.xp})"
+
+    def add_xp(self, amount: int):
+        """
+        Increase xp by `amount`, recompute level, and save.
+        Returns a tuple: (leveled_up: bool, previous_level_rank, new_level_rank)
+        """
+        amount = int(amount or 0)
+        if amount <= 0:
+            return (False, self.level_rank, self.level_rank)
+
+        previous_rank = self.level_rank
+        self.xp = max(0, self.xp + amount)
+
+        new_rank, new_name, xp_needed = level_for_xp(self.xp)
+        self.level_rank = new_rank
+        self.level = new_name
+        self.updated_at = timezone.now()
+        self.save()
+        return (new_rank != previous_rank, previous_rank, new_rank)
+
+class WorkoutAssignment(models.Model):
+    user_profile = models.ForeignKey(
+        "users.UserProfile", on_delete=models.CASCADE, related_name="assignments"
+    )
+    program = models.ForeignKey("WorkoutProgram", on_delete=models.CASCADE)
+    assigned_date = models.DateField(auto_now_add=True)
+    due_date = models.DateField(null=True, blank=True)
+    status = models.CharField(max_length=20, default="pending")
+    completed_date = models.DateField(null=True, blank=True)
+
+class WorkoutCompletion(models.Model):
+    assignment = models.ForeignKey(
+        "WorkoutAssignment", on_delete=models.CASCADE, related_name="completions"
+    )
+    user_profile = models.ForeignKey(
+        "users.UserProfile", on_delete=models.CASCADE, related_name="completions"
+    )
+    completed_at = models.DateTimeField(auto_now_add=True)
+    xp_earned = models.IntegerField(default=0)
+
+
+class Achievement(models.Model):
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    xp_reward = models.IntegerField(default=0)
+    level_required = models.IntegerField(default=1)  # minimum level_rank required
+
+    def __str__(self):
+        return f"{self.title} - Level {self.level_required} - {self.xp_reward} XP"
+    
+class UserAchievement(models.Model):
+    user_profile = models.ForeignKey(
+        UserProfile, on_delete=models.CASCADE, related_name="achievements"
+    )
+    achievement = models.ForeignKey(Achievement, on_delete=models.CASCADE)
+    date_earned = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user_profile.user.username} - {self.achievement.title}"
+
+
+class FoodPost(models.Model):
+    user_profile = models.ForeignKey(
+        UserProfile, on_delete=models.CASCADE, related_name="food_posts"
+    )
+    content = models.TextField()
+    title = models.CharField(max_length=255, null=True, blank=True)
+    visibility = models.CharField(max_length=20, default="public")
+    image = models.ImageField(upload_to="food_posts/", null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Post by {self.user_profile.user.username} at {self.created_at}"
+
+class WorkoutProgram(models.Model):
+    coach = models.ForeignKey(
+        UserProfile,
+        on_delete=models.CASCADE,
+        related_name="programs",
+        limit_choices_to={"role": "coach"},
+    )
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    video_links = models.TextField(blank=True, null=True)  # could store JSON or comma-separated
+    level_access = models.CharField(max_length=50, default="all")  # beginner, intermediate, advanced
+    difficulty_level = models.CharField(max_length=50, default="easy")
+    is_public = models.BooleanField(default=True)
+    duration = models.IntegerField(help_text="Duration in minutes", default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.title} (Coach: {self.coach.user.username})"

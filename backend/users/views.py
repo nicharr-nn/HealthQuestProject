@@ -11,6 +11,7 @@ from django.apps import apps
 from rest_framework import status
 from rest_framework.exceptions import PermissionDenied
 from .models import WorkoutProgram, WorkoutAssignment, WorkoutCompletion, Achievement, UserAchievement, FoodPost
+from django.utils import timezone
 
 
 User = get_user_model()
@@ -165,7 +166,7 @@ def user_detail(request, id):
         return Response(serializer.errors, status=400)
 
     elif request.method == "DELETE":
-        user.profile_complete = False
+        user.is_active = False
         user.save()
         return Response({"message": "Account deactivated"})
 
@@ -220,7 +221,10 @@ def workout_assignments_update(request, id):
         raise PermissionDenied("Only members can complete/delete assignments")
 
     if request.method == "PATCH":  # mark complete
-        xp = calculate_xp(assignment.program.difficulty, assignment.program.duration_minutes)
+        difficulty = assignment.program.difficulty_level
+        duration = assignment.program.duration
+        xp = calculate_xp(difficulty, duration)
+
         assignment.status = "completed"
         assignment.completed_date = timezone.now()
         assignment.save()
@@ -262,7 +266,7 @@ def user_achievements(request):
         ach_id = request.data.get("achievement_id")
         ua = get_object_or_404(UserAchievement, pk=ach_id, user_profile=profile)
         ua.delete()
-        return Response({"message": "Achievement removed"})
+        return Response({"message": "Achievement removed", "achievement_id": ach_id})
 
 @api_view(['GET, POST'])
 @permission_classes([IsAuthenticated])
@@ -270,7 +274,18 @@ def food_posts(request):
     """List or create food posts"""
     if request.method == "GET":
         posts = FoodPost.objects.all().select_related("user_profile")
-        data = [{"id": p.id, "title": p.title, "description": p.description, "author": p.user_profile.user.username} for p in posts]
+        data = [
+            {
+                "id": p.id,
+                "title": p.title,
+                "content": p.content,
+                "visibility": p.visibility,
+                "image": p.image.url if p.image else None,
+                "author": p.user_profile.user.username,
+                "created_at": p.created_at,
+            }
+            for p in posts
+        ]        
         return Response(data)
 
     elif request.method == "POST":
@@ -278,7 +293,7 @@ def food_posts(request):
         post = FoodPost.objects.create(
             user_profile=profile,
             title=request.data.get("title"),
-            description=request.data.get("description"),
+            content=request.data.get("content"),
         )
         return Response({"message": "Post created", "post_id": post.id})
 
@@ -303,7 +318,7 @@ def food_post_update(request, id):
 
     if request.method in ["PUT", "PATCH"]:
         post.title = request.data.get("title", post.title)
-        post.description = request.data.get("description", post.description)
+        post.content = request.data.get("description", post.description)
         post.save()
         return Response({"message": "Post updated"})
 
