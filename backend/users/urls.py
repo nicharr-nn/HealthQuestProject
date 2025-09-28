@@ -8,5 +8,7 @@ urlpatterns = [
     path("select-goal/", views.set_goal, name="select-goal"),
     path("update-profile/", views.update_profile, name="update-profile"),
     path("upload-photo/", views.upload_photo, name="upload-photo"),
+    path("coach/upload-cert/", views.upload_certification, name="upload-certification"),
+    
     # path("coach-portal/", views.coach_portal, name="coach-portal"),
 ]

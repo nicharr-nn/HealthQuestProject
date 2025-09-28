@@ -47,20 +47,16 @@
             </div>
   
             <div class="form-group">
-              <label class="form-label" for="cert">Certification *</label>
-              <select
-                id="cert"
-                v-model="coachForm.certification"
+              <label class="form-label" for="certDoc">Certification Document (PDF) *</label>
+              <input
+                id="certDoc"
+                type="file"
+                accept="application/pdf"
+                @change="onFileSelected"
                 class="form-input"
                 required
-              >
-                <option value="" disabled>Select your certification</option>
-                <option>ACE</option>
-                <option>NASM</option>
-                <option>CSCS</option>
-                <option>ISSA</option>
-                <option>Other</option>
-              </select>
+              />
+              <span v-if="selectedFile">{{ selectedFile.name }}</span>
             </div>
   
             <div class="form-group">
@@ -118,22 +114,50 @@
     bio: ''
   })
   
+  const selectedFile = ref<File | null>(null)
+  function onFileSelected(event: Event) {
+    const files = (event.target as HTMLInputElement).files
+    if (files && files.length > 0) {
+      selectedFile.value = files[0]
+    }
+  }
+
   const programs = ref([
     { id: 'p1', name: '8-Week Fat Loss', level: 'Beginner', duration: 8 },
     { id: 'p2', name: 'Strength Foundations', level: 'Intermediate', duration: 6 }
   ])
   
-  function submitApplication() {
-    // simple front-end validation beyond required attrs
-    if (!coachForm.fullName || !coachForm.email || !coachForm.certification) {
-      alert('Please fill in all required fields (Full Name, Email, Certification).')
-      return
-    }
-    // In real app: POST to API here
-    console.log('Submitted coach application:', { ...coachForm })
-    alert('Application submitted! Check console for payload.')
-    resetForm()
+  async function submitApplication() {
+  if (!coachForm.fullName || !coachForm.email || !selectedFile.value) {
+    alert('Please fill in all required fields (Full Name, Email, Certification PDF).')
+    return
   }
+
+  const formData = new FormData()
+  formData.append('fullName', coachForm.fullName)
+  formData.append('email', coachForm.email)
+  formData.append('phone', coachForm.phone)
+  formData.append('bio', coachForm.bio)
+  formData.append('certification_doc', selectedFile.value)
+
+  try {
+    const response = await fetch('http://127.0.0.1:8000/api/coach/upload-cert/', {
+      method: 'POST',
+      body: formData,
+      credentials: 'include'
+    })
+
+    if (!response.ok) throw new Error('Upload failed')
+
+    const data = await response.json()
+    alert('Application submitted successfully!')
+    console.log(data)
+    resetForm()
+  } catch (err) {
+    console.error(err)
+    alert('Upload failed')
+  }
+}
   
   function resetForm() {
     coachForm.fullName = ''

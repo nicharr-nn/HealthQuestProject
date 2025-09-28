@@ -131,3 +131,40 @@ def upload_photo(request):
             "photo_url": full_url,
         }
     )
+
+from .models import Coach, UserProfile
+from .serializers import CoachSerializer
+from django.utils.timezone import now
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def upload_certification(request):
+    """Upload or update coach certification document"""
+    user = request.user
+
+    try:
+        user_profile = user.userprofile  # OneToOne relation
+    except UserProfile.DoesNotExist:
+        return Response({"detail": "UserProfile not found."}, status=404)
+
+    if "certification_doc" not in request.FILES:
+        return Response({"detail": "No certification document provided."}, status=400)
+
+    cert_file = request.FILES["certification_doc"]
+
+    # Get or create coach profile for this user
+    coach, created = Coach.objects.get_or_create(user=user_profile)
+
+    coach.certification_doc = cert_file
+    coach.bio = request.data.get("bio", coach.bio)
+    coach.status_approval = "pending"  # reset to pending when re-uploaded
+    coach.save()
+
+    serializer = CoachSerializer(coach)
+    return Response(
+        {
+            "detail": "Certification uploaded successfully!",
+            "coach": serializer.data,
+        },
+        status=201 if created else 200,
+    )

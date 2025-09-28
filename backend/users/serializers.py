@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.apps import apps
+from .models import Coach
 
 
 def get_user_profile_model():
@@ -103,3 +104,22 @@ class UserSerializer(serializers.ModelSerializer):
         profile.save()
 
         return instance
+
+
+class CoachSerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField(read_only=True)  # shows username
+    certification_doc = serializers.FileField(required=False, allow_null=True)
+
+    class Meta:
+        model = Coach
+        fields = [
+            "coach_id",
+            "user",
+            "certification_doc",
+            "status_approval",
+            "bio",
+            "approved_date",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["coach_id", "status_approval", "approved_date", "created_at", "updated_at"]
