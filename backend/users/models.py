@@ -54,7 +54,7 @@ class UserProfile(models.Model):
         """
         Return the most recent UserLevel row (current) or create default one.
         """
-        ul = self.user_levels.order_by('-level_rank', '-updated_at').first()
+        ul = self.user_levels.order_by('-level_rank').first()
         if not ul:
             # create default Bronze level row
             ul = UserLevel.objects.create(user_profile=self, level="Bronze", level_rank=1, xp=0)
@@ -123,8 +123,6 @@ class UserLevel(models.Model):
     )
     xp = models.IntegerField(default=0)
     goal_achieved = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.user_profile.user.username} - {self.level} (xp={self.xp})"
@@ -144,7 +142,6 @@ class UserLevel(models.Model):
         new_rank, new_name, xp_needed = level_for_xp(self.xp)
         self.level_rank = new_rank
         self.level = new_name
-        self.updated_at = timezone.now()
         self.save()
         return (new_rank != previous_rank, previous_rank, new_rank)
 

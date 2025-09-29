@@ -56,7 +56,7 @@ class FitnessGoalSerializer(serializers.ModelSerializer):
 class UserLevelSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_level_model()
-        fields = ["level_rank", "level", "xp", "goal_achieved", "updated_at", "created_at"]
+        fields = ["level_rank", "level", "xp", "goal_achieved"]
 
 class UserProfileSerializer(serializers.ModelSerializer):
     photo = serializers.ImageField(use_url=True, required=False, allow_null=True)
@@ -86,7 +86,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             latest_goal = obj.fitness_goals.order_by("-start_date").first()
             if latest_goal:
                 return latest_goal.goal_type
-        return None
+        return None # coaches/members/admins
     
     def get_current_level(self, obj):
         ul = obj.get_current_level()

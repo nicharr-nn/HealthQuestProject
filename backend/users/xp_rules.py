@@ -56,6 +56,6 @@ def level_for_xp(xp: int):
     if next_level:
         xp_needed = next_level[2] - xp
     else:
-        xp_needed = None  # Max level reached
+        xp_needed = None
 
     return rank, name, xp_needed
