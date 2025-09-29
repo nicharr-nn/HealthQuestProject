@@ -152,11 +152,25 @@
                     <div class="flex justify-between items-center border-b border-gray-200 pb-4">
                       <label class="text-gray-600 font-medium text-lg w-32">Location</label>
                       <template v-if="isEditing">
-                        <input
+                        <!-- <input
                           v-model="editProfile.location"
                           type="text"
                           class="flex-1 text-teal-600 text-lg font-medium bg-gray-100 border border-gray-300 outline-none focus:bg-gray-50 px-3 py-2 rounded"
-                        />
+                        /> -->
+                        <select
+                          v-model="editProfile.location"
+                          class="flex-1 text-teal-600 text-lg font-medium bg-gray-100 border border-gray-300 outline-none focus:bg-gray-50 px-3 py-2 rounded"
+                        >
+                          <option value="">Select location</option>
+                          <option value="TH">Thailand</option>
+                          <option value="USA">United States</option>
+                          <option value="UK">United Kingdom</option>
+                          <option value="JP">Japan</option>
+                          <option value="LA">Laos</option>
+                          <option value="KR">South Korea</option>
+                          <option value="O">Other</option>
+                        </select>
+
                       </template>
                       <template v-else>
                         <span class="flex-1 text-teal-600 text-lg font-medium text-right">{{
@@ -219,7 +233,6 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()

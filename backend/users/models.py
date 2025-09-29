@@ -20,6 +20,16 @@ class UserProfile(models.Model):
         ("admin", "Administrator"),
     ]
 
+    LOCATION_CHOICES = [
+        ("TH", "Thailand"),
+        ("USA", "United States"),
+        ("UK", "United Kingdom"),
+        ("JP", "Japan"),
+        ("LA", "Laos"),
+        ("KR", "South Korea"),
+        ("O", "Other"),
+    ]
+
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     photo = models.ImageField(upload_to="profile_photos/", null=True, blank=True)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default="normal")
@@ -29,7 +39,7 @@ class UserProfile(models.Model):
     gender = models.CharField(
         max_length=1, choices=GENDER_CHOICES, null=True, blank=True
     )
-    location = models.CharField(max_length=100, null=True, blank=True)
+    location = models.CharField(max_length=100, choices=LOCATION_CHOICES, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
