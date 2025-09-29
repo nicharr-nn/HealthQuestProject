@@ -47,6 +47,7 @@
 
 <script setup>
 import RoleCard from '../components/RoleCard.vue'
+import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 
@@ -113,5 +114,34 @@ userStore.setRole(role);
     alert("Error setting role");
   }
 }
+
+
+onMounted(async () => {
+  try {
+    const res = await fetch("http://127.0.0.1:8000/api/user-info/", {
+      credentials: "include",
+    });
+    const data = await res.json();
+
+    if (data.isAuthenticated) {
+      console.log(data);
+      const profile = data.user?.profile || {};
+      console.log("User profile:", profile);
+
+      // If role already chosen → skip this page
+      if (profile.role) {
+        if (!profile.height || !profile.weight) {
+          router.replace("/about-you");
+        } else if (profile.role === "normal" && (!profile.current_goal || profile.current_goal === "")) {
+          router.replace("/select-goal");
+        } else {
+          router.replace("/dashboard");
+        }
+      }
+  }
+  } catch (error) {
+    console.error("Error fetching user info:", error);
+  }
+});
 
 </script>

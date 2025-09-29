@@ -12,3 +12,9 @@
   --font-bold: 600;
   --radius-xl2: 1.25rem;
 }
+
+@layer base {
+  body {
+    @apply bg-[#FAF4E8];
+  }
+}

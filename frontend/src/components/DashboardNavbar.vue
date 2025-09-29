@@ -9,6 +9,15 @@
 
           <li>
             <RouterLink
+              to="/dashboard"
+              class="nav-link font-body text-white hover:text-[#c7d2fe] transition-colors"
+            >
+              DashBoard
+            </RouterLink>
+          </li>
+
+          <li>
+            <RouterLink
               to="/progress"
               class="nav-link font-body text-white hover:text-[#c7d2fe] transition-colors"
             >
@@ -17,10 +26,10 @@
           </li>
           <li>
             <RouterLink
-              to="/workout-program"
+              to="/program"
               class="nav-link font-body text-white hover:text-[#c7d2fe] transition-colors"
             >
-              Workout Program
+              Program
             </RouterLink>
           </li>
           <li>
@@ -36,7 +45,7 @@
               to="/food-recipe"
               class="nav-link font-body text-white hover:text-[#c7d2fe] transition-colors"
             >
-              Food Recipe
+              FoodRecipe
             </RouterLink>
           </li>
           <li>
@@ -92,4 +101,5 @@ async function logout() {
     text-align: left;
   }
 }
+
 </style>
