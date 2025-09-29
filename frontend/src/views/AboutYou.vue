@@ -208,13 +208,17 @@ async function submitProfile() {
     });
 
     if (response.ok) {
-      const data = await response.json();
-      console.log("Profile updated:", data);
-      router.push("/dashboard");
-    } else {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Failed to update profile");
-    }
+  const data = await response.json();
+  console.log("Profile updated:", data);
+
+  if (userStore.role === "normal") {
+    router.push("/select-goal");
+  } else if (userStore.role === "coach") {
+    router.push("/coach-portal");
+  } else {
+    router.push("/dashboard");
+  }
+}
   } catch (error) {
     console.error("Error updating profile:", error);
     alert("Failed to update profile. Please try again.");
