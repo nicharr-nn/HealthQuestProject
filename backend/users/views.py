@@ -4,6 +4,9 @@ from rest_framework.response import Response
 from .serializers import UserProfileSerializer, UserSerializer
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
+from .models import Coach, UserProfile
+from .serializers import CoachSerializer
+from django.utils.timezone import now
 
 
 @api_view(["GET", "PUT", "PATCH"])
@@ -132,10 +135,6 @@ def upload_photo(request):
         }
     )
 
-from .models import Coach, UserProfile
-from .serializers import CoachSerializer
-from django.utils.timezone import now
-
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def upload_certification(request):
@@ -143,7 +142,7 @@ def upload_certification(request):
     user = request.user
 
     try:
-        user_profile = user.userprofile  # OneToOne relation
+        user_profile = user.userprofile
     except UserProfile.DoesNotExist:
         return Response({"detail": "UserProfile not found."}, status=404)
 
@@ -152,19 +151,44 @@ def upload_certification(request):
 
     cert_file = request.FILES["certification_doc"]
 
-    # Get or create coach profile for this user
-    coach, created = Coach.objects.get_or_create(user=user_profile)
+    # Save User info
+    full_name = request.data.get("fullName")
+    phone = request.data.get("phone")
 
+    if full_name:
+        user.first_name = full_name.split()[0]
+        user.last_name = " ".join(full_name.split()[1:]) if len(full_name.split()) > 1 else ""
+        user.save()
+    if phone:
+        user_profile.phone = phone  # make sure UserProfile has a 'phone' field
+        user_profile.save()
+
+    # Get or create coach profile
+    coach, created = Coach.objects.get_or_create(user=user_profile)
     coach.certification_doc = cert_file
     coach.bio = request.data.get("bio", coach.bio)
-    coach.status_approval = "pending"  # reset to pending when re-uploaded
+    coach.status_approval = "pending"
     coach.save()
 
     serializer = CoachSerializer(coach)
-    return Response(
-        {
-            "detail": "Certification uploaded successfully!",
-            "coach": serializer.data,
-        },
-        status=201 if created else 200,
-    )
+    return Response({
+        "detail": "Certification uploaded successfully!",
+        "coach": serializer.data,
+    }, status=201 if created else 200)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def coach_status(request):
+    """
+    Return the current coach profile and status for the logged-in user.
+    """
+    user_profile = getattr(request.user, "userprofile", None)
+    if not user_profile:
+        return Response({"coach": None})
+
+    try:
+        coach = user_profile.coach_profile
+        serializer = CoachSerializer(coach)
+        return Response({"coach": serializer.data})
+    except Coach.DoesNotExist:
+        return Response({"coach": None})

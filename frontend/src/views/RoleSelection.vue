@@ -47,6 +47,7 @@
 
 <script setup>
 import RoleCard from '../components/RoleCard.vue'
+import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 
@@ -84,29 +85,24 @@ function getCsrfToken() {
 }
 
 async function selectRole(role) {
-userStore.setRole(role);
+  userStore.setRole(role);
 
   try {
-    console.log('Selected role:', role);
     const response = await fetch("http://127.0.0.1:8000/api/select-role/", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "X-CSRFToken": getCsrfToken() },
       credentials: "include",
-      "X-CSRFToken": getCsrfToken(),
       body: JSON.stringify({ role }),
     });
 
     if (response.ok) {
       if (role === 'normal') {
-      router.push("/select-goal");
-      }
-      else if (role === 'coach') {
-        router.push("/coach-portal");
-      } 
-      else {
+        router.push("/about-you");
+      } else if (role === 'coach') {
+        router.push("/about-you");
+      } else {
         router.push("/about-you");
       }
-
     } else {
       const error = await response.json();
       console.error("Error setting role:", error);
@@ -117,5 +113,35 @@ userStore.setRole(role);
     alert("Error setting role");
   }
 }
+
+onMounted(async () => {
+  try {
+    const res = await fetch("http://127.0.0.1:8000/api/user-info/", {
+      credentials: "include",
+    });
+    const data = await res.json();
+
+    if (data.isAuthenticated) {
+      const profile = data.user?.profile || {};
+
+      if (!profile.role) {
+        return;
+      }
+
+      if (!profile.height || !profile.weight) {
+        router.replace("/about-you");
+      } else if (profile.role === "normal" && (!profile.current_goal || profile.current_goal === "")) {
+        router.replace("/select-goal");
+      } else if (profile.role === "coach") {
+        router.replace("/coach-portal");
+      } else {
+        router.replace("/dashboard");
+      }
+    }
+  } catch (error) {
+    console.error("Error fetching user info:", error);
+  }
+});
+
 
 </script>
