@@ -67,8 +67,6 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import UnsignNavBar from '@/components/UnsignNavBar.vue'
 
 const redirectToGoogle = () => {
   window.location.href = "http://127.0.0.1:8000/accounts/google/login/"
