@@ -1,13 +1,6 @@
 <!-- App.vue -->
 <template>
-  <!-- Full-page AdminDashboard -->
-  <AdminDashboard 
-    v-if="currentPage === 'admin-dashboard'" 
-    @page-change="setCurrentPage"
-  />
-  
-  <!-- Regular App Layout -->
-  <div v-else id="app" class="min-h-screen bg-paper font-subtitle">
+  <div id="app" class="min-h-screen bg-paper font-subtitle">
     <!-- Header Navigation -->
     <header class="py-4 bg-[#88ACEA] shadow-md">
       <nav class="nav-container">
@@ -24,88 +17,14 @@
 
     <!-- Main Container -->
     <div class="container">
-      <!-- Page Navigation -->
-      <div class="page-nav">
-        <button
-          v-for="page in pages"
-          :key="page.id"
-          class="page-btn font-subtitle"
-          :class="{ active: currentPage === page.id }"
-          @click="setCurrentPage(page.id)"
-        >
-          {{ page.name }}
-        </button>
-      </div>
-
-      <!-- Dynamic Component Rendering (safe mapping) -->
-      <keep-alive>
-        <component
-          :is="currentComponent"
-          @goal-selected="handleGoalSelection"
-          @page-change="setCurrentPage"
-          :user-data="userData"
-        />
-      </keep-alive>
+      <!-- RecipeLibrary Component -->
+      <RecipeLibrary />
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-
-import GoalSelectionPage from './components/GoalSelectionPage.vue'
-import BronzeDashboard from './components/BronzeDashboard.vue'
-import SilverDashboard from './components/SilverDashboard.vue'
-import WorkoutProgram from './components/WorkoutProgram.vue'
 import RecipeLibrary from './components/RecipeLibrary.vue'
-import CoachPortal from './components/CoachPortal.vue'
-// import AdminDashboard from './components/AdminDashboard.vue'
-
-const viewMap = {
-  'goal-selection': GoalSelectionPage,
-  'bronze-dashboard': BronzeDashboard,
-  'silver-dashboard': SilverDashboard,
-  'workout-program': WorkoutProgram,
-  'recipe-library': RecipeLibrary,
-  'coach-portal': CoachPortal,
-  // 'admin-dashboard': AdminDashboard
-}
-
-const pages = [
-  { id: 'goal-selection', name: 'Goal Selection' },
-  { id: 'bronze-dashboard', name: 'Bronze Dashboard' },
-  { id: 'silver-dashboard', name: 'Silver Dashboard' },
-  { id: 'workout-program', name: 'Workout Program' },
-  { id: 'recipe-library', name: 'Recipe Library' },
-  { id: 'coach-portal', name: 'Coach Portal' },
-  // { id: 'admin-dashboard', name: 'Admin Dashboard' }
-]
-
-const currentPage = ref('goal-selection')
-
-const userData = ref({
-  name: 'Katie',
-  level: 'Bronze',
-  streak: 5,
-  xp: 48,
-  totalXpForNextLevel: 150,
-  selectedGoal: null
-})
-
-const currentComponent = computed(() => {
-  // AdminDashboard is handled separately in template
-  if (currentPage.value === 'admin-dashboard') return null
-  return viewMap[currentPage.value] ?? GoalSelectionPage
-})
-
-function setCurrentPage(pageId) {
-  if (viewMap[pageId] || pageId === 'admin-dashboard') currentPage.value = pageId
-}
-
-function handleGoalSelection(goal) {
-  userData.value.selectedGoal = goal
-  setTimeout(() => setCurrentPage('bronze-dashboard'), 1500)
-}
 </script>
 
 <style>
