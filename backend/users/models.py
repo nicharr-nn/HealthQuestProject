@@ -119,3 +119,4 @@ class Coach(models.Model):
 
     def __str__(self):
         return f"Coach: {self.user.user.username} - Status: {self.status_approval}"
+        

@@ -12,30 +12,22 @@
 
         <form @submit.prevent="submitApplication" class="coach-form">
           <div class="form-group">
-            <label class="form-label" for="fullName">Full Name *</label>
-            <input
-              id="fullName"
-              v-model="coachForm.fullName"
-              type="text"
-              class="form-input"
-              placeholder="Enter your name"
-              required
-              :disabled="hasSubmitted"
-            />
+            <label class="form-label">Name</label>
+            <p>{{ googleName }}</p>
           </div>
 
           <div class="form-group">
-            <label class="form-label" for="phone">Phone Number</label>
-            <input
-              id="phone"
-              v-model="coachForm.phone"
-              type="tel"
+            <label class="form-label" for="bio">Short Bio</label>
+            <textarea
+              id="bio"
+              v-model="coachForm.bio"
               class="form-input"
-              placeholder="+66 8x xxx xxxx"
+              rows="4"
+              placeholder="Tell us a bit about your coaching style and experience"
               :disabled="hasSubmitted"
-            />
+            ></textarea>
           </div>
-
+          
           <div class="form-group">
             <label class="form-label" for="certDoc">Certification Document (PDF) *</label>
             <input
@@ -50,18 +42,6 @@
             <span v-if="selectedFile">{{ selectedFile.name }}</span>
             <span v-else-if="selectedFileName">{{ selectedFileName }}</span>
             <span v-else-if="hasSubmitted && coachStatus === 'pending'">File submitted</span>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="bio">Short Bio</label>
-            <textarea
-              id="bio"
-              v-model="coachForm.bio"
-              class="form-input"
-              rows="4"
-              placeholder="Tell us a bit about your coaching style and experience"
-              :disabled="hasSubmitted"
-            ></textarea>
           </div>
 
           <div class="form-row">
@@ -98,16 +78,13 @@
 import { reactive, ref, onMounted } from 'vue'
 
 interface CoachForm {
-  fullName: string
-  phone: string
   bio: string
 }
 
 const coachForm = reactive<CoachForm>({
-  fullName: '',
-  phone: '',
   bio: ''
 })
+
 
 const selectedFile = ref<File | null>(null)
 const selectedFileName = ref<string | null>(null)
@@ -127,44 +104,41 @@ function onFileSelected(event: Event) {
 }
 
 // Fetch coach status on mount
+const googleName = ref('')
+
+// On mounted, fetch from backend
 onMounted(async () => {
-  try {
-    const res = await fetch("http://127.0.0.1:8000/api/coach/status/", { credentials: "include" })
-    if (res.ok) {
-      const data = await res.json()
-      if (data.coach) {
-        // Use backend values for form
-        coachForm.fullName = data.coach.user.full_name || ""
-        coachForm.phone = data.coach.user.phone || ""
-        coachForm.bio = data.coach.bio || ""
-        coachStatus.value = data.coach.status_approval
-        hasSubmitted.value = true
-        if (data.coach.certification_doc) {
-          selectedFileName.value = data.coach.certification_doc.split("/").pop()
-        }
+  const res = await fetch('http://127.0.0.1:8000/api/coach/status/', { credentials: 'include' })
+  if (res.ok) {
+    const data = await res.json()
+    if (data.coach) {
+      googleName.value = data.coach.name  // Serializer now provides read-only name
+      coachForm.bio = data.coach.bio || ''
+      coachStatus.value = data.coach.status_approval
+      hasSubmitted.value = true
+      if (data.coach.certification_doc) {
+        selectedFileName.value = data.coach.certification_doc.split('/').pop()
       }
     }
-  } catch (err) {
-    console.error(err)
   }
 })
 
 // Submit coach application
 async function submitApplication() {
-  if (!coachForm.fullName || !selectedFile.value) {
-    alert('Please fill in all required fields (Full Name, Certification PDF).')
+  if (!selectedFile.value) {
+    alert('Please upload a Certification PDF.')
     return
   }
 
   const formData = new FormData()
-  formData.append('fullName', coachForm.fullName)
-  formData.append('phone', coachForm.phone)
   formData.append('bio', coachForm.bio)
-  formData.append('certification_doc', selectedFile.value)
+  if (selectedFile.value) formData.append('certification_doc', selectedFile.value)
+
+  const method = hasSubmitted.value ? 'PATCH' : 'POST'
 
   try {
     const response = await fetch('http://127.0.0.1:8000/api/coach/upload-cert/', {
-      method: 'POST',
+      method,
       body: formData,
       credentials: 'include'
     })

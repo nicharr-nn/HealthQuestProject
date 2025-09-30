@@ -52,6 +52,8 @@ class UserSerializer(serializers.ModelSerializer):
     profile = UserProfileSerializer(source="userprofile")
     is_admin = serializers.SerializerMethodField()
     profile_complete = serializers.SerializerMethodField()
+    first_name = serializers.CharField(required=True)
+    last_name = serializers.CharField(required=True)
 
     class Meta:
         model = User
@@ -87,6 +89,28 @@ class UserSerializer(serializers.ModelSerializer):
         return False
 
     def update(self, instance, validated_data):
+        """Handle nested profile updates safely, including first_name and last_name."""
+
+        # Extract profile data
+        profile_data = validated_data.pop("userprofile", {})
+
+        # Update User fields (first_name, last_name, email)
+        for attr in ["first_name", "last_name", "email"]:
+            if attr in validated_data:
+                setattr(instance, attr, validated_data[attr])
+        instance.save()
+
+        # Update or create UserProfile
+        UserProfile = get_user_profile_model()
+        profile, created = UserProfile.objects.get_or_create(user=instance)
+        for attr, value in profile_data.items():
+            if attr != "role":  # Prevent role change
+                setattr(profile, attr, value)
+        profile.save()
+
+        return instance
+
+    def update(self, instance, validated_data):
         """Handle nested profile updates safely."""
         UserProfile = get_user_profile_model()
         profile_data = validated_data.pop("userprofile", {})
@@ -107,14 +131,17 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class CoachSerializer(serializers.ModelSerializer):
-    user = serializers.StringRelatedField(read_only=True)  # shows username
+    name = serializers.SerializerMethodField()
     certification_doc = serializers.FileField(required=False, allow_null=True)
+
+    def get_name(self, obj):
+        return obj.user.user.get_full_name()  # Google name
 
     class Meta:
         model = Coach
         fields = [
             "coach_id",
-            "user",
+            "name",
             "certification_doc",
             "status_approval",
             "bio",
@@ -122,4 +149,4 @@ class CoachSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["coach_id", "status_approval", "approved_date", "created_at", "updated_at"]
+        read_only_fields = ["coach_id", "name", "status_approval", "approved_date", "created_at", "updated_at"]

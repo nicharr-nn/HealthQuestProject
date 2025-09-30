@@ -7,6 +7,8 @@ from django.core.files.base import ContentFile
 from .models import Coach, UserProfile
 from .serializers import CoachSerializer
 from django.utils.timezone import now
+from rest_framework import status
+from .serializers import CoachSerializer
 
 
 @api_view(["GET", "PUT", "PATCH"])
@@ -135,46 +137,21 @@ def upload_photo(request):
         }
     )
 
-@api_view(["POST"])
+@api_view(['POST', 'PATCH'])
 @permission_classes([IsAuthenticated])
 def upload_certification(request):
-    """Upload or update coach certification document"""
-    user = request.user
+    user_profile = request.user.userprofile
 
     try:
-        user_profile = user.userprofile
-    except UserProfile.DoesNotExist:
-        return Response({"detail": "UserProfile not found."}, status=404)
+        coach = Coach.objects.get(user=user_profile)
+        serializer = CoachSerializer(coach, data=request.data, partial=True)
+    except Coach.DoesNotExist:
+        serializer = CoachSerializer(data=request.data)
 
-    if "certification_doc" not in request.FILES:
-        return Response({"detail": "No certification document provided."}, status=400)
-
-    cert_file = request.FILES["certification_doc"]
-
-    # Save User info
-    full_name = request.data.get("fullName")
-    phone = request.data.get("phone")
-
-    if full_name:
-        user.first_name = full_name.split()[0]
-        user.last_name = " ".join(full_name.split()[1:]) if len(full_name.split()) > 1 else ""
-        user.save()
-    if phone:
-        user_profile.phone = phone  # make sure UserProfile has a 'phone' field
-        user_profile.save()
-
-    # Get or create coach profile
-    coach, created = Coach.objects.get_or_create(user=user_profile)
-    coach.certification_doc = cert_file
-    coach.bio = request.data.get("bio", coach.bio)
-    coach.status_approval = "pending"
-    coach.save()
-
-    serializer = CoachSerializer(coach)
-    return Response({
-        "detail": "Certification uploaded successfully!",
-        "coach": serializer.data,
-    }, status=201 if created else 200)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=400)
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
