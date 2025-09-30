@@ -69,6 +69,7 @@ urlpatterns = [
     path("", home_view, name="home"),
     path("about/", about_view, name="about"),
     path("api/", include("users.urls")),
+    path("api/fitness/", include("fitness.urls"))
 ]
 
 if settings.DEBUG:
