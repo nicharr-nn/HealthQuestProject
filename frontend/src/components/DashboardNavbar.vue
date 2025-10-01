@@ -12,18 +12,10 @@
               to="/dashboard"
               class="nav-link font-body text-white hover:text-[#c7d2fe] transition-colors"
             >
-              DashBoard
+              Dashboard
             </RouterLink>
           </li>
 
-          <li>
-            <RouterLink
-              to="/progress"
-              class="nav-link font-body text-white hover:text-[#c7d2fe] transition-colors"
-            >
-              Progress
-            </RouterLink>
-          </li>
           <li>
             <RouterLink
               to="/program"
@@ -45,7 +37,7 @@
               to="/food-recipe"
               class="nav-link font-body text-white hover:text-[#c7d2fe] transition-colors"
             >
-              FoodRecipe
+              Foodrecipe
             </RouterLink>
           </li>
           <li>

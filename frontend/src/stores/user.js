@@ -52,6 +52,7 @@ export const useUserStore = defineStore('user', {
           this.profile_complete = data.user?.profile_complete === true
           this.profile = data.user?.profile || null
           this.role = data.user?.profile?.role || null
+          this.level = data.profile?.current_level || { level_rank: 1, level: 'Bronze', xp: 0 }
         } else {
           this.clearAuthStatus()
         }
