@@ -12,38 +12,6 @@ def get_user_level_model():
     return apps.get_model("users", "UserLevel")
 
 
-def get_workout_completion_model():
-    return apps.get_model("users", "WorkoutCompletion")
-
-
-def get_workout_assignment_model():
-    return apps.get_model("users", "WorkoutAssignment")
-
-def get_workout_program_model():
-    return apps.get_model("users", "WorkoutProgram")
-
-class WorkoutProgramSerializer(serializers.ModelSerializer):
-    coach_name = serializers.CharField(source="coach.user.username", read_only=True)
-
-    class Meta:
-        model = get_workout_program_model()
-        fields = [
-            "id",
-            "coach",
-            "coach_name",
-            "title",
-            "description",
-            "video_links",
-            "level_access",
-            "difficulty_level",
-            "is_public",
-            "duration",
-            "created_at",
-            "updated_at",
-        ]
-        read_only_fields = ["id", "coach_name", "created_at", "updated_at"]
-
-
 class UserLevelSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_level_model()
@@ -140,9 +108,3 @@ class UserSerializer(serializers.ModelSerializer):
         profile.save()
 
         return instance
-
-
-class WorkoutCompletionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = get_workout_completion_model()
-        fields = ["id", "assignment", "xp_earned", "completed_at"]

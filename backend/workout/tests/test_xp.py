@@ -20,7 +20,7 @@ def test_xp_addition_and_level_up():
     assert isinstance(new_rank, int)
 
 def test_xp_levels():
-    from users.xp_rules import level_for_xp
+    from workout.xp_rules.py import level_for_xp
 
     assert level_for_xp(0) == (1, "Bronze", 1000)
     assert level_for_xp(1200) == (2, "Silver", 3800)

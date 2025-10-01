@@ -4,8 +4,8 @@ import AboutPage from "../views/about.vue"
 import SelectRole from "../views/RoleSelection.vue"
 import AboutYou from "../views/AboutYou.vue"
 import Profile from "../views/Profile.vue"
-import DashBoard  from "../views/DashBoard.vue"
 import SelectGoal from "../views/GoalSelection.vue"
+import DashBoard  from "../views/DashBoard.vue"
 
 const routes = [
   { path: "/", 

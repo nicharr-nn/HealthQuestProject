@@ -51,7 +51,8 @@ urlpatterns = [
     path("accounts/", include("allauth.urls")),
     path("", home_view, name="home"),
     path("api/", include("users.urls")),
-    path("api/fitness/", include("fitness.urls"))
+    path("api/fitness/", include("fitness.urls")),
+    path("api/workout/", include("workout.urls")),
 ]
 
 if settings.DEBUG:

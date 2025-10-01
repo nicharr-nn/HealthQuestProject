@@ -145,7 +145,7 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
-            name="WorkoutCompletion",
+            name="WorkoutDayCompletion",
             fields=[
                 (
                     "id",
