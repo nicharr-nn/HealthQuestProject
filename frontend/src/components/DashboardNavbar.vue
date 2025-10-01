@@ -15,15 +15,6 @@
               DashBoard
             </RouterLink>
           </li>
-
-          <li>
-            <RouterLink
-              to="/progress"
-              class="nav-link font-body text-white hover:text-[#c7d2fe] transition-colors"
-            >
-              Progress
-            </RouterLink>
-          </li>
           <li>
             <RouterLink
               to="/program"

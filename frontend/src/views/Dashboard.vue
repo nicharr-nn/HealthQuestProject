@@ -1,7 +1,7 @@
 <template>
   <div class="silver-dashboard space-y-8">
     <!-- User Profile Header -->
-    <div class="bg-white rounded-2xl p-6 shadow-[0_5px_15px_rgba(0,0,0,0.08)] space-y-6">
+    <div class="bg-white mt-6 rounded-2xl p-6 shadow-[0_5px_15px_rgba(0,0,0,0.08)] space-y-6">
       <!-- use store.loading (your store has `loading`, not `loadingProfile`) -->
       <div v-if="store.loading" class="text-gray-500">Loading profile...</div>
 
