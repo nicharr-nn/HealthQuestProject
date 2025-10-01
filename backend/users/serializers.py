@@ -1,27 +1,27 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.apps import apps
+from fitness.serializers import FitnessGoalSerializer
 
 
 def get_user_profile_model():
     return apps.get_model("users", "UserProfile")
 
 
-def get_fitness_goal_model():
-    return apps.get_model("users", "FitnessGoal")
+def get_user_level_model():
+    return apps.get_model("users", "UserLevel")
 
 
-class FitnessGoalSerializer(serializers.ModelSerializer):
+class UserLevelSerializer(serializers.ModelSerializer):
     class Meta:
-        model = get_fitness_goal_model()
-        fields = ["id", "goal_type", "start_date", "end_date"]
-        read_only_fields = ["id", "start_date"]
-
+        model = get_user_level_model()
+        fields = ["level_rank", "level", "xp", "goal_achieved"]
 
 class UserProfileSerializer(serializers.ModelSerializer):
     photo = serializers.ImageField(use_url=True, required=False, allow_null=True)
     fitness_goals = FitnessGoalSerializer(many=True, read_only=True)
     current_goal = serializers.SerializerMethodField()
+    current_level = serializers.SerializerMethodField()
 
     class Meta:
         model = get_user_profile_model()
@@ -35,6 +35,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "photo",
             "fitness_goals",
             "current_goal",
+            "current_level",
         ]
         read_only_fields = ["role"]
 
@@ -44,7 +45,11 @@ class UserProfileSerializer(serializers.ModelSerializer):
             latest_goal = obj.fitness_goals.order_by("-start_date").first()
             if latest_goal:
                 return latest_goal.goal_type
-        return None
+        return None # coaches/members/admins
+    
+    def get_current_level(self, obj):
+        ul = obj.get_current_level()
+        return UserLevelSerializer(ul).data
 
 
 class UserSerializer(serializers.ModelSerializer):

@@ -152,11 +152,25 @@
                     <div class="flex justify-between items-center border-b border-gray-200 pb-4">
                       <label class="text-gray-600 font-medium text-lg w-32">Location</label>
                       <template v-if="isEditing">
-                        <input
+                        <!-- <input
                           v-model="editProfile.location"
                           type="text"
                           class="flex-1 text-teal-600 text-lg font-medium bg-gray-100 border border-gray-300 outline-none focus:bg-gray-50 px-3 py-2 rounded"
-                        />
+                        /> -->
+                        <select
+                          v-model="editProfile.location"
+                          class="flex-1 text-teal-600 text-lg font-medium bg-gray-100 border border-gray-300 outline-none focus:bg-gray-50 px-3 py-2 rounded"
+                        >
+                          <option value="">Select location</option>
+                          <option value="TH">Thailand</option>
+                          <option value="USA">United States</option>
+                          <option value="UK">United Kingdom</option>
+                          <option value="JP">Japan</option>
+                          <option value="LA">Laos</option>
+                          <option value="KR">South Korea</option>
+                          <option value="O">Other</option>
+                        </select>
+
                       </template>
                       <template v-else>
                         <span class="flex-1 text-teal-600 text-lg font-medium text-right">{{
@@ -204,6 +218,7 @@
                 </div>
 
                 <button
+                  @click="deleteAccount"
                   class="bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-full font-semibold text-lg transition-colors shadow-lg"
                 >
                   Delete Account
@@ -219,8 +234,8 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import { data } from 'autoprefixer'
 
 const userStore = useUserStore()
 
@@ -329,7 +344,7 @@ async function saveChanges() {
 
     // Update goal (only if user is normal)
     if (userStore.role === 'normal' && editProfile.value.current_goal) {
-      const goalResponse = await fetch("http://127.0.0.1:8000/api/select-goal/", {
+      const goalResponse = await fetch("http://127.0.0.1:8000/api/fitness/select-goal/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -423,9 +438,48 @@ function cancelEdit() {
   uploadMessage.value = ''
 }
 
+function deleteAccount() {
+  const user_id = userStore.profile?.id || userStore.id
+  
+  if (!user_id) {
+    alert('User ID not found. Please try logging out and back in.')
+    return
+  }
+
+  if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+    fetch(`http://127.0.0.1:8000/api/user/${user_id}/`, { 
+      method: 'DELETE',
+      credentials: 'include',
+      headers: {
+        'X-CSRFToken': getCsrfToken(),
+        'Content-Type': 'application/json',
+      }
+    })
+      .then(response => {
+        if (response.ok) {
+          return response.json()
+        } else if (response.status === 403) {
+          throw new Error('Not authorized to delete this account')
+        } else {
+          throw new Error('Failed to delete account')
+        }
+      })
+      .then(data => {
+        console.log('Account deleted:', data)
+        userStore.logout()  // Make sure this action exists
+        window.location.href = '/'
+      })
+      .catch(err => {
+        console.error('Error deleting account:', err)
+        alert('Error deleting account: ' + err.message)
+      })
+  }
+}
+
 onMounted(() => {
   fetchUserProfile()
 })
+
 </script>
 
 <style scoped>

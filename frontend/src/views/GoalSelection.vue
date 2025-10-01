@@ -117,7 +117,7 @@ async function saveGoal() {
   
   try {
     const csrfToken = getCsrfToken();
-    const response = await fetch("http://127.0.0.1:8000/api/select-goal/", {
+    const response = await fetch("http://127.0.0.1:8000/api/fitness/select-goal/", {
       method: "POST",
       headers: { 
         "Content-Type": "application/json",

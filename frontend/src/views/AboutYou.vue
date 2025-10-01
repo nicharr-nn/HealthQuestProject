@@ -72,13 +72,13 @@
           @blur="validateField('location')"
         >
           <option value="" disabled>Select Location</option>
-          <option value="Thailand">Thailand</option>
+          <option value="TH">Thailand</option>
           <option value="USA">United States</option>
           <option value="UK">United Kingdom</option>
-          <option value="Japan">Japan</option>
-          <option value="Lao">Lao</option>
-          <option value="Korea">Korea</option>
-          <option value="Other">Other</option>
+          <option value="JP">Japan</option>
+          <option value="LA">Laos</option>
+          <option value="KR">South Korea</option>
+          <option value="O">Other</option>
         </select>
         <p v-if="errors.location" class="text-red-500 text-sm mt-1">{{ errors.location }}</p>
       </div>
