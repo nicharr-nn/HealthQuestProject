@@ -30,7 +30,7 @@ class UserProfile(models.Model):
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     photo = models.ImageField(upload_to="profile_photos/", null=True, blank=True)
-    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default="normal")
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES)
     height = models.FloatField(null=True, blank=True)  # in cm
     weight = models.FloatField(null=True, blank=True)  # in kg
     age = models.IntegerField(null=True, blank=True)

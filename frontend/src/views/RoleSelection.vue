@@ -97,9 +97,7 @@ async function selectRole(role) {
 
     if (response.ok) {
       if (role === 'normal') {
-        router.push("/about-you");
-      } else if (role === 'coach') {
-        router.push("/about-you");
+        router.push("/select-goal");
       } else {
         router.push("/about-you");
       }

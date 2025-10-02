@@ -1,26 +1,42 @@
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.decorators import api_view, permission_classes, parser_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
-from django.core.files.storage import default_storage
-from .models import Coach, UserProfile
+from rest_framework import status
+from django.utils import timezone
+from .models import Coach
 from .serializers import CoachSerializer
-from django.utils.timezone import now
-
-@api_view(['POST', 'PATCH'])
+@api_view(["POST", "PATCH"])
 @permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser])
 def upload_certification(request):
-    user_profile = request.user.userprofile
+    profile = request.user.userprofile
 
-    try:
-        coach = Coach.objects.get(user=user_profile)
-        serializer = CoachSerializer(coach, data=request.data, partial=True)
-    except Coach.DoesNotExist:
-        serializer = CoachSerializer(data=request.data)
+    if request.method == "PATCH":
+        try:
+            coach = Coach.objects.get(user=profile)
+        except Coach.DoesNotExist:
+            return Response({"error": "Coach profile not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data)
-    return Response(serializer.errors, status=400)
+        coach.bio = request.data.get("bio", coach.bio)
+        if "certification_doc" in request.FILES:
+            coach.certification_doc = request.FILES["certification_doc"]
+        coach.status_approval = "pending"
+        coach.approved_date = None
+        coach.save()
+        return Response(CoachSerializer(coach).data)
+
+    elif request.method == "POST":
+        coach = Coach.objects.create(
+            user=profile,
+            bio=request.data.get("bio", ""),
+            certification_doc=request.FILES.get("certification_doc"),
+            status_approval="pending",
+            approved_date=None,
+        )
+        return Response(CoachSerializer(coach).data, status=status.HTTP_201_CREATED)
+
+
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])

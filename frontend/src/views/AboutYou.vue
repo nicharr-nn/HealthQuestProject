@@ -216,9 +216,7 @@ if (response.ok) {
   const profile = res.data
   userStore.setRole(profile.role) 
 
-  if (profile.role === "normal") {
-    router.push("/select-goal")
-  } else if (profile.role === "coach") {
+  if (profile.role === "coach") {
     router.push("/coach-portal")
   } else {
     router.push("/dashboard")
