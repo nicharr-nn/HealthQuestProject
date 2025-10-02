@@ -10,7 +10,7 @@ from .xp_rules import calculate_xp
 from django.apps import apps
 from rest_framework import status
 from rest_framework.exceptions import PermissionDenied
-from .models import WorkoutProgram, WorkoutAssignment, WorkoutDayCompletion
+from .models import WorkoutProgram, WorkoutAssignment, WorkoutDayCompletion, WorkoutDay
 from django.utils import timezone
 from users.serializers import UserSerializer
 
@@ -89,3 +89,31 @@ def workout_assignments_update(request, id):
     elif request.method == "DELETE":
         assignment.delete()
         return Response({"message": "Assignment deleted"})
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def workout_day_videos(request, id):
+    """
+    GET: Retrieve all YouTube links for a WorkoutDay
+    POST: Add a new YouTube link (coaches only)
+    """
+    workout_day = get_object_or_404(WorkoutDay, id=id)
+
+    if request.method == 'GET':
+        return Response({"video_links": workout_day.video_links})
+
+    elif request.method == 'POST':
+        profile = request.user.userprofile
+        if profile.role != "coach":
+            raise PermissionDenied("Only coaches can add video links")
+
+        new_link = request.data.get("link")
+        if not new_link:
+            return Response({"error": "You must provide a YouTube link"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Append new link to JSONField
+        workout_day.video_links.append(new_link)
+        workout_day.save(update_fields=["video_links"])
+
+        return Response({"message": "Video link added", "video_links": workout_day.video_links})
