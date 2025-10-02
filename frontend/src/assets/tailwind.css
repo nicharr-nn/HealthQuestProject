@@ -11,6 +11,8 @@
   --color-paper: #FAF4E8;
   --font-bold: 600;
   --radius-xl2: 1.25rem;
+  --radius-3xl: 1.5rem;
+  --radius-4xl: 2rem;
 }
 
 @layer base {
