@@ -17,14 +17,40 @@
 
     <!-- Main Container -->
     <div class="container">
-      <!-- CoachPortal Component -->
-      <CoachPortal />
+      <!-- Page Navigation
+      <div class="page-nav">
+        <button
+          class="page-btn"
+          :class="{ active: currentPage === 'portal' }"
+          @click="currentPage = 'portal'"
+        >
+          Coach Portal
+        </button>
+        <button
+          class="page-btn"
+          :class="{ active: currentPage === 'create-workout' }"
+          @click="currentPage = 'create-workout'"
+        >
+          Create Workout Program
+        </button>
+      </div> -->
+
+      <!-- Dynamic Component Display -->
+      <CoachPortal
+        v-if="currentPage === 'portal'"
+        @navigateToCreateProgram="currentPage = 'create-workout'"
+      />
+      <CreateWorkoutProgram v-if="currentPage === 'create-workout'" />
     </div>
   </div>
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import CoachPortal from './components/CoachPortal.vue'
+import CreateWorkoutProgram from './components/CreateWorkoutProgram.vue'
+
+const currentPage = ref('portal')
 </script>
 
 <style>
