@@ -9,6 +9,7 @@ class FitnessGoal(models.Model):
         ("build_muscle", "Build Muscle"),
         ("improve_endurance", "Improve Endurance"),
         ("general_fitness", "General Fitness"),
+        ("increase_flexibility", "Increase Flexibility"),
     ]
 
     goal_type = models.CharField(

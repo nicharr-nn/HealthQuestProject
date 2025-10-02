@@ -56,26 +56,13 @@
         </form>
       </div>
 
-      <!-- Programs Overview (mock) -->
-      <div class="content-card">
-        <div class="card-title mb-3">Your Programs</div>
-        <div v-if="programs.length === 0" class="muted">No programs yet. Create your first one!</div>
-        <ul v-else class="program-list">
-          <li v-for="p in programs" :key="p.id" class="program-item">
-            <div>
-              <div class="program-name">{{ p.name }}</div>
-              <div class="program-meta">Level: {{ p.level }} · Duration: {{ p.duration }} weeks</div>
-            </div>
-            <button class="btn small" @click="openProgram(p.id)">Open</button>
-          </li>
-        </ul>
-      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { reactive, ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 
 interface CoachForm {
   bio: string
@@ -106,6 +93,9 @@ function onFileSelected(event: Event) {
 // Fetch coach status on mount
 const googleName = ref('')
 
+// router for redirects when coach is approved
+const router = useRouter()
+
 // On mounted, fetch from backend
 onMounted(async () => {
   const res = await fetch('http://127.0.0.1:8000/api/coach/status/', { credentials: 'include' })
@@ -118,6 +108,10 @@ onMounted(async () => {
       hasSubmitted.value = true
       if (data.coach.certification_doc) {
         selectedFileName.value = data.coach.certification_doc.split('/').pop()
+      }
+       // If coach already approved, go to program creation page
+      if (coachStatus.value === 'approved') {
+        router.push('/coach-dashboard')
       }
     }
   }
@@ -146,10 +140,17 @@ async function submitApplication() {
     if (!response.ok) throw new Error('Upload failed')
 
     const data = await response.json()
-    coachStatus.value = 'pending'
+    //coachStatus.value = 'pending'
+    const newStatus = data?.status_approval || data?.coach?.status_approval || data?.status || 'pending'
+    coachStatus.value = newStatus
     hasSubmitted.value = true
     selectedFileName.value = selectedFile.value?.name || null
     alert('Application submitted! Status is now pending.')
+   // if status approved, redirect to create program
+    if (coachStatus.value === 'approved') {
+      router.push('/coach-dashboard')
+    }
+
   } catch (err) {
     console.error(err)
     alert('Upload failed')
@@ -158,8 +159,6 @@ async function submitApplication() {
 
 // Reset form (used before submit)
 function resetForm() {
-  coachForm.fullName = ''
-  coachForm.phone = ''
   coachForm.bio = ''
   selectedFile.value = null
   selectedFileName.value = null

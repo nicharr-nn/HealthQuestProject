@@ -4,9 +4,10 @@ import AboutPage from "../views/about.vue"
 import SelectRole from "../views/RoleSelection.vue"
 import AboutYou from "../views/AboutYou.vue"
 import Profile from "../views/Profile.vue"
-import DashBoard  from "../views/DashBoard.vue"
+import Dashboard  from "../views/Dashboard.vue"
 import SelectGoal from "../views/GoalSelection.vue"
 import CoachPortal from "../views/CoachPortal.vue"
+import CoachDashboard from "../views/CoachDashboard.vue"
 
 const routes = [
   { path: "/", 
@@ -32,8 +33,8 @@ const routes = [
     component: Profile,
   },
   { path: "/dashboard", 
-    name: "DashBoard",
-    component: DashBoard 
+    name: "Dashboard",
+    component: Dashboard 
   },
   { path: "/select-goal", 
   name: "SelectGoal",
@@ -43,6 +44,10 @@ const routes = [
   name: "CoachPortal",
   component: CoachPortal 
   },
+  { path: "/coach-dashboard",
+  name: "CoachDashboard",
+  component: CoachDashboard 
+  },  
 ]
 
 const router = createRouter({

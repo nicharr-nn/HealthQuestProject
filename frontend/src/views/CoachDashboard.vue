@@ -160,7 +160,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import CreateWorkoutProgram from './CreateWorkoutProgram.vue'
+import CreateWorkoutProgram from '../components/CreateWorkoutProgram.vue'
 
 interface WorkoutSession {
   name: string
