@@ -108,36 +108,13 @@
             </div>
           </div>
 
-          <!-- Programs Section (only visible when approved) -->
-          <div v-if="approvalStatus === 'approved'" class="programs-section">
-            <div class="programs-header">
-              <div class="card-title mb-3">Your Programs</div>
-              <button class="btn primary small" @click="createNewProgram">
-                + Create New Program
-              </button>
+          <!-- Approval Success Message -->
+          <div v-if="approvalStatus === 'approved'" class="approval-success">
+            <div class="success-icon">🎉</div>
+            <div class="success-title">Congratulations!</div>
+            <div class="success-message">
+              Your coach application has been approved! You will be redirected to your dashboard where you can start creating workout programs.
             </div>
-
-            <div v-if="programs.length === 0" class="empty-state">
-              <div class="empty-icon">🏋️‍♂️</div>
-              <div class="empty-title">No programs yet</div>
-              <div class="empty-message">Start creating your first workout program to help your clients achieve their fitness goals!</div>
-              <button class="btn primary" @click="createNewProgram">
-                Create Your First Program
-              </button>
-            </div>
-
-            <ul v-else class="program-list">
-              <li v-for="p in programs" :key="p.id" class="program-item">
-                <div>
-                  <div class="program-name">{{ p.name }}</div>
-                  <div class="program-meta">Level: {{ p.level }} · Duration: {{ p.duration }} weeks</div>
-                </div>
-                <div class="program-actions">
-                  <button class="btn small ghost" @click="editProgram(p.id)">Edit</button>
-                  <button class="btn small" @click="viewProgram(p.id)">View</button>
-                </div>
-              </li>
-            </ul>
           </div>
 
           <!-- Demo Approval Button (for testing) -->
@@ -155,7 +132,7 @@
   import { reactive, ref } from 'vue'
 
   const emit = defineEmits<{
-    navigateToCreateProgram: []
+    approved: []
   }>()
   
   interface CoachForm {
@@ -176,12 +153,6 @@
   
   const approvalStatus = ref('pending') // 'pending', 'approved', 'rejected'
 
-  // Start with empty programs - they will be populated from CreateWorkoutProgram
-  const programs = ref([
-    // Mock data for demonstration - in real app this would come from API
-    // { id: 'p1', name: '8-Week Fat Loss', level: 'Beginner', duration: 8 },
-    // { id: 'p2', name: 'Strength Foundations', level: 'Intermediate', duration: 6 }
-  ])
   
   function submitApplication() {
     // simple front-end validation beyond required attrs
@@ -203,23 +174,14 @@
     coachForm.bio = ''
   }
   
-  function createNewProgram() {
-    emit('navigateToCreateProgram')
-  }
-
-  function editProgram(id: string) {
-    // In real app: navigate to edit page with program ID
-    alert(`Edit program: ${id} - This would navigate to edit page`)
-  }
-
-  function viewProgram(id: string) {
-    // In real app: navigate to program details page
-    alert(`View program: ${id} - This would show program details`)
-  }
 
   function simulateApproval() {
     approvalStatus.value = 'approved'
-    alert('Coach application approved! You can now view and manage your programs.')
+    alert('Coach application approved! Redirecting to your dashboard...')
+    // Emit event to parent to show dashboard
+    setTimeout(() => {
+      emit('approved')
+    }, 1000)
   }
   </script>
   
@@ -274,41 +236,27 @@
   .status-title { color: #374151; }
   .status-message { color: #6b7280; font-size: 13px; line-height: 1.4; }
 
-  .programs-section { padding-top: 16px; border-top: 1px solid #e5e7eb; }
-  .programs-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-  }
-
-  .empty-state {
+  .approval-success {
     text-align: center;
     padding: 32px 16px;
-    border: 2px dashed #e5e7eb;
+    border: 2px solid #10b981;
     border-radius: 12px;
-    background: #fafafa;
+    background: #d1fae5;
+    margin-top: 16px;
   }
-  .empty-icon { font-size: 48px; margin-bottom: 12px; }
-  .empty-title {
-    font-size: 18px;
+  .success-icon { font-size: 48px; margin-bottom: 12px; }
+  .success-title {
+    font-size: 20px;
     font-weight: 600;
-    color: #374151;
+    color: #065f46;
     margin-bottom: 8px;
   }
-  .empty-message {
-    color: #6b7280;
-    margin-bottom: 20px;
+  .success-message {
+    color: #047857;
     line-height: 1.5;
     max-width: 400px;
     margin-left: auto;
     margin-right: auto;
-  }
-
-  .program-actions {
-    display: flex;
-    gap: 8px;
-    align-items: center;
   }
 
   .demo-section {
@@ -316,23 +264,6 @@
     border-top: 1px solid #e5e7eb;
     display: flex;
     justify-content: center;
-  }
-
-  @media (max-width: 768px) {
-    .programs-header {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 12px;
-    }
-    .program-actions {
-      flex-direction: column;
-      gap: 4px;
-    }
-    .program-item {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 12px;
-    }
   }
   </style>
   

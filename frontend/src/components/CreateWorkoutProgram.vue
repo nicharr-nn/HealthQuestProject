@@ -1,7 +1,7 @@
 <template>
   <div class="create-workout-program">
     <div class="page-header">
-      <h1 class="page-title">Create Workout Program</h1>
+      <h1 class="page-title">{{ existingProgram ? 'Edit Workout Program' : 'Create Workout Program' }}</h1>
       <p class="page-subtitle">Design a comprehensive workout program with YouTube video guides</p>
     </div>
 
@@ -210,7 +210,7 @@
         @click="submitProgram"
         :disabled="!canSubmitProgram"
       >
-        Create Program
+        {{ existingProgram ? 'Update Program' : 'Create Program' }}
       </button>
       <button
         type="button"
@@ -219,12 +219,44 @@
       >
         Reset All
       </button>
+      <button
+        type="button"
+        class="btn ghost large"
+        @click="emit('cancel')"
+      >
+        Cancel
+      </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, computed } from 'vue'
+import { reactive, ref, computed, watch } from 'vue'
+
+interface Props {
+  existingProgram?: {
+    name: string
+    description: string
+    level: string
+    duration: number
+    category: string
+    sessions: WorkoutSession[]
+  } | null
+}
+
+const props = defineProps<Props>()
+
+const emit = defineEmits<{
+  programCreated: [program: {
+    name: string
+    description: string
+    level: string
+    duration: number
+    category: string
+    sessions: WorkoutSession[]
+  }]
+  cancel: []
+}>()
 
 interface WorkoutSession {
   name: string
@@ -319,10 +351,15 @@ function submitProgram() {
     return
   }
 
-  // In real app: POST to API here
-  console.log('Created workout program:', { ...workoutProgram })
-  alert('Workout program created successfully! Check console for details.')
-  resetProgram()
+  // Emit the program data to parent component
+  emit('programCreated', {
+    name: workoutProgram.name,
+    description: workoutProgram.description,
+    level: workoutProgram.level,
+    duration: workoutProgram.duration,
+    category: workoutProgram.category,
+    sessions: [...workoutProgram.sessions]
+  })
 }
 
 function resetProgram() {
@@ -340,6 +377,20 @@ function resetProgram() {
   newSession.notes = ''
   youtubeError.value = ''
 }
+
+// Watch for existing program prop and populate form
+watch(() => props.existingProgram, (program) => {
+  if (program) {
+    workoutProgram.name = program.name
+    workoutProgram.description = program.description
+    workoutProgram.level = program.level
+    workoutProgram.duration = program.duration
+    workoutProgram.category = program.category
+    workoutProgram.sessions = [...program.sessions]
+  } else {
+    resetProgram()
+  }
+}, { immediate: true })
 </script>
 
 <style scoped>
