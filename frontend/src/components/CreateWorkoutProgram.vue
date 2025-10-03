@@ -325,6 +325,19 @@
 <script setup lang="ts">
 import { reactive, ref, computed, watch, onMounted } from 'vue'
 
+const coachId = ref<number | null>(null)
+onMounted(async () => {
+  try {
+    const res = await fetch('http://127.0.0.1:8000/api/coach/status/', { credentials: 'include' })
+    if (res.ok) {
+      const data = await res.json()
+      coachId.value = data?.coach?.id ?? null
+    }
+  } catch (e) {
+    console.error('failed to fetch coach status', e)
+  }
+})
+
 interface Props {
   existingProgram?: {
     title: string
@@ -487,40 +500,71 @@ function resetCurrentWorkout() {
   youtubeError.value = ''
 }
 
-function submitProgram() {
+async function submitProgram() {
   if (!canSubmitProgram.value) {
     alert('Please fill in all required fields and add at least one daily workout')
+    return
+  }
+  if (!coachId.value) {
+    // try one more time before failing
+    try {
+      const r = await fetch('http://127.0.0.1:8000/api/coach/status/', { credentials: 'include' })
+      if (r.ok) {
+        const d = await r.json()
+        console.log('coach fetch retry', d)
+        coachId.value = d?.coach?.coach_id ?? d?.coach_id ?? d?.coach?.id ?? null
+      }
+    } catch (e) {
+      console.error('coach fetch retry failed', e)
+    }
+  }
+  if (!coachId.value) {
+    alert('Coach profile not found. Please create or confirm your coach profile before creating a program.')
     return
   }
 
   const days = Object.entries(workoutProgram.WorkoutDays).map(([day, workouts]) => ({
     day_number: Number(day),
     title: `Day ${day}`,
+    video_links: workouts.map(w => w.video_link).filter(Boolean),
     duration_minutes: workouts.reduce((sum, w) => sum + (w.duration || 0), 0), // total minutes for the day
   }))
 
   const payload = {
+    coach: coachId.value,
     title: workoutProgram.title,
     description: workoutProgram.description,
     difficulty_level: workoutProgram.difficulty_level,
     level_access: workoutProgram.level_access || "all",
     is_public: workoutProgram.is_public ?? true,
-    duration_days: workoutProgram.duration,
+    duration: workoutProgram.duration,
     category: workoutProgram.category || "full_body",
     days
 
   }
-  const url = props.existingProgram ? `/api/workout-programs/${(props.existingProgram as any).id}/` : '/api/workout-programs/'
+  const url = props.existingProgram ? `http://127.0.0.1:8000/api/workout/programs/${(props.existingProgram as any).id}/` : 'http://127.0.0.1:8000/api/workout/programs/'
 
-  // POST to backend
+  console.debug('Submitting program payload', payload)
+
   fetch(url, {
     method: props.existingProgram ? 'PUT' : 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
   })
-    .then(res => res.json())
-    .then(data => {
+    .then(async res => {
+      const text = await res.text()
+      let body = null
+      try { body = JSON.parse(text) } catch { body = text }
+      if (!res.ok) {
+        console.error('Save program failed:', res.status, body)
+        // show backend validation message if available
+        const message = body?.detail || body?.errors || body || `HTTP ${res.status}`
+        alert('Failed to save program: ' + JSON.stringify(message))
+        return
+      }
+      // success
+      const data = body
       emit('programCreated', data)
     })
     .catch(err => {
@@ -528,7 +572,6 @@ function submitProgram() {
       alert('Failed to save program')
     })
 }
-
 function resetProgram() {
   workoutProgram.title = ''
   workoutProgram.description = ''

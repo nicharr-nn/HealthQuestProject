@@ -67,10 +67,11 @@
           <div class="section-actions">
             <select v-model="filterLevel" class="filter-select">
               <option value="">All Levels</option>
-              <option value="Beginner">Beginner</option>
-              <option value="Intermediate">Intermediate</option>
-              <option value="Advanced">Advanced</option>
+              <option value="easy">Beginner</option>
+              <option value="medium">Intermediate</option>
+              <option value="hard">Advanced</option>
             </select>
+
           </div>
         </div>
 
@@ -92,10 +93,11 @@
             class="program-card"
           >
             <div class="program-header">
-              <div class="program-title">{{ program.name }}</div>
-              <div class="program-level" :class="program.level.toLowerCase()">
-                {{ program.level }}
+              <div class="program-title">{{ program.title }}</div>
+              <div class="program-level" :class="program.difficulty_level">
+                {{ program.difficulty_level }}
               </div>
+
             </div>
 
             <div class="program-description">
@@ -105,11 +107,11 @@
             <div class="program-meta">
               <div class="meta-item">
                 <span class="meta-label">Duration:</span>
-                <span class="meta-value">{{ program.duration }} weeks</span>
+                <span class="meta-value">{{ program.duration_days }} Days </span>
               </div>
               <div class="meta-item">
                 <span class="meta-label">Sessions:</span>
-                <span class="meta-value">{{ program.sessions?.length || 0 }}</span>
+                <span class="meta-value">{{ program.days?.length || 0 }}</span>
               </div>
               <div class="meta-item">
                 <span class="meta-label">Category:</span>
@@ -117,7 +119,7 @@
               </div>
             </div>
 
-            <div v-if="program.sessions?.some(s => s.youtubeUrl)" class="program-features">
+            <div v-if="program.days?.some(d => d.video_links.length > 0)" class="program-features">
               <span class="feature-badge">📹 Video Included</span>
             </div>
 
@@ -159,56 +161,119 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import CreateWorkoutProgram from '../components/CreateWorkoutProgram.vue'
 
-interface WorkoutSession {
-  name: string
+interface WorkoutDay {
+  day_number: number
+  title: string
   duration: number
-  type: string
-  youtubeUrl: string
-  notes: string
+  video_links: string[]
 }
 
 interface WorkoutProgram {
-  id: string
-  name: string
+  id: number
+  title: string
   description: string
-  level: string
-  duration: number
+  difficulty_level: string
+  duration_days: number
   category: string
-  sessions: WorkoutSession[]
-  createdAt: Date
+  is_public: boolean
+  days: WorkoutDay[]
 }
 
-const approvalStatus = ref('pending') // 'pending', 'approved', 'rejected'
+const approvalStatus = ref<'pending'|'approved'|'rejected'>('pending')
 const showCreateProgram = ref(false)
 const editingProgram = ref<WorkoutProgram | null>(null)
 const filterLevel = ref('')
 
-const programs = ref<WorkoutProgram[]>([
-  // Sample data - in real app this would come from API
-])
+const programs = ref<WorkoutProgram[]>([])
 
 const isApproved = computed(() => approvalStatus.value === 'approved')
 
-const totalSessions = computed(() => {
-  return programs.value.reduce((total, program) => total + (program.sessions?.length || 0), 0)
+const API_BASE = 'http://127.0.0.1:8000/api/workout/programs/'
+
+function mapApiProgram(p: any): WorkoutProgram {
+  return {
+    id: p.id,
+    title: p.title,
+    description: p.description,
+    difficulty_level: p.difficulty_level ?? '',
+    duration_days: p.duration ?? p.duration_days ?? 0,
+    category: p.category ?? 'general',
+    is_public: p.is_public ?? true,
+    days: (p.days || []).map((d: any) => ({
+      day_number: d.day_number,
+      title: d.title,
+      duration: d.duration ?? d.duration_minutes ?? 0,
+      video_links: d.video_links || []
+    }))
+  }
+}
+
+async function loadPrograms() {
+  try {
+    const res = await fetch(API_BASE, { credentials: 'include' })
+    if (!res.ok) {
+      console.error('Failed loading programs', res.status)
+      programs.value = []
+      return
+    }
+    const data = await res.json()
+    // assume list returned
+    programs.value = (Array.isArray(data) ? data : data.results || []).map(mapApiProgram)
+  } catch (err) {
+    console.error('Error loading programs', err)
+    programs.value = []
+  }
+}
+
+async function loadApprovalStatus() {
+  try {
+    const res = await fetch('http://127.0.0.1:8000/api/coach/status/', { credentials: 'include' })
+    if (!res.ok) {
+      approvalStatus.value = 'pending'
+      return
+    }
+    const data = await res.json()
+    const status = data?.coach?.status_approval ?? data?.status_approval ?? null
+    if (status === 'approved') approvalStatus.value = 'approved'
+    else if (status === 'rejected') approvalStatus.value = 'rejected'
+    else approvalStatus.value = 'pending'
+  } catch (err) {
+    console.error('Error loading coach status', err)
+    approvalStatus.value = 'pending'
+  }
+}
+
+onMounted(async () => {
+  await loadApprovalStatus()
+  if (isApproved.value) {
+    await loadPrograms()
+  }
 })
 
+// total sessions = all days across all programs
+const totalSessions = computed(() => {
+  return programs.value.reduce((total, program) => total + (program.days?.length || 0), 0)
+})
+
+// programs with at least one video link
 const programsWithVideos = computed(() => {
   return programs.value.filter(program =>
-    program.sessions?.some(session => session.youtubeUrl)
+    program.days?.some(day => (day.video_links || []).length > 0)
   ).length
 })
 
+// filter by difficulty
 const filteredPrograms = computed(() => {
   if (!filterLevel.value) return programs.value
-  return programs.value.filter(program => program.level === filterLevel.value)
+  return programs.value.filter(p => p.difficulty_level === filterLevel.value)
 })
 
 function simulateApproval() {
   approvalStatus.value = 'approved'
+  loadPrograms()
   alert('Coach application approved! You can now create and manage workout programs.')
 }
 
@@ -217,47 +282,70 @@ function closeCreateProgram() {
   editingProgram.value = null
 }
 
-function editProgram(program: WorkoutProgram) {
-  editingProgram.value = program
-  showCreateProgram.value = true
+async function editProgram(program: WorkoutProgram) {
+  // fetch latest program from API before editing
+  try {
+    const res = await fetch(`${API_BASE}${program.id}/`, { credentials: 'include' })
+    if (!res.ok) {
+      console.error('Failed to fetch program for edit', res.status)
+      alert('Failed to load program for editing')
+      return
+    }
+    const data = await res.json()
+    editingProgram.value = mapApiProgram(data)
+    showCreateProgram.value = true
+  } catch (err) {
+    console.error('Error fetching program', err)
+    alert('Failed to load program for editing')
+  }
 }
 
 function viewProgram(program: WorkoutProgram) {
-  alert(`Viewing program: ${program.name}\n\nThis would open a detailed view with all sessions, exercises, and video links.`)
+  alert(`Viewing program: ${program.title}\n\nThis would open a detailed view with all days, exercises, and video links.`)
 }
 
-function deleteProgram(programId: string) {
-  if (confirm('Are you sure you want to delete this program? This action cannot be undone.')) {
-    const index = programs.value.findIndex(p => p.id === programId)
-    if (index > -1) {
-      programs.value.splice(index, 1)
+async function deleteProgram(programId: number) {
+  if (!confirm('Are you sure you want to delete this program? This action cannot be undone.')) {
+    return
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}${programId}/`, {
+      method: 'DELETE',
+      credentials: 'include',
+    })
+
+    if (res.ok) {
+      // refresh list
+      await loadPrograms()
+      // close modal if editing the deleted program
+      if (editingProgram.value && editingProgram.value.id === programId) {
+        editingProgram.value = null
+        showCreateProgram.value = false
+      }
       alert('Program deleted successfully!')
+    } else {
+      const text = await res.text()
+      let body: any = text
+      try { body = JSON.parse(text) } catch {}
+      console.error('Delete program failed:', res.status, body)
+      const message = body?.detail || body?.error || body || `HTTP ${res.status}`
+      alert('Failed to delete program: ' + JSON.stringify(message))
     }
+  } catch (err) {
+    console.error('Error deleting program:', err)
+    alert('Failed to delete program')
   }
 }
 
-function handleProgramCreated(newProgram: Omit<WorkoutProgram, 'id' | 'createdAt'>) {
-  const program: WorkoutProgram = {
-    ...newProgram,
-    id: `prog_${Date.now()}`,
-    createdAt: new Date()
-  }
-
-  if (editingProgram.value) {
-    // Update existing program
-    const index = programs.value.findIndex(p => p.id === editingProgram.value?.id)
-    if (index > -1) {
-      programs.value[index] = { ...program, id: editingProgram.value.id, createdAt: editingProgram.value.createdAt }
-    }
-  } else {
-    // Add new program
-    programs.value.unshift(program)
-  }
-
+async function handleProgramCreated(apiProgram: any) {
+  // refresh list after create/update
+  await loadPrograms()
   closeCreateProgram()
-  alert(editingProgram.value ? 'Program updated successfully!' : 'Program created successfully!')
+  alert('Program saved successfully!')
 }
 </script>
+
 
 <style scoped>
 .coach-dashboard {
