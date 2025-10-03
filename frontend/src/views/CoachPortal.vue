@@ -29,26 +29,50 @@
           </div>
           
           <div class="form-group">
-            <label class="form-label" for="certDoc">Certification Document (PDF) *</label>
-            <input
-              id="certDoc"
-              type="file"
-              accept="application/pdf"
-              @change="onFileSelected"
-              class="form-input"
-              :disabled="hasSubmitted"
-              :required="!hasSubmitted"
-            />
-            <span v-if="selectedFile">{{ selectedFile.name }}</span>
-            <span v-else-if="selectedFileName">{{ selectedFileName }}</span>
-            <span v-else-if="hasSubmitted && coachStatus === 'pending'">File submitted</span>
+              <label for="certDoc" class="file-upload-label">
+                <input
+                  id="certDoc"
+                  type="file"
+                  accept="application/pdf"
+                  @change="onFileSelected"
+                  class="hidden"   
+                  :disabled="hasSubmitted"
+                  :required="!hasSubmitted"
+                />
+                <span class="btn ghost">Choose File</span>
+              </label>
+
+              <!-- Always show filename here -->
+              <span class="ml-2 mt-5 font-body text-gray-700">
+                {{ selectedFile?.name || selectedFileName || (hasSubmitted ? 'File submitted' : 'No file chosen') }}
+              </span>
           </div>
 
-          <div class="form-row">
-            <button v-if="!hasSubmitted" type="submit" class="btn primary">Submit Application</button>
-            <button v-if="!hasSubmitted" type="button" class="btn ghost" @click="resetForm">Reset</button>
-            <button v-else type="button" class="btn primary" @click="resubmit">Resubmit Certification</button>
-          </div>
+
+        <div class="form-row">
+          <button v-if="!hasSubmitted" type="submit" class="btn primary">Submit Application</button>
+          <button v-if="!hasSubmitted" type="button" class="btn ghost" @click="resetForm">Reset</button>
+
+          <!-- If already submitted -->
+          <button 
+            v-else-if="coachStatus === 'approved'" 
+            type="button" 
+            class="btn primary" 
+            @click="editProfile"
+          >
+            Edit Profile
+          </button>
+
+          <button 
+            v-else 
+            type="button" 
+            class="btn primary" 
+            @click="resubmit"
+          >
+            Resubmit Certification
+          </button>
+        </div>
+
 
           <div v-if="hasSubmitted" class="form-status mt-2">
             <p>Your application status: <strong>{{ coachStatus }}</strong></p>
@@ -77,9 +101,8 @@ const selectedFile = ref<File | null>(null)
 const selectedFileName = ref<string | null>(null)
 const hasSubmitted = ref(false)
 const coachStatus = ref<'not_submitted' | 'pending' | 'approved' | 'rejected'>('not_submitted')
-
-// Mock programs array
-const programs = ref<{ id: number; name: string; level: string; duration: number }[]>([])
+const originalBio = ref("")
+const originalName = ref("")
 
 // Called when file input changes
 function onFileSelected(event: Event) {
@@ -98,20 +121,23 @@ const router = useRouter()
 
 // On mounted, fetch from backend
 onMounted(async () => {
-  const res = await fetch('http://127.0.0.1:8000/api/coach/status/', { credentials: 'include' })
+  const res = await fetch("http://127.0.0.1:8000/api/coach/status/", { credentials: 'include' })
   if (res.ok) {
     const data = await res.json()
     if (data.coach) {
-      googleName.value = data.coach.name  // Serializer now provides read-only name
+      googleName.value = data.coach.name
       coachForm.bio = data.coach.bio || ''
       coachStatus.value = data.coach.status_approval
       hasSubmitted.value = true
+      originalBio.value = coachForm.bio
+      originalName.value = googleName.value
       if (data.coach.certification_doc) {
         selectedFileName.value = data.coach.certification_doc.split('/').pop()
       }
     }
   }
 })
+
 
 // Submit coach application
 async function submitApplication() {
@@ -166,10 +192,48 @@ function resubmit() {
   }
 }
 
-// Mock open program function
-function openProgram(id: number) {
-  alert(`Open program ID: ${id}`)
+
+async function editProfile() {
+  // Build payload only with changed fields
+  const payload: Record<string, any> = {}
+
+  if (coachForm.bio !== originalBio.value) {
+    payload.bio = coachForm.bio
+  }
+
+  if (googleName.value !== originalName.value) {
+    payload.name = googleName.value
+  }
+
+  if (Object.keys(payload).length === 0) {
+    alert("No changes detected.")
+    return
+  }
+
+  try {
+    const response = await fetch("http://127.0.0.1:8000/api/coach/edit-profile/", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(payload)
+    })
+
+    if (!response.ok) throw new Error("Failed to update profile")
+
+    const data = await response.json()
+    alert("Profile updated successfully!")
+    coachForm.bio = data.bio
+    googleName.value = data.name
+
+    // Update originals so user can’t save again without changes
+    originalBio.value = data.bio
+    originalName.value = data.name
+  } catch (err) {
+    console.error(err)
+    alert("Could not update profile")
+  }
 }
+
 </script>
 
 <style scoped>

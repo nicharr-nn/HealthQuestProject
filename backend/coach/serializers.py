@@ -24,6 +24,4 @@ class CoachSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = [
-            "coach_id", "name", "status_approval", "approved_date", "created_at", "updated_at"
-        ]
+        read_only_fields = ["status_approval", "approved_date", "certification_doc"]

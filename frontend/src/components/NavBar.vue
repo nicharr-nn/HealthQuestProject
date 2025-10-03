@@ -1,8 +1,7 @@
 <template>
   <CoachNavbar
     v-if="userStore.profile_complete
-      && (userStore.role === 'coach' || userStore.profile?.role === 'coach')
-      && (userStore.approved || userStore.profile?.approved || userStore.coach_profile?.status_approval === 'approved')"
+      && (userStore.role === 'coach' || userStore.profile?.role === 'coach')"
   />
   <DashboardNavbar v-else-if="userStore.profile_complete" />
   <UnsignNavbar v-else />
@@ -13,7 +12,7 @@ import { onMounted, watch } from 'vue'
 import { useUserStore } from '@/stores/user'
 import DashboardNavbar from './DashboardNavbar.vue'
 import UnsignNavbar from './UnsignNavBar.vue'
-import CoachNavbar from './CoachNavbar.vue'
+import CoachNavbar from './CoachNavBar.vue'
 
 const userStore = useUserStore()
 

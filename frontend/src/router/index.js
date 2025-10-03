@@ -64,6 +64,10 @@ const routes = [
   },
 ]
 
+import { useUserStore } from '@/stores/user'
+
+const SKIP_IF_COMPLETE = new Set(['/select-role', '/about-you'])
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
@@ -71,46 +75,31 @@ const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
   console.log(`Navigating from ${from.path} to ${to.path}`)
-  
-  // Only check auth for specific routes
-  if (to.path === "/select-role" || to.path === "/about-you") {
-    try {
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 5000)
-      
-      const response = await fetch("http://127.0.0.1:8000/api/user-info/", {
-        credentials: "include",
-        signal: controller.signal,
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      })
-      
-      clearTimeout(timeoutId)
-      
-      if (response.ok) {
-        const user = await response.json()
-        console.log('User profile check:', user)
-        
-        if (user.profile_complete) {
-          console.log('Profile complete, redirecting to dashboard')
-          return next("/dashboard")
-        }
-      } else {
-        console.warn(`Auth check failed with status: ${response.status}`)
-      }
-    } catch (err) {
-      console.error("Auth check failed:", err.name, err.message)
-      
-      // Don't block navigation if it's just a network error
-      if (err.name === 'AbortError') {
-        console.warn('Auth check timed out, allowing navigation')
-      } else if (err.name === 'TypeError') {
-        console.warn('Network error during auth check, allowing navigation')
-      }
-    }
+
+  if (!SKIP_IF_COMPLETE.has(to.path)) {
+    return next()
   }
-  
+
+  try {
+    const userStore = useUserStore()
+
+    // ensure store initialized (init is idempotent)
+    if (userStore.loading || userStore.user === null) {
+      await userStore.init()
+    }
+
+    if (userStore.profile_complete) {
+      console.log('Profile complete, redirecting to appropriate dashboard')
+      // send coaches to coach dashboard, others to regular dashboard
+      if (userStore.role === 'coach' || userStore.profile?.role === 'coach') {
+        return next('/coach-dashboard')
+      }
+      return next('/dashboard')
+    }
+  } catch (err) {
+    console.warn('Profile check failed, allowing navigation', err)
+  }
+
   next()
 })
 

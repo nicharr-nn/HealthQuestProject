@@ -5,7 +5,6 @@ export const useUserStore = defineStore('user', {
     id: null,
     isAuthenticated: false,
     user: null,
-    user: null,
     profile: null,
     profile_complete: false,
     role: null,
@@ -116,14 +115,7 @@ export const useUserStore = defineStore('user', {
     setRole(role) {
       this.role = role
       if (this.profile) this.profile.role = role
-
-    setRole(role) {
-      this.role = role
-      if (this.profile) this.profile.role = role
     },
-
-    setGoal(goal) {
-      this.goal = goal
 
     setGoal(goal) {
       this.goal = goal
@@ -136,15 +128,12 @@ export const useUserStore = defineStore('user', {
     clearAuthStatus() {
       this.isAuthenticated = false
       this.user = null
-      this.user = null
       this.profile = null
       this.profile_complete = false
       this.role = null
       this.goal = null
     },
     
-    
   },
-  
   
 })

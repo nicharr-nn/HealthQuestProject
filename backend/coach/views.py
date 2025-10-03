@@ -3,7 +3,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework import status
-from django.utils import timezone
 from .models import Coach
 from .serializers import CoachSerializer
 @api_view(["POST", "PATCH"])
@@ -27,13 +26,27 @@ def upload_certification(request):
         return Response(CoachSerializer(coach).data)
 
     elif request.method == "POST":
-        coach = Coach.objects.create(
+       # Avoid IntegrityError when a Coach record already exists for this user.
+        # If a coach exists, update it; otherwise create a new one.
+        coach, created = Coach.objects.get_or_create(
             user=profile,
-            bio=request.data.get("bio", ""),
-            certification_doc=request.FILES.get("certification_doc"),
-            status_approval="pending",
-            approved_date=None,
+            defaults={
+                "bio": request.data.get("bio", ""),
+                "certification_doc": request.FILES.get("certification_doc"),
+                "status_approval": "pending",
+                "approved_date": None,
+            },
         )
+        if not created:
+            # update existing coach entry (treat POST as upsert for UX)
+            coach.bio = request.data.get("bio", coach.bio)
+            if "certification_doc" in request.FILES:
+                coach.certification_doc = request.FILES["certification_doc"]
+            coach.status_approval = "pending"
+            coach.approved_date = None
+            coach.save()
+            return Response(CoachSerializer(coach).data, status=status.HTTP_200_OK)
+
         return Response(CoachSerializer(coach).data, status=status.HTTP_201_CREATED)
 
 
@@ -54,3 +67,26 @@ def coach_status(request):
         return Response({"coach": serializer.data})
     except Coach.DoesNotExist:
         return Response({"coach": None})
+
+@api_view(["PUT", "PATCH"])
+@permission_classes([IsAuthenticated])
+def edit_coach_profile(request):
+    """Edit coach profile (bio, name, etc.)"""
+    try:
+        profile = request.user.userprofile
+        coach = profile.coach_profile  # reverse relation
+
+        # Update only allowed fields
+        if "bio" in request.data:
+            coach.bio = request.data["bio"]
+
+        if "name" in request.data:  
+            # Assuming your Coach model has a name field 
+            coach.name = request.data["name"]
+
+        coach.save()
+        return Response(CoachSerializer(coach).data, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
