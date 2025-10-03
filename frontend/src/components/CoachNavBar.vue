@@ -37,7 +37,7 @@
         <ul class="hidden md:flex items-center space-x-8">
           <li>
             <RouterLink
-              to="/dashboard"
+              to="/coach-dashboard"
               class="font-body text-white hover:text-[#c7d2fe] transition-colors"
               active-class="text-[#c7d2fe]"
             >
@@ -55,11 +55,11 @@
           </li>
           <li>
             <RouterLink
-              to="/workout"
+              to="/member"
               class="font-body text-white hover:text-[#c7d2fe] transition-colors"
               active-class="text-[#c7d2fe]"
             >
-              Workout
+              Member
             </RouterLink>
           </li>
           <li>
@@ -73,7 +73,7 @@
           </li>
           <li>
             <RouterLink
-              to="/profile"
+              to="/coach-portal"
               class="font-body text-white hover:text-[#c7d2fe] transition-colors"
               active-class="text-[#c7d2fe]"
             >
@@ -99,7 +99,7 @@
         <ul class="flex flex-col space-y-2 px-4">
           <li>
             <RouterLink
-              to="/dashboard"
+              to="/coach-dashboard"
               @click="closeMobileMenu"
               class="block font-body text-white hover:text-[#c7d2fe] transition-colors py-2"
               active-class="text-[#c7d2fe]"
@@ -119,12 +119,12 @@
           </li>
           <li>
             <RouterLink
-              to="/workout"
+              to="/member"
               @click="closeMobileMenu"
               class="block font-body text-white hover:text-[#c7d2fe] transition-colors py-2"
               active-class="text-[#c7d2fe]"
             >
-              Workout
+              Member
             </RouterLink>
           </li>
           <li>
@@ -139,7 +139,7 @@
           </li>
           <li>
             <RouterLink
-              to="/profile"
+              to="/coach-portal"
               @click="closeMobileMenu"
               class="block font-body text-white hover:text-[#c7d2fe] transition-colors py-2"
               active-class="text-[#c7d2fe]"

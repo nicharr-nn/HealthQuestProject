@@ -123,11 +123,10 @@ def user_detail(request, id):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
-
+        
     elif request.method == "DELETE":
-        user.is_active = False
-        user.save()
-        return Response({"message": "Account deactivated"})
+        user.delete()
+        return Response({"message": "Account deleted permanently"})
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

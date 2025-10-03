@@ -109,10 +109,10 @@ onMounted(async () => {
       if (data.coach.certification_doc) {
         selectedFileName.value = data.coach.certification_doc.split('/').pop()
       }
-       // If coach already approved, go to program creation page
-      if (coachStatus.value === 'approved') {
-        router.push('/coach-dashboard')
-      }
+      //  // If coach already approved, go to program creation page
+      // if (coachStatus.value === 'approved') {
+      //   router.replace('/coach-dashboard')
+      // }
     }
   }
 })
