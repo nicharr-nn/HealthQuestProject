@@ -135,7 +135,7 @@
         <div class="day-selector mb-4">
           <label class="form-label">Select Day to Add Workout:</label>
           <select v-model="selectedDay" class="form-input day-select">
-            <option value="" disabled>Choose a day...</option>
+            <option value="" disabled class="ml-10 pr-16">Choose a day</option>
             <option
               v-for="day in workoutProgram.duration"
               :key="day"

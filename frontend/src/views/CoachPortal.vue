@@ -109,10 +109,6 @@ onMounted(async () => {
       if (data.coach.certification_doc) {
         selectedFileName.value = data.coach.certification_doc.split('/').pop()
       }
-      //  // If coach already approved, go to program creation page
-      // if (coachStatus.value === 'approved') {
-      //   router.replace('/coach-dashboard')
-      // }
     }
   }
 })
@@ -146,10 +142,6 @@ async function submitApplication() {
     hasSubmitted.value = true
     selectedFileName.value = selectedFile.value?.name || null
     alert('Application submitted! Status is now pending.')
-   // if status approved, redirect to create program
-    if (coachStatus.value === 'approved') {
-      router.push('/coach-dashboard')
-    }
 
   } catch (err) {
     console.error(err)

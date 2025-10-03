@@ -301,7 +301,7 @@ async function editProgram(program: WorkoutProgram) {
 }
 
 function viewProgram(program: WorkoutProgram) {
-  alert(`Viewing program: ${program.title}\n\nThis would open a detailed view with all days, exercises, and video links.`)
+  alert(`Viewing program: ${program.title}\n\nDuration: ${program.duration_days} days\nSessions: ${program.days?.length || 0}\nDescription: ${program.description || 'N/A'}\nStatus: ${program.is_public ? 'Public' : 'Private'}`)
 }
 
 async function deleteProgram(programId: number) {
