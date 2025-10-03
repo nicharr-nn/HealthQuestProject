@@ -32,7 +32,7 @@ def set_goal(request):
             return Response({"detail": "Goal type is required."}, status=400)
 
         # Create new FitnessGoal
-        FitnessGoal.objects.create(
+        FitnessGoal.objects.update_or_create(
             user_profile=profile, goal_type=goal_type, end_date=end_date
         )
 

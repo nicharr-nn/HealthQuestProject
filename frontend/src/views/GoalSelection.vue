@@ -133,7 +133,7 @@ async function saveGoal() {
     if (response.ok) {
       const goalData = await response.json();
       console.log("Goal set successfully:", goalData);
-      router.push("/dashboard");
+      router.push("/about-you");
     } else if (response.status === 400) {
       const error = await response.json();
       console.error("Error setting goal:", error);
