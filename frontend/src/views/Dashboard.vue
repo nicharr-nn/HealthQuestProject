@@ -51,7 +51,7 @@
       <!-- Left Column: Profile Card -->
       <div class="col-span-3 space-y-6">
         <!-- Profile Card -->
-        <div class="font-body bg-gradient-to-br from-[#88ACEA] to-gray-500 rounded-3xl p-8 text-white shadow-xl overflow-hidden relative">
+        <div class="font-body bg-gradient-to-br from-[#88ACEA] to-[#88ACEA] rounded-3xl p-8 text-white shadow-xl overflow-hidden relative">
           <div class="relative z-10">
             <div class="w-32 h-32 rounded-full overflow-hidden mx-auto mb-6 border-4 border-white/30 shadow-lg">
               <img
@@ -166,8 +166,8 @@
           <p class="text-sm text-gray-600 mb-6">Detailed insights into your progress</p>
           
           <div class="space-y-4">
-            <div class="text-center p-4 bg-gradient-to-br from-[#99e2b4] to-[#99e2b4] rounded-2xl">
-              <div class="text-3xl font-extrabold text-[#004e64] mb-1">{{ analytics.weeklyImprovement }}%</div>
+            <div class="text-center p-4 bg-gradient-to-br from-[#F3C6C1] to-[#F3C6C1] rounded-2xl">
+              <div class="text-3xl font-extrabold text-[#9C6963] mb-1">{{ analytics.weeklyImprovement }}%</div>
               <div class="text-xs text-gray-700 font-medium">Weekly Improvement</div>
             </div>
             <div class="text-center p-4 bg-gradient-to-br from-[#a8d5e2] to-[#a8d5e2] rounded-2xl">
@@ -211,11 +211,13 @@
 <script>
 import { computed, onMounted, ref } from 'vue'
 import { useUserStore } from '@/stores/user'
+import { useRouter } from 'vue-router'
 
 export default {
   name: 'UserDashboard',
   setup() {
     const store = useUserStore()
+    const router = useRouter()
 
     onMounted(async () => {
       if (!store.user || !store.profile) {
@@ -256,11 +258,13 @@ export default {
       { label: 'S', height: 20, isActive: false }
     ])
 
-    // --- Methods (Keep your existing methods) ---
-    const startWorkout = () => alert('Starting workout!')
-    const goToRecipes = () => alert('Navigating to recipes...')
-    const viewAnalytics = () => alert('Analytics details coming soon!')
-    const viewChallenge = () => alert('Challenge details coming soon!')
+   const startWorkout = () => {
+      router.push('/workout').catch(() => {})
+    }
+
+    const goToRecipes = () => {
+      router.push('/food-recipe').catch(() => {})
+    }
 
     return {
       store,
@@ -275,8 +279,6 @@ export default {
       weekDays,
       startWorkout,
       goToRecipes,
-      viewAnalytics,
-      viewChallenge
     }
   }
 }
