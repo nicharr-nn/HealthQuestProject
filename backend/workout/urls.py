@@ -6,4 +6,5 @@ urlpatterns = [
     path("assignment/<int:id>/", views.workout_assignments, name="workout-assignments"),
     path("assignment-update/<int:id>/", views.workout_assignments_update, name="workout-assignment-update"),
     path('analytics/', views.user_analytics, name='user-analytics'),
+    path("analytics/weekly-activity/", views.user_weekly_activity, name="weekly-activity"),
 ]

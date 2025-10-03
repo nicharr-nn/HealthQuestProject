@@ -201,3 +201,47 @@ def user_analytics(request):
         }
     }
     return Response(payload)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def user_weekly_activity(request):
+    """
+    Return last 7 days of activity for the authenticated user.
+    Response: [{ label, date, count, height, isActive }, ...] (7 items, oldest -> newest)
+    height is a normalized integer 20-100 for frontend bar rendering.
+    """
+    user_profile = request.user.userprofile
+    today = timezone.localdate()
+    days = []
+    counts = []
+
+    # collect counts per day (oldest -> newest)
+    for days_ago in range(6, -1, -1):
+        d = today - timedelta(days=days_ago)
+        cnt = WorkoutDayCompletion.objects.filter(
+            user_profile=user_profile,
+            completed_at__date=d
+        ).count()
+        counts.append({"date": d, "count": cnt})
+
+    # compute normalization (avoid zero division)
+    max_count = max(item["count"] for item in counts) or 0
+
+    result = []
+    for item in counts:
+        d = item["date"]
+        cnt = item["count"]
+        # normalize height to 20..100 so very small values are visible
+        if max_count > 0:
+            height = int(20 + (cnt / max_count) * 80)
+        else:
+            height = 20 if cnt == 0 else 100
+        result.append({
+            "label": d.strftime("%a")[0],         # 'M','T','W','T','F','S','S'
+            "date": d.isoformat(),
+            "count": cnt,
+            "height": height,                   # for bar height in UI
+            "isActive": cnt > 0
+        })
+
+    return Response(result)
