@@ -105,6 +105,7 @@
               active-class="text-[#c7d2fe]"
             >
               Dashboard
+              Dashboard
             </RouterLink>
           </li>
           <li>

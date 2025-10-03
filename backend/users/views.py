@@ -181,6 +181,21 @@ def food_posts(request):
         )
         return Response({"message": "Post created", "post_id": post.id})
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_levels(request):
+    profile = getattr(request.user, 'userprofile', None)
+    if not profile:
+        return Response({"detail": "Profile not found"}, status=400)
+    current = profile.get_current_level() if hasattr(profile, 'get_current_level') else None
+
+    next_xp = 1000 if current and current.level_rank == 1 else None
+    payload = {
+        "current": {"level": current.level, "level_rank": current.level_rank, "xp": current.xp} if current else None,
+        "next_xp": next_xp,
+    }
+    return Response(payload)
+
 # @api_view(['POST'])
 # @permission_classes([IsAuthenticated])
 # def food_post_comment(request, id):
