@@ -13,7 +13,14 @@
         <form @submit.prevent="submitApplication" class="coach-form">
           <div class="form-group">
             <label class="form-label">Name</label>
-            <p>{{ googleName }}</p>
+            <input
+              v-if="isEditingProfile"
+              v-model="googleName"
+              type="text"
+              class="form-input"
+              placeholder="Your name"
+            />
+            <p v-else class="text-gray-700">{{ googleName }}</p>
           </div>
 
           <div class="form-group">
@@ -24,62 +31,87 @@
               class="form-input"
               rows="4"
               placeholder="Tell us a bit about your coaching style and experience"
-              :disabled="hasSubmitted"
+              :disabled="hasSubmitted && !isEditingProfile"
             ></textarea>
           </div>
           
-          <div class="form-group">
-              <label for="certDoc" class="file-upload-label">
-                <input
-                  id="certDoc"
-                  type="file"
-                  accept="application/pdf"
-                  @change="onFileSelected"
-                  class="hidden"   
-                  :disabled="hasSubmitted"
-                  :required="!hasSubmitted"
-                />
-                <span class="btn ghost">Choose File</span>
-              </label>
+          <div v-if="!hasSubmitted || isResubmitting" class="form-group">
+            <label for="certDoc" class="file-upload-label">
+              <input
+                id="certDoc"
+                type="file"
+                accept="application/pdf"
+                @change="onFileSelected"
+                class="hidden"
+                :required="!hasSubmitted"
+              />
+              <span class="btn ghost">Choose File</span>
+            </label>
 
-              <!-- Always show filename here -->
-              <span class="ml-2 mt-5 font-body text-gray-700">
-                {{ selectedFile?.name || selectedFileName || (hasSubmitted ? 'File submitted' : 'No file chosen') }}
-              </span>
+            <span class="ml-2 mt-5 font-body text-gray-700">
+              {{ selectedFile?.name || 'No file chosen' }}
+            </span>
           </div>
 
+          <!-- Show submitted file info when already submitted -->
+          <div v-else-if="hasSubmitted && selectedFileName" class="form-group">
+            <label class="form-label">Certification Document</label>
+            <p class="text-gray-700">{{ selectedFileName }}</p>
+          </div>
 
-        <div class="form-row">
-          <button v-if="!hasSubmitted" type="submit" class="btn primary">Submit Application</button>
-          <button v-if="!hasSubmitted" type="button" class="btn ghost" @click="resetForm">Reset</button>
+          <div class="form-row">
+            <!-- Not submitted yet -->
+            <button v-if="!hasSubmitted" type="submit" class="btn primary">Submit Application</button>
+            <button v-if="!hasSubmitted" type="button" class="btn ghost" @click="resetForm">Reset</button>
 
-          <!-- If already submitted -->
-          <button 
-            v-else-if="coachStatus === 'approved'" 
-            type="button" 
-            class="btn primary" 
-            @click="editProfile"
-          >
-            Edit Profile
-          </button>
+            <!-- Already submitted and approved - can edit profile -->
+            <template v-else-if="coachStatus === 'approved'">
+              <button 
+                v-if="!isEditingProfile"
+                type="button" 
+                class="btn primary" 
+                @click="startEditProfile"
+              >
+                Edit Profile
+              </button>
+              <template v-else>
+                <button 
+                  type="button" 
+                  class="btn primary" 
+                  @click="saveProfile"
+                >
+                  Save Changes
+                </button>
+                <button 
+                  type="button" 
+                  class="btn ghost" 
+                  @click="cancelEdit"
+                >
+                  Cancel
+                </button>
+              </template>
+            </template>
 
-          <button 
-            v-else 
-            type="button" 
-            class="btn primary" 
-            @click="resubmit"
-          >
-            Resubmit Certification
-          </button>
-        </div>
-
+            <!-- Pending or rejected - can resubmit -->
+            <button 
+              v-else-if="!isResubmitting"
+              type="button" 
+              class="btn primary" 
+              @click="startResubmit"
+            >
+              Resubmit Certification
+            </button>
+            <template v-else>
+              <button type="submit" class="btn primary">Submit Application</button>
+              <button type="button" class="btn ghost" @click="cancelResubmit">Cancel</button>
+            </template>
+          </div>
 
           <div v-if="hasSubmitted" class="form-status mt-2">
             <p>Your application status: <strong>{{ coachStatus }}</strong></p>
           </div>
         </form>
       </div>
-
     </div>
   </div>
 </template>
@@ -87,6 +119,9 @@
 <script setup lang="ts">
 import { reactive, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useUserStore } from '@/stores/user'
+
+const userStore = useUserStore()
 
 interface CoachForm {
   bio: string
@@ -96,13 +131,17 @@ const coachForm = reactive<CoachForm>({
   bio: ''
 })
 
-
 const selectedFile = ref<File | null>(null)
 const selectedFileName = ref<string | null>(null)
 const hasSubmitted = ref(false)
 const coachStatus = ref<'not_submitted' | 'pending' | 'approved' | 'rejected'>('not_submitted')
 const originalBio = ref("")
 const originalName = ref("")
+const googleName = ref('')
+const isEditingProfile = ref(false)
+const isResubmitting = ref(false)
+
+const router = useRouter()
 
 // Called when file input changes
 function onFileSelected(event: Event) {
@@ -114,12 +153,6 @@ function onFileSelected(event: Event) {
 }
 
 // Fetch coach status on mount
-const googleName = ref('')
-
-// router for redirects when coach is approved
-const router = useRouter()
-
-// On mounted, fetch from backend
 onMounted(async () => {
   const res = await fetch("http://127.0.0.1:8000/api/coach/status/", { credentials: 'include' })
   if (res.ok) {
@@ -138,10 +171,9 @@ onMounted(async () => {
   }
 })
 
-
 // Submit coach application
 async function submitApplication() {
-  if (!selectedFile.value) {
+  if (!selectedFile.value && !hasSubmitted.value) {
     alert('Please upload a Certification PDF.')
     return
   }
@@ -151,6 +183,10 @@ async function submitApplication() {
   if (selectedFile.value) formData.append('certification_doc', selectedFile.value)
 
   const method = hasSubmitted.value ? 'PATCH' : 'POST'
+
+  if (userStore.loading) {
+    await userStore.init()
+  }
 
   try {
     const response = await fetch('http://127.0.0.1:8000/api/coach/upload-cert/', {
@@ -162,11 +198,12 @@ async function submitApplication() {
     if (!response.ok) throw new Error('Upload failed')
 
     const data = await response.json()
-    //coachStatus.value = 'pending'
     const newStatus = data?.status_approval || data?.coach?.status_approval || data?.status || 'pending'
     coachStatus.value = newStatus
     hasSubmitted.value = true
+    isResubmitting.value = false
     selectedFileName.value = selectedFile.value?.name || null
+    selectedFile.value = null
     alert('Application submitted! Status is now pending.')
 
   } catch (err) {
@@ -182,19 +219,35 @@ function resetForm() {
   selectedFileName.value = null
 }
 
-// Resubmit application
-function resubmit() {
+// Start resubmit process
+function startResubmit() {
   const confirmed = confirm('Are you sure you want to resubmit your certification?')
   if (confirmed) {
-    hasSubmitted.value = false
+    isResubmitting.value = true
     selectedFile.value = null
-    selectedFileName.value = null
   }
 }
 
+// Cancel resubmit
+function cancelResubmit() {
+  isResubmitting.value = false
+  selectedFile.value = null
+}
 
-async function editProfile() {
-  // Build payload only with changed fields
+// Start editing profile
+function startEditProfile() {
+  isEditingProfile.value = true
+}
+
+// Cancel profile editing
+function cancelEdit() {
+  isEditingProfile.value = false
+  coachForm.bio = originalBio.value
+  googleName.value = originalName.value
+}
+
+// Save profile changes
+async function saveProfile() {
   const payload: Record<string, any> = {}
 
   if (coachForm.bio !== originalBio.value) {
@@ -225,15 +278,17 @@ async function editProfile() {
     coachForm.bio = data.bio
     googleName.value = data.name
 
-    // Update originals so user can’t save again without changes
+    // Update originals
     originalBio.value = data.bio
     originalName.value = data.name
+    
+    // Exit edit mode
+    isEditingProfile.value = false
   } catch (err) {
     console.error(err)
     alert("Could not update profile")
   }
 }
-
 </script>
 
 <style scoped>
@@ -248,24 +303,29 @@ async function editProfile() {
 .content-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
 .card-title { font-weight: 600; font-size: 18px; }
 .muted { color: #6b7280; }
+.text-gray-700 { color: #374151; }
+.mb-3 { margin-bottom: 12px; }
+.ml-2 { margin-left: 8px; }
+.mt-2 { margin-top: 8px; }
+.mt-5 { margin-top: 20px; }
 
 .coach-form { display: grid; gap: 14px; }
 .form-group { display: grid; gap: 6px; }
 .form-row { display: flex; gap: 10px; margin-top: 6px; }
-.form-label { font-size: 14px; color: #374151; }
-.form-input { border: 1px solid #d1d5db; border-radius: 10px; padding: 10px 12px; font-size: 14px; outline: none; }
+.form-label { font-size: 14px; color: #374151; font-weight: 500; }
+.form-input { border: 1px solid #d1d5db; border-radius: 10px; padding: 10px 12px; font-size: 14px; outline: none; width: 100%; }
 .form-input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+.form-input:disabled { background-color: #f9fafb; cursor: not-allowed; }
 
-.btn { border: 1px solid #d1d5db; border-radius: 10px; padding: 10px 14px; font-weight: 600; background: #fff; cursor: pointer; }
+.btn { border: 1px solid #d1d5db; border-radius: 10px; padding: 10px 14px; font-weight: 600; background: #fff; cursor: pointer; transition: all 0.2s; }
 .btn:hover { background: #f9fafb; }
 .btn.primary { background: #111827; color: #fff; border-color: #111827; }
 .btn.primary:hover { filter: brightness(1.05); }
 .btn.ghost { background: #fff; }
 .btn.small { padding: 8px 10px; font-size: 13px; }
 
-.program-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
-.program-item { display: flex; align-items: center; justify-content: space-between; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px 14px; }
-.program-name { font-weight: 600; }
-.program-meta { color: #6b7280; font-size: 13px; margin-top: 2px; }
-.form-status p { margin-bottom: 12px; }
+.file-upload-label { display: inline-block; }
+.hidden { display: none; }
+
+.form-status p { margin-bottom: 12px; color: #374151; }
 </style>

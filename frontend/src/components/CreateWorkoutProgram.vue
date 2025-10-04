@@ -325,18 +325,115 @@
 <script setup lang="ts">
 import { reactive, ref, computed, watch, onMounted } from 'vue'
 
-const coachId = ref<number | null>(null)
+const coachUserProfileId = ref<number | null>(null)
+
 onMounted(async () => {
+  
   try {
-    const res = await fetch('http://127.0.0.1:8000/api/coach/status/', { credentials: 'include' })
-    if (res.ok) {
-      const data = await res.json()
-      coachId.value = data?.coach?.id ?? null
+
+    const coachResponse = await fetch('http://127.0.0.1:8000/api/coach/status/', {
+      credentials: 'include',
+    })
+    
+    if (coachResponse.ok) {
+      const coachData = await coachResponse.json()
+      console.log('Coach status response:', JSON.stringify(coachData, null, 2))
+      
+      // Try every possible path for UserProfile ID
+      const possiblePaths = [
+        'user_profile_id',
+        'coach.user.id',
+        'coach.user_id', 
+        'user.id',
+        'user_id',
+        'profile.id',
+        'id',
+        'coach.id',
+        'userprofile_id'
+      ]
+      
+      let foundId = null
+      for (const path of possiblePaths) {
+        const value = getNestedValue(coachData, path)
+        if (value) {
+          console.log(`✓ Found ID at path '${path}':`, value)
+          foundId = value
+          break
+        }
+      }
+      
+      if (foundId) {
+        coachUserProfileId.value = foundId
+        console.log('✅ Using UserProfile ID:', coachUserProfileId.value)
+        return
+      }
+    } else {
+      console.log('❌ Coach status failed:', coachResponse.status)
     }
-  } catch (e) {
-    console.error('failed to fetch coach status', e)
+    
+    // Test 2: Check user-info endpoint
+    console.log('2. Testing /api/user-info/')
+    const userResponse = await fetch('http://127.0.0.1:8000/api/user-info/', {
+      credentials: 'include',
+    })
+    
+    if (userResponse.ok) {
+      const userData = await userResponse.json()
+      console.log('User info response:', JSON.stringify(userData, null, 2))
+      
+      // Try paths in user-info response
+      const userPaths = [
+        'user.profile.id',
+        'profile.id',
+        'user.id',
+        'id'
+      ]
+      
+      for (const path of userPaths) {
+        const value = getNestedValue(userData, path)
+        if (value) {
+          console.log(`✓ Found ID at path '${path}':`, value)
+          coachUserProfileId.value = value
+          console.log('✅ Using UserProfile ID from user-info:', coachUserProfileId.value)
+          return
+        }
+      }
+    } else {
+      console.log('❌ User info failed:', userResponse.status)
+    }
+    
+    // If we get here, no ID was found
+    console.log('❌ No UserProfile ID found in any endpoint')
+    alert('Could not find coach profile. Please ensure you have a coach profile set up.')
+    
+  } catch (error) {
+    console.error('❌ Debug failed:', error)
+    alert('Error checking coach status: ' + error.message)
   }
+  
+  console.log('=== END COACH PROFILE DEBUG ===')
 })
+
+// Helper function
+function getNestedValue(obj, path) {
+  return path.split('.').reduce((current, key) => current && current[key], obj)
+}
+
+// Fallback function to get UserProfile ID from user-info
+async function fetchUserProfileId() {
+  try {
+    const response = await fetch('http://127.0.0.1:8000/api/user-info/', {
+      credentials: 'include',
+    })
+    if (response.ok) {
+      const data = await response.json()
+      coachUserProfileId.value = data.user?.profile?.id
+      console.log('Got UserProfile ID from user-info:', coachUserProfileId.value)
+    }
+  } catch (error) {
+    console.error('Failed to fetch user profile:', error)
+  }
+}
 
 interface Props {
   existingProgram?: {
@@ -500,25 +597,30 @@ function resetCurrentWorkout() {
   youtubeError.value = ''
 }
 
+// Update your submitProgram function
 async function submitProgram() {
   if (!canSubmitProgram.value) {
     alert('Please fill in all required fields and add at least one daily workout')
     return
   }
-  if (!coachId.value) {
-    // try one more time before failing
+
+  if (!coachUserProfileId.value) {
+    // Try one more time before failing
     try {
-      const r = await fetch('http://127.0.0.1:8000/api/coach/status/', { credentials: 'include' })
-      if (r.ok) {
-        const d = await r.json()
-        console.log('coach fetch retry', d)
-        coachId.value = d?.coach?.coach_id ?? d?.coach_id ?? d?.coach?.id ?? null
+      const response = await fetch('http://127.0.0.1:8000/api/user-info/', { 
+        credentials: 'include' 
+      })
+      if (response.ok) {
+        const data = await response.json()
+        coachUserProfileId.value = data.user?.profile?.id
+        console.log('Retrieved UserProfile ID:', coachUserProfileId.value)
       }
     } catch (e) {
-      console.error('coach fetch retry failed', e)
+      console.error('UserProfile fetch retry failed', e)
     }
   }
-  if (!coachId.value) {
+
+  if (!coachUserProfileId.value) {
     alert('Coach profile not found. Please create or confirm your coach profile before creating a program.')
     return
   }
@@ -527,11 +629,11 @@ async function submitProgram() {
     day_number: Number(day),
     title: `Day ${day}`,
     video_links: workouts.map(w => w.video_link).filter(Boolean),
-    duration_minutes: workouts.reduce((sum, w) => sum + (w.duration || 0), 0), // total minutes for the day
+    duration_minutes: workouts.reduce((sum, w) => sum + (w.duration || 0), 0),
   }))
 
   const payload = {
-    coach: coachId.value,
+    coach: coachUserProfileId.value,  // Use UserProfile ID instead of coach_id
     title: workoutProgram.title,
     description: workoutProgram.description,
     difficulty_level: workoutProgram.difficulty_level,
@@ -540,38 +642,52 @@ async function submitProgram() {
     duration: workoutProgram.duration,
     category: workoutProgram.category || "full_body",
     days
-
   }
-  const url = props.existingProgram ? `http://127.0.0.1:8000/api/workout/programs/${(props.existingProgram as any).id}/` : 'http://127.0.0.1:8000/api/workout/programs/'
 
-  console.debug('Submitting program payload', payload)
+  console.log('Submitting program with UserProfile ID:', payload)
 
-  fetch(url, {
-    method: props.existingProgram ? 'PUT' : 'POST',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  })
-    .then(async res => {
-      const text = await res.text()
-      let body = null
-      try { body = JSON.parse(text) } catch { body = text }
-      if (!res.ok) {
-        console.error('Save program failed:', res.status, body)
-        // show backend validation message if available
-        const message = body?.detail || body?.errors || body || `HTTP ${res.status}`
-        alert('Failed to save program: ' + JSON.stringify(message))
-        return
-      }
-      // success
-      const data = body
-      emit('programCreated', data)
+  const url = props.existingProgram 
+    ? `http://127.0.0.1:8000/api/workout/programs/${(props.existingProgram as any).id}/` 
+    : 'http://127.0.0.1:8000/api/workout/programs/'
+
+  try {
+    const response = await fetch(url, {
+      method: props.existingProgram ? 'PUT' : 'POST',
+      credentials: 'include',
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCsrfToken()
+      },
+      body: JSON.stringify(payload)
     })
-    .catch(err => {
-      console.error('Error saving program:', err)
-      alert('Failed to save program')
-    })
+
+    const text = await response.text()
+    let body = null
+    try { body = JSON.parse(text) } catch { body = text }
+
+    if (!response.ok) {
+      console.error('Save program failed:', response.status, body)
+      const message = body?.detail || body?.errors || body || `HTTP ${response.status}`
+      alert('Failed to save program: ' + JSON.stringify(message))
+      return
+    }
+
+    // Success
+    console.log('Program saved successfully:', body)
+    emit('programCreated', body)
+    alert('Program saved successfully!')
+    
+  } catch (error) {
+    console.error('Error saving program:', error)
+    alert('Failed to save program: ' + error.message)
+  }
 }
+
+function getCsrfToken() {
+  const match = document.cookie.match(new RegExp('(^| )csrftoken=([^;]+)'))
+  return match ? match[2] : ''
+}
+
 function resetProgram() {
   workoutProgram.title = ''
   workoutProgram.description = ''

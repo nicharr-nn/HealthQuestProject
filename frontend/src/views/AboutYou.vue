@@ -189,6 +189,10 @@ async function submitProfile() {
     return;
   }
 
+  if (userStore.loading) {
+    await userStore.init();
+  }
+
   loading.value = true;
   try {
     const payload = {
