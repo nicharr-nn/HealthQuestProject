@@ -48,8 +48,11 @@ INSTALLED_APPS = [
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
     "corsheaders",
-    "users",
     "rest_framework",
+    "users",
+    "fitness",
+    "workout",
+    "coach",
 ]
 
 MIDDLEWARE = [

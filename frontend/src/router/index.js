@@ -47,16 +47,17 @@ const routes = [
     name: "SelectGoal",
     component: SelectGoal 
   },
-  { 
-    path: "/workout", 
-    name: "Workout",
-    component: Workout 
-  },
-  { 
-    path: "/program", 
-    name: "Program",
-    component: Program 
-  },
+ { 
+  path: "/workout", 
+  name: "Workout",
+  component: Workout 
+},
+{
+  path: '/workout/:id',  // ✅ Changed from /programs/:id to /workout/:id
+  name: 'Program',
+  component: Program,
+  props: true
+},
 ]
 
 const router = createRouter({

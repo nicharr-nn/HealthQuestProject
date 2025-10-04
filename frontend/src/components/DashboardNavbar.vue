@@ -17,14 +17,6 @@
           </li>
           <li>
             <RouterLink
-              to="/program"
-              class="nav-link font-body text-white hover:text-[#c7d2fe] transition-colors"
-            >
-              Program
-            </RouterLink>
-          </li>
-          <li>
-            <RouterLink
               to="/workout"
               class="nav-link font-body text-white hover:text-[#c7d2fe] transition-colors"
             >
