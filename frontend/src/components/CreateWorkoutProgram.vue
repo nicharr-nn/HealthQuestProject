@@ -338,7 +338,6 @@ onMounted(async () => {
       console.log('Coach status response:', data)
       
       coachUserProfileId.value = 
-        data.user_profile_id ||
         data.user?.id ||           // This is where it actually is!
         data.coach?.user?.id ||
         null
@@ -368,9 +367,7 @@ async function fetchUserProfileId() {
     })
     if (response.ok) {
       const data = await response.json()
-      // FIX: Use data.user.id instead of data.user.profile.id
       coachUserProfileId.value = data.user?.id
-      console.log('Got UserProfile ID from user-info:', coachUserProfileId.value)
     }
   } catch (error) {
     console.error('Failed to fetch user profile:', error)
@@ -587,7 +584,6 @@ async function submitProgram() {
     days
   }
 
-  console.log('Submitting program with UserProfile ID:', payload)
 
   const url = props.existingProgram 
     ? `http://127.0.0.1:8000/api/workout/programs/${(props.existingProgram as any).id}/` 
@@ -615,8 +611,6 @@ async function submitProgram() {
       return
     }
 
-    // Success
-    console.log('Program saved successfully:', body)
     emit('programCreated', body)
     alert('Program saved successfully!')
     

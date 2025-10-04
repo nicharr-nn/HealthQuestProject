@@ -64,15 +64,15 @@
       <div class="programs-section">
         <div class="section-header">
           <h2 class="section-title">Your Workout Programs</h2>
-          <div class="section-actions">
+          <!-- <div class="section-actions">
             <select v-model="filterLevel" class="filter-select">
               <option value="">All Levels</option>
               <option value="easy">Beginner</option>
               <option value="medium">Intermediate</option>
               <option value="hard">Advanced</option>
-            </select>
+            </select> -->
 
-          </div>
+          <!-- </div> -->
         </div>
 
         <div v-if="filteredPrograms.length === 0" class="empty-state">
