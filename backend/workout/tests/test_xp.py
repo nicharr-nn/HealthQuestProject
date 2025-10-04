@@ -1,29 +1,47 @@
 import pytest
-from django.contrib.auth.models import User
-from users.models import UserProfile, UserLevel
+from .. import xp_rules as xr
 
-@pytest.mark.django_db
-def test_xp_addition_and_level_up():
-    user = User.objects.create_user(username="testuser", password="testpass")
-    profile = user.userprofile
-    level = profile.get_current_level()
+def test_calculate_xp_defaults():
+    # default: duration=30, difficulty='medium' (mult=2.0) -> 30 * 1 * 2 = 60
+    assert xr.calculate_xp() == 60
 
-    assert level.level_rank == 1
-    assert level.xp == 0
+def test_calculate_xp_difficulty_multipliers():
+    assert xr.calculate_xp(duration=30, difficulty_level='easy') == 30
+    assert xr.calculate_xp(duration=30, difficulty_level='medium') == 60
+    assert xr.calculate_xp(duration=30, difficulty_level='hard') == 90
 
-    # Add XP
-    leveled_up, old_rank, new_rank = level.add_xp(120)
+def test_calculate_xp_with_intensity_and_rounding():
+    # 10 minutes, easy (mult=1.0), intensity 1.5 -> 10 * 1 * 1.5 = 15
+    assert xr.calculate_xp(duration=10, difficulty_level='easy', intensity=1.5) == 15
 
-    assert level.xp == 120
-    assert leveled_up is True or False  # depends on xp_rules
-    assert isinstance(old_rank, int)
-    assert isinstance(new_rank, int)
+def test_calculate_xp_non_negative():
+    # negative duration should not produce negative XP
+    assert xr.calculate_xp(duration=-10) == 0
 
-def test_xp_levels():
-    from workout.xp_rules.py import level_for_xp
+def test_level_for_xp_boundaries_and_next_level():
+    # Bronze start
+    rank, name, needed = xr.level_for_xp(0)
+    assert rank == 1 and name == "Bronze" and needed == 1000
 
-    assert level_for_xp(0) == (1, "Bronze", 1000)
-    assert level_for_xp(1200) == (2, "Silver", 3800)
-    assert level_for_xp(4500) == (3, "Gold", None)
+    # just below Silver
+    rank, name, needed = xr.level_for_xp(999)
+    assert rank == 1 and name == "Bronze" and needed == 1
 
+    # exactly Silver threshold
+    rank, name, needed = xr.level_for_xp(1000)
+    assert rank == 2 and name == "Silver" and needed == 4000
 
+    # exactly Gold threshold -> no next level
+    rank, name, needed = xr.level_for_xp(5000)
+    assert rank == 3 and name == "Gold" and needed is None
+
+def test_calculate_xp_with_streak_and_completion():
+    xp = xr.calculate_xp(duration=30, difficulty_level='medium', streak=True, completed=True)
+    # 30*2=60, +10% streak = 66, +500 completion = 566
+    assert xp == 566
+
+def test_invalid_difficulty_defaults_to_easy():
+    assert xr.calculate_xp(duration=30, difficulty_level='unknown') == 30
+
+# Run tests with pytest in backend directory:
+# pytest workout/tests/test_xp.py

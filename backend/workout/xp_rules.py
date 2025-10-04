@@ -14,30 +14,38 @@ LEVELS = [
 # difficulty multipliers
 DIFFICULTY_MULTIPLIER = {
     "easy": 1.0,
-    "medium": 5.0,
-    "hard": 10.0,
+    "medium": 2.0,
+    "hard": 3.0,
 }
+# special rules
+STREAK_BONUS = 1.1   # +10% XP if on a streak
+COMPLETION_BONUS = 500  # flat bonus for finishing a program
 
-def calculate_xp(duration: int = 30, difficulty_level: str = "medium", intensity: float = 1.0) -> int:
+def calculate_xp(duration: int = 30, difficulty_level: str = "medium",
+                 intensity: float = 1.0, streak: bool = False, completed: bool = False) -> int:
     """
     XP formula:
       base_xp_per_minute * duration * difficulty_multiplier * intensity
     Round to integer and return non-negative.
     """
-    base_per_min = 1  # 1 XP per minute baseline
-    try:
-        mult = DIFFICULTY_MULTIPLIER.get(difficulty_level, 1.0)
-        intensity_val = float(intensity) if intensity is not None else 1.0
-    except Exception:
-        mult = 1.0
-        intensity_val = 1.0
+    base_per_min = 1
+    mult = DIFFICULTY_MULTIPLIER.get(difficulty_level, 1.0)
+    intensity_val = float(intensity) if intensity else 1.0
+    
+    xp = duration * base_per_min * mult * intensity_val
+    if streak:
+        xp *= STREAK_BONUS
+    xp = round(xp)
+    
+    if completed:
+        xp += COMPLETION_BONUS
 
-    xp = int(round(duration * base_per_min * mult * intensity_val))
-    return max(0, xp)
+    return max(0, int(xp))
 
 def level_for_xp(xp: int):
     """
     Given XP, return a tuple: (level_rank, level_name, xp_required_for_next_level).
+    xp_required_for_next_level is None if already at top level.
     """
     xp = int(max(0, xp))
     current_level = LEVELS[0]
@@ -48,13 +56,16 @@ def level_for_xp(xp: int):
             current_level = (rank, name, threshold)
             if i + 1 < len(LEVELS):
                 next_level = LEVELS[i + 1]
+            else:
+                next_level = None
         else:
+            # xp below this threshold -> previous current_level is correct
             break
 
     rank, name, threshold = current_level
 
     if next_level:
-        xp_needed = next_level[2] - xp
+        xp_needed = max(0, next_level[2] - xp)
     else:
         xp_needed = None
 
