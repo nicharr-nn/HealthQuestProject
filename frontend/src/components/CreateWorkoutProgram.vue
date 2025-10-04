@@ -328,98 +328,39 @@ import { reactive, ref, computed, watch, onMounted } from 'vue'
 const coachUserProfileId = ref<number | null>(null)
 
 onMounted(async () => {
-  
   try {
-
-    const coachResponse = await fetch('http://127.0.0.1:8000/api/coach/status/', {
+    const response = await fetch('http://127.0.0.1:8000/api/coach/status/', {
       credentials: 'include',
     })
     
-    if (coachResponse.ok) {
-      const coachData = await coachResponse.json()
-      console.log('Coach status response:', JSON.stringify(coachData, null, 2))
+    if (response.ok) {
+      const data = await response.json()
+      console.log('Coach status response:', data)
       
-      // Try every possible path for UserProfile ID
-      const possiblePaths = [
-        'user_profile_id',
-        'coach.user.id',
-        'coach.user_id', 
-        'user.id',
-        'user_id',
-        'profile.id',
-        'id',
-        'coach.id',
-        'userprofile_id'
-      ]
+      coachUserProfileId.value = 
+        data.user_profile_id ||
+        data.user?.id ||           // This is where it actually is!
+        data.coach?.user?.id ||
+        null
       
-      let foundId = null
-      for (const path of possiblePaths) {
-        const value = getNestedValue(coachData, path)
-        if (value) {
-          console.log(`✓ Found ID at path '${path}':`, value)
-          foundId = value
-          break
-        }
-      }
-      
-      if (foundId) {
-        coachUserProfileId.value = foundId
-        console.log('✅ Using UserProfile ID:', coachUserProfileId.value)
-        return
+      if (coachUserProfileId.value) {
+        console.log('Found UserProfile ID for coach:', coachUserProfileId.value)
+      } else {
+        console.error('No UserProfile ID found in coach status response')
+        // Fallback to user-info endpoint
+        await fetchUserProfileId()
       }
     } else {
-      console.log('❌ Coach status failed:', coachResponse.status)
+      console.error('Failed to fetch coach status:', response.status)
+      await fetchUserProfileId()
     }
-    
-    // Test 2: Check user-info endpoint
-    console.log('2. Testing /api/user-info/')
-    const userResponse = await fetch('http://127.0.0.1:8000/api/user-info/', {
-      credentials: 'include',
-    })
-    
-    if (userResponse.ok) {
-      const userData = await userResponse.json()
-      console.log('User info response:', JSON.stringify(userData, null, 2))
-      
-      // Try paths in user-info response
-      const userPaths = [
-        'user.profile.id',
-        'profile.id',
-        'user.id',
-        'id'
-      ]
-      
-      for (const path of userPaths) {
-        const value = getNestedValue(userData, path)
-        if (value) {
-          console.log(`✓ Found ID at path '${path}':`, value)
-          coachUserProfileId.value = value
-          console.log('✅ Using UserProfile ID from user-info:', coachUserProfileId.value)
-          return
-        }
-      }
-    } else {
-      console.log('❌ User info failed:', userResponse.status)
-    }
-    
-    // If we get here, no ID was found
-    console.log('❌ No UserProfile ID found in any endpoint')
-    alert('Could not find coach profile. Please ensure you have a coach profile set up.')
-    
   } catch (error) {
-    console.error('❌ Debug failed:', error)
-    alert('Error checking coach status: ' + error.message)
+    console.error('Failed to fetch coach status:', error)
+    await fetchUserProfileId()
   }
-  
-  console.log('=== END COACH PROFILE DEBUG ===')
 })
 
-// Helper function
-function getNestedValue(obj, path) {
-  return path.split('.').reduce((current, key) => current && current[key], obj)
-}
-
-// Fallback function to get UserProfile ID from user-info
+// Update the fallback function to use the correct path
 async function fetchUserProfileId() {
   try {
     const response = await fetch('http://127.0.0.1:8000/api/user-info/', {
@@ -427,13 +368,15 @@ async function fetchUserProfileId() {
     })
     if (response.ok) {
       const data = await response.json()
-      coachUserProfileId.value = data.user?.profile?.id
+      // FIX: Use data.user.id instead of data.user.profile.id
+      coachUserProfileId.value = data.user?.id
       console.log('Got UserProfile ID from user-info:', coachUserProfileId.value)
     }
   } catch (error) {
     console.error('Failed to fetch user profile:', error)
   }
 }
+
 
 interface Props {
   existingProgram?: {
