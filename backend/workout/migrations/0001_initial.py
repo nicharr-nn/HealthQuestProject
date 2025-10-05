@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -26,7 +25,10 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("day_number", models.PositiveIntegerField()),
-                ("title", models.CharField(blank=True, max_length=255, null=True)),
+                (
+                    "title",
+                    models.CharField(blank=True, max_length=255, null=True),
+                ),
                 ("video_links", models.JSONField(default=list)),
                 ("duration", models.IntegerField(default=30)),
             ],
@@ -90,12 +92,20 @@ class Migration(migrations.Migration):
                 ),
                 ("title", models.CharField(max_length=255)),
                 ("description", models.TextField()),
-                ("level_access", models.CharField(default="all", max_length=50)),
-                ("difficulty_level", models.CharField(default="easy", max_length=50)),
+                (
+                    "level_access",
+                    models.CharField(default="all", max_length=50),
+                ),
+                (
+                    "difficulty_level",
+                    models.CharField(default="easy", max_length=50),
+                ),
                 ("is_public", models.BooleanField(default=True)),
                 (
                     "duration",
-                    models.IntegerField(default=0, help_text="Total duration in days"),
+                    models.IntegerField(
+                        default=0, help_text="Total duration in days"
+                    ),
                 ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),

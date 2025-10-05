@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("users", "0013_alter_userprofile_role"),
         ("workout", "0001_initial"),

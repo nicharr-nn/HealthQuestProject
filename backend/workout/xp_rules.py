@@ -18,11 +18,17 @@ DIFFICULTY_MULTIPLIER = {
     "hard": 3.0,
 }
 # special rules
-STREAK_BONUS = 1.1   # +10% XP if on a streak
+STREAK_BONUS = 1.1  # +10% XP if on a streak
 COMPLETION_BONUS = 500  # flat bonus for finishing a program
 
-def calculate_xp(duration: int = 30, difficulty_level: str = "medium",
-                 intensity: float = 1.0, streak: bool = False, completed: bool = False) -> int:
+
+def calculate_xp(
+    duration: int = 30,
+    difficulty_level: str = "medium",
+    intensity: float = 1.0,
+    streak: bool = False,
+    completed: bool = False,
+) -> int:
     """
     XP formula:
       base_xp_per_minute * duration * difficulty_multiplier * intensity
@@ -31,16 +37,17 @@ def calculate_xp(duration: int = 30, difficulty_level: str = "medium",
     base_per_min = 1
     mult = DIFFICULTY_MULTIPLIER.get(difficulty_level, 1.0)
     intensity_val = float(intensity) if intensity else 1.0
-    
+
     xp = duration * base_per_min * mult * intensity_val
     if streak:
         xp *= STREAK_BONUS
     xp = round(xp)
-    
+
     if completed:
         xp += COMPLETION_BONUS
 
     return max(0, int(xp))
+
 
 def level_for_xp(xp: int):
     """

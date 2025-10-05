@@ -1,34 +1,38 @@
-from django.shortcuts import render
+import calendar
+from datetime import timedelta
+
+from django.contrib.auth import get_user_model
+from django.db import models
+from django.db.models import Sum
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+
+from .models import (
+    WorkoutAssignment,
+    WorkoutDay,
+    WorkoutDayCompletion,
+    WorkoutProgram,
+)
 from .serializers import WorkoutProgramSerializer
-from django.core.files.storage import default_storage
-from django.shortcuts import get_object_or_404
-from django.contrib.auth import get_user_model
 from .xp_rules import calculate_xp
-from django.apps import apps
-from rest_framework import status
-from rest_framework.exceptions import PermissionDenied
-from .models import WorkoutProgram, WorkoutAssignment, WorkoutDayCompletion, WorkoutDay
-from django.utils import timezone
-from django.db.models import Sum
-from django.utils import timezone
-from datetime import timedelta
-import calendar
-from django.db import models
 
 User = get_user_model()
 
-@api_view(['GET', 'POST'])
+
+@api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def workout_programs(request):
-    if request.method == 'GET':
+    if request.method == "GET":
         programs = WorkoutProgram.objects.all()
         serializer = WorkoutProgramSerializer(programs, many=True)
         return Response(serializer.data)
 
-    elif request.method == 'POST':
+    elif request.method == "POST":
         if request.user.userprofile.role != "coach":
             raise PermissionDenied("Only coaches can create programs")
         serializer = WorkoutProgramSerializer(data=request.data)
@@ -38,32 +42,39 @@ def workout_programs(request):
         return Response(serializer.errors, status=400)
 
 
-@api_view(['GET', 'PUT', 'DELETE'])
+@api_view(["GET", "PUT", "DELETE"])
 @permission_classes([IsAuthenticated])
 def workout_program_detail(request, id):
     program = get_object_or_404(WorkoutProgram, pk=id)
 
-    if request.method == 'GET':
+    if request.method == "GET":
         serializer = WorkoutProgramSerializer(program)
         return Response(serializer.data)
 
-    elif request.method == 'PUT':
+    elif request.method == "PUT":
         if request.user.userprofile.role != "coach":
             raise PermissionDenied("Only coaches can update programs")
-        serializer = WorkoutProgramSerializer(program, data=request.data, partial=True)
+        serializer = WorkoutProgramSerializer(
+            program, data=request.data, partial=True
+        )
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
 
-    elif request.method == 'DELETE':
-        if request.user.userprofile.role != "coach" or program.coach != request.user.userprofile:
-            raise PermissionDenied("Only the owning coach can delete this program")
+    elif request.method == "DELETE":
+        if (
+            request.user.userprofile.role != "coach"
+            or program.coach != request.user.userprofile
+        ):
+            raise PermissionDenied(
+                "Only the owning coach can delete this program"
+            )
         program.delete()
         return Response({"message": "Program deleted"})
 
 
-@api_view(['POST'])
+@api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def workout_assignments(request, id):
     """Assign a workout program to a member (coaches only)"""
@@ -78,14 +89,19 @@ def workout_assignments(request, id):
     assignment = WorkoutAssignment.objects.create(
         user_profile=member, program=program
     )
-    return Response({"message": "Program assigned", "assignment_id": assignment.id})
+    return Response(
+        {"message": "Program assigned", "assignment_id": assignment.id}
+    )
 
-@api_view(['PATCH', 'DELETE'])
+
+@api_view(["PATCH", "DELETE"])
 @permission_classes([IsAuthenticated])
 def workout_assignments_update(request, id):
     """Complete or delete a workout assignment (members only)"""
     profile = request.user.userprofile
-    assignment = get_object_or_404(WorkoutAssignment, pk=id, user_profile=profile)
+    assignment = get_object_or_404(
+        WorkoutAssignment, pk=id, user_profile=profile
+    )
 
     if profile.role != "member":
         raise PermissionDenied("Only members can complete/delete assignments")
@@ -105,7 +121,7 @@ def workout_assignments_update(request, id):
             WorkoutDayCompletion.objects.get_or_create(
                 user_profile=profile,
                 workout_day=last_day,
-                defaults={"xp_earned": xp}
+                defaults={"xp_earned": xp},
             )
 
         # Update user XP
@@ -118,29 +134,39 @@ def workout_assignments_update(request, id):
         assignment.delete()
         return Response({"message": "Assignment deleted"})
 
-@api_view(['GET'])
+
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def todays_workout(request):
     profile = request.user.userprofile
     # choose the next active assignment for the user
-    assignment = WorkoutAssignment.objects.filter(user_profile=profile, status='assigned').order_by('created_at').first()
+    assignment = (
+        WorkoutAssignment.objects.filter(
+            user_profile=profile, status="assigned"
+        )
+        .order_by("created_at")
+        .first()
+    )
     if not assignment:
         return Response({"message": "No active assignment"}, status=200)
     program = assignment.program
     # return basic program + assignment id
-    return Response({
-        "assignment_id": assignment.id,
-        "program": {
-            "id": program.id,
-            "name": program.name,
-            "description": program.description,
-            "duration": program.duration,
-            "difficulty_level": program.difficulty_level,
-            "xp": program.xp if hasattr(program, 'xp') else None
+    return Response(
+        {
+            "assignment_id": assignment.id,
+            "program": {
+                "id": program.id,
+                "name": program.name,
+                "description": program.description,
+                "duration": program.duration,
+                "difficulty_level": program.difficulty_level,
+                "xp": program.xp if hasattr(program, "xp") else None,
+            },
         }
-    })
+    )
 
-@api_view(['GET'])
+
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def user_analytics(request):
     profile = request.user.userprofile
@@ -152,42 +178,48 @@ def user_analytics(request):
     prev_week_end = week_start - timedelta(days=1)
 
     this_week_count = WorkoutDayCompletion.objects.filter(
-        user_profile=profile,
-        completed_at__date__gte=week_start
+        user_profile=profile, completed_at__date__gte=week_start
     ).count()
 
     prev_week_count = WorkoutDayCompletion.objects.filter(
         user_profile=profile,
-        completed_at__date__range=(prev_week_start, prev_week_end)
+        completed_at__date__range=(prev_week_start, prev_week_end),
     ).count()
 
     if prev_week_count == 0:
         weekly_improvement = 100 if this_week_count > 0 else 0
     else:
-        weekly_improvement = round(((this_week_count - prev_week_count) / prev_week_count) * 100, 1)
+        weekly_improvement = round(
+            ((this_week_count - prev_week_count) / prev_week_count) * 100, 1
+        )
 
     # --- Consistency (last 30 days) ---
     month_start = today - timedelta(days=29)
-    days_with_activity = WorkoutDayCompletion.objects.filter(
-        user_profile=profile,
-        completed_at__date__gte=month_start
-    ).values("completed_at__date").distinct().count()
+    days_with_activity = (
+        WorkoutDayCompletion.objects.filter(
+            user_profile=profile, completed_at__date__gte=month_start
+        )
+        .values("completed_at__date")
+        .distinct()
+        .count()
+    )
 
     consistency = round((days_with_activity / 30) * 100, 1)
 
     # --- XP last 30 days ---
-    xp_agg = WorkoutDayCompletion.objects.filter(
-        user_profile=profile,
-        completed_at__date__gte=month_start
-    ).aggregate(total_xp=Sum("xp_earned")) or {}
+    xp_agg = (
+        WorkoutDayCompletion.objects.filter(
+            user_profile=profile, completed_at__date__gte=month_start
+        ).aggregate(total_xp=Sum("xp_earned"))
+        or {}
+    )
 
     xp_last_30 = xp_agg.get("total_xp") or 0
 
     # --- Monthly challenge ---
     target = getattr(profile, "monthly_challenge_target", 20)
     completed_month = WorkoutDayCompletion.objects.filter(
-        user_profile=profile,
-        completed_at__date__gte=today.replace(day=1)
+        user_profile=profile, completed_at__date__gte=today.replace(day=1)
     ).count()
 
     _, days_in_month = calendar.monthrange(today.year, today.month)
@@ -195,9 +227,12 @@ def user_analytics(request):
     days_left = (last_day_of_month - today).days
 
     # --- Current streak calculation ---
-    completions = WorkoutDayCompletion.objects.filter(
-        user_profile=profile
-    ).values_list("completed_at__date", flat=True).distinct().order_by("-completed_at__date")
+    completions = (
+        WorkoutDayCompletion.objects.filter(user_profile=profile)
+        .values_list("completed_at__date", flat=True)
+        .distinct()
+        .order_by("-completed_at__date")
+    )
 
     streak = 0
     if completions:
@@ -223,9 +258,10 @@ def user_analytics(request):
             "completed": completed_month,
             "target": target,
             "daysLeft": days_left,
-        }
+        },
     }
     return Response(payload)
+
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
@@ -237,15 +273,13 @@ def user_weekly_activity(request):
     """
     user_profile = request.user.userprofile
     today = timezone.localdate()
-    days = []
     counts = []
 
     # collect counts per day (oldest -> newest)
     for days_ago in range(6, -1, -1):
         d = today - timedelta(days=days_ago)
         cnt = WorkoutDayCompletion.objects.filter(
-            user_profile=user_profile,
-            completed_at__date=d
+            user_profile=user_profile, completed_at__date=d
         ).count()
         counts.append({"date": d, "count": cnt})
 
@@ -261,18 +295,20 @@ def user_weekly_activity(request):
             height = int(20 + (cnt / max_count) * 80)
         else:
             height = 20 if cnt == 0 else 100
-        result.append({
-            "label": d.strftime("%a")[0],         # 'M','T','W','T','F','S','S'
-            "date": d.isoformat(),
-            "count": cnt,
-            "height": height,                   # for bar height in UI
-            "isActive": cnt > 0
-        })
+        result.append(
+            {
+                "label": d.strftime("%a")[0],  # 'M','T','W','T','F','S','S'
+                "date": d.isoformat(),
+                "count": cnt,
+                "height": height,  # for bar height in UI
+                "isActive": cnt > 0,
+            }
+        )
 
     return Response(result)
 
 
-@api_view(['GET', 'POST'])
+@api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def workout_day_videos(request, id):
     """
@@ -281,25 +317,34 @@ def workout_day_videos(request, id):
     """
     workout_day = get_object_or_404(WorkoutDay, id=id)
 
-    if request.method == 'GET':
+    if request.method == "GET":
         return Response({"video_links": workout_day.video_links})
 
-    elif request.method == 'POST':
+    elif request.method == "POST":
         profile = request.user.userprofile
         if profile.role != "coach":
             raise PermissionDenied("Only coaches can add video links")
 
         new_link = request.data.get("link")
         if not new_link:
-            return Response({"error": "You must provide a YouTube link"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "You must provide a YouTube link"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         # Append new link to JSONField
         workout_day.video_links.append(new_link)
         workout_day.save(update_fields=["video_links"])
 
-        return Response({"message": "Video link added", "video_links": workout_day.video_links})
+        return Response(
+            {
+                "message": "Video link added",
+                "video_links": workout_day.video_links,
+            }
+        )
 
-@api_view(['POST'])
+
+@api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def complete_workout_day(request, id):
     profile = request.user.userprofile
@@ -309,13 +354,13 @@ def complete_workout_day(request, id):
     # calculate XP for this workout day
     xp_value = calculate_xp(
         duration=workout_day.duration,
-        difficulty_level=workout_day.program.difficulty_level
+        difficulty_level=workout_day.program.difficulty_level,
     )
 
     completion, created = WorkoutDayCompletion.objects.get_or_create(
         user_profile=profile,
         workout_day=workout_day,
-        defaults={"xp_earned": xp_value}
+        defaults={"xp_earned": xp_value},
     )
     if not created:
         return Response({"message": "Already completed"})
@@ -334,14 +379,17 @@ def complete_workout_day(request, id):
     # Case 2: Normal user → no assignment, just track progress with completions
     # (streaks and XP already handled)
 
-    return Response({
-        "message": "Workout day completed",
-        "xp": xp_value,
-        "day": workout_day.day_number,
-        "program": workout_day.program.title
-    })
+    return Response(
+        {
+            "message": "Workout day completed",
+            "xp": xp_value,
+            "day": workout_day.day_number,
+            "program": workout_day.program.title,
+        }
+    )
 
-@api_view(['GET'])
+
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def workout_progress(request, program_id):
     profile = request.user.userprofile
@@ -349,20 +397,27 @@ def workout_progress(request, program_id):
 
     total_days = program.days.count()
     completed_qs = WorkoutDayCompletion.objects.filter(
-        user_profile=profile,
-        workout_day__program=program
+        user_profile=profile, workout_day__program=program
     )
     completed_days = completed_qs.count()
-    xp_earned = completed_qs.aggregate(models.Sum("xp_earned"))["xp_earned__sum"] or 0
+    xp_earned = (
+        completed_qs.aggregate(models.Sum("xp_earned"))["xp_earned__sum"] or 0
+    )
 
-    return Response({
-        "program_id": program.id,
-        "program_title": program.title,
-        "total_days": total_days,
-        "completed_days": completed_days,
-        "completion_percentage": round((completed_days / total_days) * 100, 1) if total_days > 0 else 0,
-        "xp_earned": xp_earned,
-        "completed_day_numbers": list(completed_qs.values_list("workout_day__day_number", flat=True))
-    })
-
-
+    return Response(
+        {
+            "program_id": program.id,
+            "program_title": program.title,
+            "total_days": total_days,
+            "completed_days": completed_days,
+            "completion_percentage": (
+                round((completed_days / total_days) * 100, 1)
+                if total_days > 0
+                else 0
+            ),
+            "xp_earned": xp_earned,
+            "completed_day_numbers": list(
+                completed_qs.values_list("workout_day__day_number", flat=True)
+            ),
+        }
+    )

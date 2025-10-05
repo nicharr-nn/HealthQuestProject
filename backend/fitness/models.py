@@ -1,7 +1,8 @@
-from django.db import models
 from django.core.exceptions import ValidationError
-from django.apps import apps
+from django.db import models
+
 from users.models import UserProfile
+
 
 class FitnessGoal(models.Model):
     GOAL_CHOICES = [
@@ -36,4 +37,3 @@ class FitnessGoal(models.Model):
 
     def __str__(self):
         return f"{self.user_profile.user.username} - {self.goal_type}"
-    

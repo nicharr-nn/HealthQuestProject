@@ -1,10 +1,17 @@
-from rest_framework.decorators import api_view, permission_classes, parser_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.parsers import MultiPartParser, FormParser
-from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.decorators import (
+    api_view,
+    parser_classes,
+    permission_classes,
+)
+from rest_framework.parsers import FormParser, MultiPartParser
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
 from .models import Coach
 from .serializers import CoachSerializer
+
+
 @api_view(["POST", "PATCH"])
 @permission_classes([IsAuthenticated])
 @parser_classes([MultiPartParser, FormParser])
@@ -15,7 +22,10 @@ def upload_certification(request):
         try:
             coach = Coach.objects.get(user=profile)
         except Coach.DoesNotExist:
-            return Response({"error": "Coach profile not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Coach profile not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         coach.bio = request.data.get("bio", coach.bio)
         if "certification_doc" in request.FILES:
@@ -26,7 +36,7 @@ def upload_certification(request):
         return Response(CoachSerializer(coach).data)
 
     elif request.method == "POST":
-       # Avoid IntegrityError when a Coach record already exists for this user.
+        # Avoid IntegrityError when a Coach record already exists for this user.
         # If a coach exists, update it; otherwise create a new one.
         coach, created = Coach.objects.get_or_create(
             user=profile,
@@ -45,10 +55,13 @@ def upload_certification(request):
             coach.status_approval = "pending"
             coach.approved_date = None
             coach.save()
-            return Response(CoachSerializer(coach).data, status=status.HTTP_200_OK)
+            return Response(
+                CoachSerializer(coach).data, status=status.HTTP_200_OK
+            )
 
-        return Response(CoachSerializer(coach).data, status=status.HTTP_201_CREATED)
-
+        return Response(
+            CoachSerializer(coach).data, status=status.HTTP_201_CREATED
+        )
 
 
 @api_view(["GET"])
@@ -68,6 +81,7 @@ def coach_status(request):
     except Coach.DoesNotExist:
         return Response({"coach": None})
 
+
 @api_view(["PUT", "PATCH"])
 @permission_classes([IsAuthenticated])
 def edit_coach_profile(request):
@@ -80,8 +94,8 @@ def edit_coach_profile(request):
         if "bio" in request.data:
             coach.bio = request.data["bio"]
 
-        if "name" in request.data:  
-            # Assuming your Coach model has a name field 
+        if "name" in request.data:
+            # Assuming your Coach model has a name field
             coach.name = request.data["name"]
 
         coach.save()
@@ -89,4 +103,3 @@ def edit_coach_profile(request):
 
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-

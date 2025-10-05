@@ -1,6 +1,7 @@
-from rest_framework import serializers
-from django.contrib.auth.models import User
 from django.apps import apps
+from django.contrib.auth.models import User
+from rest_framework import serializers
+
 from fitness.serializers import FitnessGoalSerializer
 
 
@@ -17,8 +18,11 @@ class UserLevelSerializer(serializers.ModelSerializer):
         model = get_user_level_model()
         fields = ["level_rank", "level", "xp", "goal_achieved"]
 
+
 class UserProfileSerializer(serializers.ModelSerializer):
-    photo = serializers.ImageField(use_url=True, required=False, allow_null=True)
+    photo = serializers.ImageField(
+        use_url=True, required=False, allow_null=True
+    )
     fitness_goals = FitnessGoalSerializer(many=True, read_only=True)
     current_goal = serializers.SerializerMethodField()
     current_level = serializers.SerializerMethodField()
@@ -45,8 +49,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
             latest_goal = obj.fitness_goals.order_by("-start_date").first()
             if latest_goal:
                 return latest_goal.goal_type
-        return None # coaches/members/admins
-    
+        return None  # coaches/members/admins
+
     def get_current_level(self, obj):
         ul = obj.get_current_level()
         return UserLevelSerializer(ul).data

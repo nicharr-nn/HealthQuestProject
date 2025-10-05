@@ -1,6 +1,7 @@
 from django.db import models
-from django.apps import apps
+
 from users.models import UserProfile
+
 
 class Coach(models.Model):
     STATUS_CHOICES = [
@@ -11,9 +12,7 @@ class Coach(models.Model):
 
     coach_id = models.AutoField(primary_key=True)
     user = models.OneToOneField(
-        UserProfile,
-        on_delete=models.CASCADE,
-        related_name="coach_profile"
+        UserProfile, on_delete=models.CASCADE, related_name="coach_profile"
     )
     certification_doc = models.FileField(
         upload_to="coach_certifications/", null=True, blank=True
@@ -29,4 +28,3 @@ class Coach(models.Model):
 
     def __str__(self):
         return f"Coach: {self.user.user.username} - Status: {self.status_approval}"
-        

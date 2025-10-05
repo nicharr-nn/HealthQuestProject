@@ -1,10 +1,11 @@
 from django.db import models
 from django.utils import timezone
+
 from users.models import UserProfile
 
 
 class WorkoutProgram(models.Model):
-    CATEGORY_CHOICES = [ 
+    CATEGORY_CHOICES = [
         ("strength_training", "Strength Training"),
         ("cardio", "Cardio"),
         ("weight_loss", "Weight Loss"),
@@ -25,10 +26,14 @@ class WorkoutProgram(models.Model):
     level_access = models.CharField(max_length=50, default="all")
     difficulty_level = models.CharField(max_length=50, default="easy")
     is_public = models.BooleanField(default=True)
-    duration = models.IntegerField(help_text="Total duration in days", default=0)
+    duration = models.IntegerField(
+        help_text="Total duration in days", default=0
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default="full_body")
+    category = models.CharField(
+        max_length=50, choices=CATEGORY_CHOICES, default="full_body"
+    )
 
     def __str__(self):
         return f"{self.title} (Coach: {self.coach.user.username})"
@@ -43,7 +48,9 @@ class WorkoutDay(models.Model):
     )
     day_number = models.PositiveIntegerField()
     title = models.CharField(max_length=255, blank=True, null=True)
-    video_links = models.JSONField(default=list)  # store multiple links as list
+    video_links = models.JSONField(
+        default=list
+    )  # store multiple links as list
     duration = models.IntegerField(default=30)  # minutes total
     completed_by = models.ManyToManyField(
         UserProfile,
@@ -97,7 +104,9 @@ class WorkoutAssignment(models.Model):
     def check_completion(self):
         """Check if all days in the program are completed by this user"""
         total_days = self.program.days.count()
-        completed_days = self.user_profile.completed_days.filter(program=self.program).count()
+        completed_days = self.user_profile.completed_days.filter(
+            program=self.program
+        ).count()
 
         if completed_days >= total_days and total_days > 0:
             self.status = "completed"

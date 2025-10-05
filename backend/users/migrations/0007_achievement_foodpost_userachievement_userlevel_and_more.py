@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("users", "0006_remove_userprofile_goal_fitnessgoal"),
     ]
@@ -42,11 +41,19 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("content", models.TextField()),
-                ("title", models.CharField(blank=True, max_length=255, null=True)),
-                ("visibility", models.CharField(default="public", max_length=20)),
+                (
+                    "title",
+                    models.CharField(blank=True, max_length=255, null=True),
+                ),
+                (
+                    "visibility",
+                    models.CharField(default="public", max_length=20),
+                ),
                 (
                     "image",
-                    models.ImageField(blank=True, null=True, upload_to="food_posts/"),
+                    models.ImageField(
+                        blank=True, null=True, upload_to="food_posts/"
+                    ),
                 ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
@@ -191,12 +198,20 @@ class Migration(migrations.Migration):
                 ("title", models.CharField(max_length=255)),
                 ("description", models.TextField()),
                 ("video_links", models.TextField(blank=True, null=True)),
-                ("level_access", models.CharField(default="all", max_length=50)),
-                ("difficulty_level", models.CharField(default="easy", max_length=50)),
+                (
+                    "level_access",
+                    models.CharField(default="all", max_length=50),
+                ),
+                (
+                    "difficulty_level",
+                    models.CharField(default="easy", max_length=50),
+                ),
                 ("is_public", models.BooleanField(default=True)),
                 (
                     "duration",
-                    models.IntegerField(default=0, help_text="Duration in minutes"),
+                    models.IntegerField(
+                        default=0, help_text="Duration in minutes"
+                    ),
                 ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
@@ -215,7 +230,8 @@ class Migration(migrations.Migration):
             model_name="workoutassignment",
             name="program",
             field=models.ForeignKey(
-                on_delete=django.db.models.deletion.CASCADE, to="users.workoutprogram"
+                on_delete=django.db.models.deletion.CASCADE,
+                to="users.workoutprogram",
             ),
         ),
     ]

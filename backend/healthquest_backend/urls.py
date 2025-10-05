@@ -1,8 +1,8 @@
-from django.contrib import admin
-from django.urls import path, include
-from django.http import JsonResponse
-from django.conf.urls.static import static
 from django.conf import settings
+from django.conf.urls.static import static
+from django.contrib import admin
+from django.http import JsonResponse
+from django.urls import include, path
 
 """
 URL configuration for healthquest_backend project.
@@ -44,8 +44,6 @@ def home_view(request):
         return JsonResponse({"message": "Please log in"})
 
 
-
-
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include("allauth.urls")),
@@ -57,4 +55,6 @@ urlpatterns = [
 ]
 
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(
+        settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
+    )

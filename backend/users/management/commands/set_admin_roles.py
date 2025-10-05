@@ -1,5 +1,6 @@
-from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
+from django.core.management.base import BaseCommand
+
 from users.models import UserProfile
 
 
@@ -18,5 +19,7 @@ class Command(BaseCommand):
                 )
             else:
                 self.stdout.write(
-                    self.style.WARNING(f"{user.username} already has admin role")
+                    self.style.WARNING(
+                        f"{user.username} already has admin role"
+                    )
                 )

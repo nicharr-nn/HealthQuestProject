@@ -1,5 +1,7 @@
 from rest_framework import serializers
+
 from .models import Coach
+
 
 class CoachSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
@@ -24,4 +26,8 @@ class CoachSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["status_approval", "approved_date", "certification_doc"]
+        read_only_fields = [
+            "status_approval",
+            "approved_date",
+            "certification_doc",
+        ]

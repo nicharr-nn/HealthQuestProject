@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -16,11 +15,16 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="Coach",
             fields=[
-                ("coach_id", models.AutoField(primary_key=True, serialize=False)),
+                (
+                    "coach_id",
+                    models.AutoField(primary_key=True, serialize=False),
+                ),
                 (
                     "certification_doc",
                     models.FileField(
-                        blank=True, null=True, upload_to="coach_certifications/"
+                        blank=True,
+                        null=True,
+                        upload_to="coach_certifications/",
                     ),
                 ),
                 (

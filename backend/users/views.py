@@ -1,21 +1,21 @@
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.response import Response
-from .serializers import UserProfileSerializer, UserSerializer
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
-from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
-from django.apps import apps
-from rest_framework import status
-from .models import Achievement, UserAchievement, FoodPost
-from django.utils import timezone
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
+from django.shortcuts import get_object_or_404
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
 
+from .models import Achievement, FoodPost, UserAchievement
+from .serializers import UserProfileSerializer, UserSerializer
 
 User = get_user_model()
 
+
 @api_view(["GET", "PUT", "PATCH"])
-@permission_classes([AllowAny])  # allow GET without auth, require auth for PUT/PATCH
+@permission_classes(
+    [AllowAny]
+)  # allow GET without auth, require auth for PUT/PATCH
 def user_info(request):
     """
     Return user info and authentication status.
@@ -63,12 +63,16 @@ def update_profile(request):
     """Update user profile data"""
     try:
         profile = request.user.userprofile
-        serializer = UserProfileSerializer(profile, data=request.data, partial=True)
+        serializer = UserProfileSerializer(
+            profile, data=request.data, partial=True
+        )
 
         if serializer.is_valid():
             serializer.save()
             return Response({"status": "success", "data": serializer.data})
-        return Response({"status": "error", "errors": serializer.errors}, status=400)
+        return Response(
+            {"status": "error", "errors": serializer.errors}, status=400
+        )
 
     except Exception as e:
         return Response({"status": "error", "message": str(e)}, status=400)
@@ -101,7 +105,8 @@ def upload_photo(request):
         }
     )
 
-@api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
+
+@api_view(["GET", "PUT", "PATCH", "DELETE"])
 @permission_classes([IsAuthenticated])
 def user_detail(request, id):
     """Retrieve, update, or deactivate user account"""
@@ -118,41 +123,56 @@ def user_detail(request, id):
         if not profile:
             return Response({"error": "Profile not found"}, status=404)
 
-        serializer = UserProfileSerializer(profile, data=request.data, partial=True)
+        serializer = UserProfileSerializer(
+            profile, data=request.data, partial=True
+        )
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
-        
+
     elif request.method == "DELETE":
         user.delete()
         return Response({"message": "Account deleted permanently"})
 
-@api_view(['GET'])
+
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def achievements(request):
     """List all achievements"""
-    data = Achievement.objects.all().values("id", "title", "description", "xp_reward")
+    data = Achievement.objects.all().values(
+        "id", "title", "description", "xp_reward"
+    )
     return Response(list(data))
 
-@api_view(['GET, DELETE'])
+
+@api_view(["GET, DELETE"])
 @permission_classes([IsAuthenticated])
 def user_achievements(request):
     """get or remove an achievement for the authenticated user"""
     profile = request.user.userprofile
 
     if request.method == "GET":
-        achievements = UserAchievement.objects.filter(user_profile=profile).select_related("achievement")
-        data = [{"id": ua.id, "date_earned": ua.date_earned} for ua in achievements]
+        achievements = UserAchievement.objects.filter(
+            user_profile=profile
+        ).select_related("achievement")
+        data = [
+            {"id": ua.id, "date_earned": ua.date_earned} for ua in achievements
+        ]
         return Response(data)
 
     elif request.method == "DELETE":
         ach_id = request.data.get("achievement_id")
-        ua = get_object_or_404(UserAchievement, pk=ach_id, user_profile=profile)
+        ua = get_object_or_404(
+            UserAchievement, pk=ach_id, user_profile=profile
+        )
         ua.delete()
-        return Response({"message": "Achievement removed", "achievement_id": ach_id})
+        return Response(
+            {"message": "Achievement removed", "achievement_id": ach_id}
+        )
 
-@api_view(['GET, POST'])
+
+@api_view(["GET, POST"])
 @permission_classes([IsAuthenticated])
 def food_posts(request):
     """List or create food posts"""
@@ -169,7 +189,7 @@ def food_posts(request):
                 "created_at": p.created_at,
             }
             for p in posts
-        ]        
+        ]
         return Response(data)
 
     elif request.method == "POST":
@@ -181,20 +201,34 @@ def food_posts(request):
         )
         return Response({"message": "Post created", "post_id": post.id})
 
-@api_view(['GET'])
+
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def user_levels(request):
-    profile = getattr(request.user, 'userprofile', None)
+    profile = getattr(request.user, "userprofile", None)
     if not profile:
         return Response({"detail": "Profile not found"}, status=400)
-    current = profile.get_current_level() if hasattr(profile, 'get_current_level') else None
+    current = (
+        profile.get_current_level()
+        if hasattr(profile, "get_current_level")
+        else None
+    )
 
     next_xp = 1000 if current and current.level_rank == 1 else None
     payload = {
-        "current": {"level": current.level, "level_rank": current.level_rank, "xp": current.xp} if current else None,
+        "current": (
+            {
+                "level": current.level,
+                "level_rank": current.level_rank,
+                "xp": current.xp,
+            }
+            if current
+            else None
+        ),
         "next_xp": next_xp,
     }
     return Response(payload)
+
 
 # @api_view(['POST'])
 # @permission_classes([IsAuthenticated])
@@ -208,7 +242,8 @@ def user_levels(request):
 #     )
 #     return Response({"message": "Comment added", "comment_id": comment.id})
 
-@api_view(['PUT', 'PATCH', 'DELETE'])
+
+@api_view(["PUT", "PATCH", "DELETE"])
 @permission_classes([IsAuthenticated])
 def food_post_update(request, id):
     """update or delete to a food post"""

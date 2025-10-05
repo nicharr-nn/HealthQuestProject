@@ -4,9 +4,11 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ("users", "0007_achievement_foodpost_userachievement_userlevel_and_more"),
+        (
+            "users",
+            "0007_achievement_foodpost_userachievement_userlevel_and_more",
+        ),
     ]
 
     operations = [

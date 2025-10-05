@@ -1,10 +1,8 @@
-from django.shortcuts import render
+from django.apps import apps
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import status
-from django.contrib.auth import get_user_model
-from django.apps import apps
+
 from users.serializers import UserSerializer
 
 
@@ -12,7 +10,6 @@ from users.serializers import UserSerializer
 @permission_classes([IsAuthenticated])
 def set_goal(request):
     """Set user fitness goal"""
-    from django.apps import apps
 
     FitnessGoal = apps.get_model("fitness", "FitnessGoal")
 
@@ -22,7 +19,8 @@ def set_goal(request):
         # Only normal users can have fitness goals
         if profile.role != "normal":
             return Response(
-                {"detail": "Only normal users can set fitness goals."}, status=400
+                {"detail": "Only normal users can set fitness goals."},
+                status=400,
             )
 
         goal_type = request.data.get("goal_type")
