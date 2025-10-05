@@ -610,7 +610,6 @@ async function submitProgram() {
       alert('Failed to save program: ' + JSON.stringify(message))
       return
     }
-
     emit('programCreated', body)
     alert('Program saved successfully!')
     

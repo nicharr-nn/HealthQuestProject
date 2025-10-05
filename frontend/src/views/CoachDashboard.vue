@@ -37,7 +37,7 @@
       <!-- Demo Approval Button (for testing) -->
       <div class="demo-section">
         <button class="btn primary small" @click="simulateApproval">
-          🔧 Simulate Admin Approval (Demo)
+          Simulate Admin Approval (Demo)
         </button>
       </div>
     </div>
@@ -342,7 +342,6 @@ async function handleProgramCreated(apiProgram: any) {
   // refresh list after create/update
   await loadPrograms()
   closeCreateProgram()
-  alert('Program saved successfully!')
 }
 </script>
 

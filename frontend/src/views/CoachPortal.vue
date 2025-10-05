@@ -117,31 +117,29 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, onMounted } from 'vue'
+import { reactive, ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
+const router = useRouter()
 
 interface CoachForm {
   bio: string
 }
 
-const coachForm = reactive<CoachForm>({
-  bio: ''
-})
 
+const coachForm = reactive({ bio: '' })
 const selectedFile = ref<File | null>(null)
 const selectedFileName = ref<string | null>(null)
 const hasSubmitted = ref(false)
 const coachStatus = ref<'not_submitted' | 'pending' | 'approved' | 'rejected'>('not_submitted')
-const originalBio = ref("")
-const originalName = ref("")
-const googleName = ref('')
+const originalBio = ref('')
+const originalName = ref('')
 const isEditingProfile = ref(false)
 const isResubmitting = ref(false)
+const googleName = ref('')
 
-const router = useRouter()
 
 // Called when file input changes
 function onFileSelected(event: Event) {
@@ -155,10 +153,16 @@ function onFileSelected(event: Event) {
 // Fetch coach status on mount
 onMounted(async () => {
   const res = await fetch("http://127.0.0.1:8000/api/coach/status/", { credentials: 'include' })
+  if (!userStore.user || !userStore.profile) {
+        await userStore.init()
+  }
+
+  googleName.value = userStore.user?.name || userStore.displayName || ''
+
   if (res.ok) {
     const data = await res.json()
+   
     if (data.coach) {
-      googleName.value = data.coach.name
       coachForm.bio = data.coach.bio || ''
       coachStatus.value = data.coach.status_approval
       hasSubmitted.value = true

@@ -46,15 +46,6 @@
           </li>
           <li>
             <RouterLink
-              to="/workout-program"
-              class="font-body text-white hover:text-[#c7d2fe] transition-colors"
-              active-class="text-[#c7d2fe]"
-            >
-              Workout Program
-            </RouterLink>
-          </li>
-          <li>
-            <RouterLink
               to="/workout"
               class="font-body text-white hover:text-[#c7d2fe] transition-colors"
               active-class="text-[#c7d2fe]"
