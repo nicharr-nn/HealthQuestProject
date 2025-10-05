@@ -13,6 +13,7 @@ export const useUserStore = defineStore('user', {
     // coach-specific info (populated from /api/coach/status/)
     coach_profile: null,
     approved: false,
+    level: { level_rank: 1, level: 'Bronze', xp: 0 },
   }),
 
   getters: {
@@ -55,7 +56,7 @@ export const useUserStore = defineStore('user', {
           this.profile_complete = data.user?.profile_complete === true
           this.profile = data.user?.profile || null
           this.role = data.user?.profile?.role || null
-          this.level = data.profile?.current_level || { level_rank: 1, level: 'Bronze', xp: 0 }
+          this.level = data.user?.profile?.current_level || { level_rank: 1, level: 'Bronze', xp: 0 }
 
           // If user is a coach, fetch coach status
           if (this.role === 'coach') {

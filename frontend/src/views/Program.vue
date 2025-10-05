@@ -298,7 +298,7 @@ async function completeDay(dayId) {
 
   isCompletingDay.value = true
   try {
-    const res = await fetch(`http://127.0.0.1:8000/api/workout/complete-day/`, {
+    const res = await fetch(`http://127.0.0.1:8000/api/workout/day/${dayId}/complete/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -311,7 +311,8 @@ async function completeDay(dayId) {
     if (!res.ok) throw new Error('Failed to complete day')
     dayCompletionStates.value[dayId] = true
     alert('🎉 Congratulations! You earned 50 XP!')
-  } catch (err) {
+
+  } catch {
     alert('Failed to complete day. Please try again.')
   } finally {
     isCompletingDay.value = false

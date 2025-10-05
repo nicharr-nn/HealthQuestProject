@@ -10,12 +10,8 @@ urlpatterns = [
     path("user/<int:id>/", views.user_detail, name="user_detail"),
     # Levels & Achievements
     path("achievements/", views.achievements, name="all-achievements"),
-    path(
-        "user/achievements/", views.user_achievements, name="user-achievements"
-    ),
+    path("user/achievements/", views.user_achievements, name="user-achievements"),
     # Food post
     path("food-posts/", views.food_posts, name="food-posts"),
-    path(
-        "food-posts/<int:id>", views.food_post_update, name="food-post-update"
-    ),
+    path("food-posts/<int:id>", views.food_post_update, name="food-post-update"),
 ]
