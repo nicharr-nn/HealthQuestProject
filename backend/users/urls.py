@@ -15,7 +15,6 @@ urlpatterns = [
     ),
     # Food post
     path("food-posts/", views.food_posts, name="food-posts"),
-    #   path("food-posts/<int:id>/comments", views.food_post_comment, name="food-post-comment"),
     path(
         "food-posts/<int:id>", views.food_post_update, name="food-post-update"
     ),

@@ -7,7 +7,7 @@
 #     from workout.models import WorkoutAssignment, WorkoutProgram
 # except Exception:
 #     try:
-#         from users.models import WorkoutAssignment, WorkoutProgram  # fallback
+#         from users.models import WorkoutAssignment, WorkoutProgram
 #     except Exception:
 #         WorkoutProgram = None
 #         WorkoutAssignment = None
@@ -33,7 +33,7 @@
 #             self.profile = getattr(
 #                 self.user, "userprofile", None
 #             ) or UserProfile.objects.create(user=self.user)
-#             # make this user a member so they can complete assignments in tests
+#             # make a member so they can complete assignments in tests
 #             self.profile.role = "member"
 #             self.profile.save()
 #         else:
@@ -48,7 +48,7 @@
 #             if "title" in fields:
 #                 prog_kwargs["title"] = "Test Program"
 
-#             # ensure we set the required coach/owner field if present (use the test user's profile)
+#             # ensure we set the required coach if present
 #             if "coach" in fields:
 #                 prog_kwargs["coach"] = self.profile
 #             elif "owner" in fields:
@@ -74,7 +74,7 @@
 #                         user_profile=self.profile, program=self.program
 #                     )
 #                 except Exception:
-#                     # last resort: create without linking fields (test will likely fail)
+#                     # last resort: create without linking fields
 #                     self.assignment = WorkoutAssignment.objects.create(
 #                         program=self.program
 #                     )
@@ -104,7 +104,7 @@
 #         xp_awarded = resp.data.get("xp_awarded", 0)
 #         self.assertGreater(xp_awarded, 0, "Expected XP to be awarded")
 
-#         # verify assignment completed — prefer status field, fall back to boolean/date flags
+#         # verify assignment completed
 #         status_val = getattr(self.assignment, "status", None)
 
 #         def _check_boolean_flags(obj):
@@ -119,13 +119,13 @@
 #             return bool(completed)
 
 #         if status_val is not None:
-#             # accept explicit completed-like status values OR rely on boolean/timestamp flags
+#             # accept explicit completed-like status values
 #             if status_val in ("completed", "done", "finished"):
 #                 pass
 #             else:
 #                 self.assertTrue(
 #                     _check_boolean_flags(self.assignment),
-#                     msg=f"Assignment was not marked completed (status={status_val})",
+#                     msg=f"Assignment status={status_val})",
 #                 )
 
 #         else:
