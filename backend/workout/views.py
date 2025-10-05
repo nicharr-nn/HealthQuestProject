@@ -268,7 +268,7 @@ def user_analytics(request):
 def user_weekly_activity(request):
     """
     Return last 7 days of activity for the authenticated user.
-    Response: [{ label, date, count, height, isActive }, ...] (7 items, oldest -> newest)
+    Response: [{ label, date, count, height, isActive }, ...]
     height is a normalized integer 20-100 for frontend bar rendering.
     """
     user_profile = request.user.userprofile
