@@ -1,32 +1,54 @@
 <template>
-  <header class="header bg-[#88ACEA] shadow-md">
-    <div class="nav-container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <header class="bg-[#88ACEA] shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between h-16 items-center">
         <!-- Left: Brand -->
-        <RouterLink to="/" class="font-subtitle text-2xl text-white">HealthQuest</RouterLink>
-        <!-- Right: Navigation Links -->
-        <ul class="nav-links hidden md:flex items-center space-x-8">
+        <RouterLink 
+          to="/" 
+          class="font-subtitle text-2xl text-white hover:text-[#c7d2fe] transition-colors"
+        >
+          HealthQuest
+        </RouterLink>
 
+        <!-- Mobile Menu Button -->
+        <button 
+          @click="toggleMobileMenu"
+          class="md:hidden text-white hover:text-[#c7d2fe] transition-colors"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path 
+              v-if="!mobileMenuOpen"
+              stroke-linecap="round" 
+              stroke-linejoin="round" 
+              stroke-width="2" 
+              d="M4 6h16M4 12h16M4 18h16"
+            />
+            <path 
+              v-else
+              stroke-linecap="round" 
+              stroke-linejoin="round" 
+              stroke-width="2" 
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+
+        <!-- Desktop Navigation Links -->
+        <ul class="hidden md:flex items-center space-x-8">
           <li>
             <RouterLink
-              to="/progress"
-              class="nav-link font-body text-white hover:text-[#c7d2fe] transition-colors"
+              to="/dashboard"
+              class="font-body text-white hover:text-[#c7d2fe] transition-colors"
+              active-class="text-[#c7d2fe]"
             >
-              Progress
-            </RouterLink>
-          </li>
-          <li>
-            <RouterLink
-              to="/workout-program"
-              class="nav-link font-body text-white hover:text-[#c7d2fe] transition-colors"
-            >
-              Workout Program
+              Dashboard
             </RouterLink>
           </li>
           <li>
             <RouterLink
               to="/workout"
-              class="nav-link font-body text-white hover:text-[#c7d2fe] transition-colors"
+              class="font-body text-white hover:text-[#c7d2fe] transition-colors"
+              active-class="text-[#c7d2fe]"
             >
               Workout
             </RouterLink>
@@ -34,7 +56,8 @@
           <li>
             <RouterLink
               to="/food-recipe"
-              class="nav-link font-body text-white hover:text-[#c7d2fe] transition-colors"
+              class="font-body text-white hover:text-[#c7d2fe] transition-colors"
+              active-class="text-[#c7d2fe]"
             >
               Food Recipe
             </RouterLink>
@@ -42,15 +65,88 @@
           <li>
             <RouterLink
               to="/profile"
-              class="nav-link font-body text-white hover:text-[#c7d2fe] transition-colors"
+              class="font-body text-white hover:text-[#c7d2fe] transition-colors"
+              active-class="text-[#c7d2fe]"
             >
               Profile
             </RouterLink>
           </li>
           <li>
-          <span class="material-symbols-outlined text-white" @click="logout">
-          logout
-          </span>
+            <button 
+              @click="logout"
+              class="text-white hover:text-[#c7d2fe] transition-colors cursor-pointer"
+            >
+              <span class="material-symbols-outlined">logout</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Mobile Navigation Menu -->
+      <div 
+        v-if="mobileMenuOpen"
+        class="md:hidden absolute left-0 right-0 bg-[#88ACEA] shadow-lg py-4 z-50"
+      >
+        <ul class="flex flex-col space-y-2 px-4">
+          <li>
+            <RouterLink
+              to="/dashboard"
+              @click="closeMobileMenu"
+              class="block font-body text-white hover:text-[#c7d2fe] transition-colors py-2"
+              active-class="text-[#c7d2fe]"
+            >
+              Dashboard
+              Dashboard
+            </RouterLink>
+          </li>
+          <li>
+            <RouterLink
+              to="/workout-program"
+              @click="closeMobileMenu"
+              class="block font-body text-white hover:text-[#c7d2fe] transition-colors py-2"
+              active-class="text-[#c7d2fe]"
+            >
+              Workout Program
+            </RouterLink>
+          </li>
+          <li>
+            <RouterLink
+              to="/workout"
+              @click="closeMobileMenu"
+              class="block font-body text-white hover:text-[#c7d2fe] transition-colors py-2"
+              active-class="text-[#c7d2fe]"
+            >
+              Workout
+            </RouterLink>
+          </li>
+          <li>
+            <RouterLink
+              to="/food-recipe"
+              @click="closeMobileMenu"
+              class="block font-body text-white hover:text-[#c7d2fe] transition-colors py-2"
+              active-class="text-[#c7d2fe]"
+            >
+              Food Recipe
+            </RouterLink>
+          </li>
+          <li>
+            <RouterLink
+              to="/profile"
+              @click="closeMobileMenu"
+              class="block font-body text-white hover:text-[#c7d2fe] transition-colors py-2"
+              active-class="text-[#c7d2fe]"
+            >
+              Profile
+            </RouterLink>
+          </li>
+          <li>
+            <button 
+              @click="logout"
+              class="flex items-center text-white hover:text-[#c7d2fe] transition-colors py-2"
+            >
+              <span class="material-symbols-outlined">logout</span>
+              <span class="ml-2">Logout</span>
+            </button>
           </li>
         </ul>
       </div>
@@ -59,37 +155,20 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { RouterLink } from 'vue-router'
+
+const mobileMenuOpen = ref(false)
+
+function toggleMobileMenu() {
+  mobileMenuOpen.value = !mobileMenuOpen.value
+}
+
+function closeMobileMenu() {
+  mobileMenuOpen.value = false
+}
 
 async function logout() {
   window.location.href = "http://127.0.0.1:8000/accounts/logout/"
 }
-
 </script>
-
-<style scoped>
-/* Active link styling */
-.router-link-active {
-  @apply text-[#c7d2fe];
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .nav-links {
-    display: flex;
-    flex-direction: column;
-    position: absolute;
-    top: 4rem;
-    left: 0;
-    width: 100%;
-    background-color: #88acea;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    padding: 1rem 0;
-  }
-
-  .nav-links li {
-    padding: 0.5rem 0;
-    text-align: left;
-  }
-}
-</style>

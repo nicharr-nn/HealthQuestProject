@@ -152,11 +152,25 @@
                     <div class="flex justify-between items-center border-b border-gray-200 pb-4">
                       <label class="text-gray-600 font-medium text-lg w-32">Location</label>
                       <template v-if="isEditing">
-                        <input
+                        <!-- <input
                           v-model="editProfile.location"
                           type="text"
                           class="flex-1 text-teal-600 text-lg font-medium bg-gray-100 border border-gray-300 outline-none focus:bg-gray-50 px-3 py-2 rounded"
-                        />
+                        /> -->
+                        <select
+                          v-model="editProfile.location"
+                          class="flex-1 text-teal-600 text-lg font-medium bg-gray-100 border border-gray-300 outline-none focus:bg-gray-50 px-3 py-2 rounded"
+                        >
+                          <option value="">Select location</option>
+                          <option value="TH">Thailand</option>
+                          <option value="USA">United States</option>
+                          <option value="UK">United Kingdom</option>
+                          <option value="JP">Japan</option>
+                          <option value="LA">Laos</option>
+                          <option value="KR">South Korea</option>
+                          <option value="O">Other</option>
+                        </select>
+
                       </template>
                       <template v-else>
                         <span class="flex-1 text-teal-600 text-lg font-medium text-right">{{
@@ -204,6 +218,7 @@
                 </div>
 
                 <button
+                  @click="deleteAccount"
                   class="bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-full font-semibold text-lg transition-colors shadow-lg"
                 >
                   Delete Account
@@ -219,8 +234,8 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import { data } from 'autoprefixer'
 
 const userStore = useUserStore()
 
@@ -329,7 +344,7 @@ async function saveChanges() {
 
     // Update goal (only if user is normal)
     if (userStore.role === 'normal' && editProfile.value.current_goal) {
-      const goalResponse = await fetch("http://127.0.0.1:8000/api/select-goal/", {
+      const goalResponse = await fetch("http://127.0.0.1:8000/api/fitness/select-goal/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -423,9 +438,31 @@ function cancelEdit() {
   uploadMessage.value = ''
 }
 
+async function deleteAccount() {
+  if (!confirm('Are you sure you want to deactivate your account?')) return
+
+  const res = await fetch(`http://127.0.0.1:8000/api/user/${userStore.user.id}/`, {
+    method: 'DELETE',
+    credentials: 'include',
+    headers: {
+      'X-CSRFToken': getCsrfToken(),
+    },
+  })
+
+  if (res.ok) {
+    alert('Account deactivated successfully.')
+    userStore.clearAuthStatus()
+    window.location.href = '/'
+  } else {
+    const data = await res.json().catch(() => ({}))
+    alert(`Failed: ${res.status} ${data.detail || ''}`)
+  }
+}
+
 onMounted(() => {
   fetchUserProfile()
 })
+
 </script>
 
 <style scoped>

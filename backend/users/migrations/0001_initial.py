@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -50,7 +49,10 @@ class Migration(migrations.Migration):
                         null=True,
                     ),
                 ),
-                ("location", models.CharField(blank=True, max_length=100, null=True)),
+                (
+                    "location",
+                    models.CharField(blank=True, max_length=100, null=True),
+                ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
                 (
