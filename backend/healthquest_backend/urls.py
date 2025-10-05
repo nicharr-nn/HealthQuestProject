@@ -1,3 +1,9 @@
+from django.contrib import admin
+from django.urls import path, include
+from django.http import JsonResponse
+from django.conf.urls.static import static
+from django.conf import settings
+
 """
 URL configuration for healthquest_backend project.
 
@@ -14,9 +20,56 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
-from django.urls import path
+"""
+URL configuration for healthquest_backend project.
+"""
+
+
+def home_view(request):
+    """Simple home page view that returns user info or login status"""
+    if request.user.is_authenticated:
+        return JsonResponse(
+            {
+                "message": "Login successful!",
+                "user": {
+                    "id": request.user.id,
+                    "username": request.user.username,
+                    "email": request.user.email,
+                    "first_name": request.user.first_name,
+                    "last_name": request.user.last_name,
+                },
+            }
+        )
+    else:
+        return JsonResponse({"message": "Please log in"})
+
+
+def about_view(request):
+    """About page view that returns user info and about message"""
+    if request.user.is_authenticated:
+        return JsonResponse(
+            {
+                "message": "Welcome to HealthQuest About Page!",
+                "user": {
+                    "id": request.user.id,
+                    "username": request.user.username,
+                    "email": request.user.email,
+                    "first_name": request.user.first_name,
+                    "last_name": request.user.last_name,
+                },
+            }
+        )
+    else:
+        return JsonResponse({"message": "Please log in to access the about page"})
+
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path("admin/", admin.site.urls),
+    path("accounts/", include("allauth.urls")),
+    path("", home_view, name="home"),
+    path("about/", about_view, name="about"),
+    path("api/", include("users.urls")),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
