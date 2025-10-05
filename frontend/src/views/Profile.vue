@@ -438,41 +438,24 @@ function cancelEdit() {
   uploadMessage.value = ''
 }
 
-function deleteAccount() {
-  const user_id = userStore.profile?.id || userStore.id
-  
-  if (!user_id) {
-    alert('User ID not found. Please try logging out and back in.')
-    return
-  }
+async function deleteAccount() {
+  if (!confirm('Are you sure you want to deactivate your account?')) return
 
-  if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-    fetch(`http://127.0.0.1:8000/api/user/${user_id}/`, { 
-      method: 'DELETE',
-      credentials: 'include',
-      headers: {
-        'X-CSRFToken': getCsrfToken(),
-        'Content-Type': 'application/json',
-      }
-    })
-      .then(response => {
-        if (response.ok) {
-          return response.json()
-        } else if (response.status === 403) {
-          throw new Error('Not authorized to delete this account')
-        } else {
-          throw new Error('Failed to delete account')
-        }
-      })
-      .then(data => {
-        console.log('Account deleted:', data)
-        userStore.logout()  // Make sure this action exists
-        window.location.href = '/'
-      })
-      .catch(err => {
-        console.error('Error deleting account:', err)
-        alert('Error deleting account: ' + err.message)
-      })
+  const res = await fetch(`http://127.0.0.1:8000/api/user/${userStore.user.id}/`, {
+    method: 'DELETE',
+    credentials: 'include',
+    headers: {
+      'X-CSRFToken': getCsrfToken(),
+    },
+  })
+
+  if (res.ok) {
+    alert('Account deactivated successfully.')
+    userStore.clearAuthStatus()
+    window.location.href = '/'
+  } else {
+    const data = await res.json().catch(() => ({}))
+    alert(`Failed: ${res.status} ${data.detail || ''}`)
   }
 }
 
