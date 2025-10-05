@@ -13,9 +13,7 @@ User = get_user_model()
 
 
 @api_view(["GET", "PUT", "PATCH"])
-@permission_classes(
-    [AllowAny]
-)  # allow GET without auth, require auth for PUT/PATCH
+@permission_classes([AllowAny])  # allow GET without auth, require auth for PUT/PATCH
 def user_info(request):
     """
     Return user info and authentication status.
@@ -63,16 +61,12 @@ def update_profile(request):
     """Update user profile data"""
     try:
         profile = request.user.userprofile
-        serializer = UserProfileSerializer(
-            profile, data=request.data, partial=True
-        )
+        serializer = UserProfileSerializer(profile, data=request.data, partial=True)
 
         if serializer.is_valid():
             serializer.save()
             return Response({"status": "success", "data": serializer.data})
-        return Response(
-            {"status": "error", "errors": serializer.errors}, status=400
-        )
+        return Response({"status": "error", "errors": serializer.errors}, status=400)
 
     except Exception as e:
         return Response({"status": "error", "message": str(e)}, status=400)
@@ -123,9 +117,7 @@ def user_detail(request, id):
         if not profile:
             return Response({"error": "Profile not found"}, status=404)
 
-        serializer = UserProfileSerializer(
-            profile, data=request.data, partial=True
-        )
+        serializer = UserProfileSerializer(profile, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -140,9 +132,7 @@ def user_detail(request, id):
 @permission_classes([IsAuthenticated])
 def achievements(request):
     """List all achievements"""
-    data = Achievement.objects.all().values(
-        "id", "title", "description", "xp_reward"
-    )
+    data = Achievement.objects.all().values("id", "title", "description", "xp_reward")
     return Response(list(data))
 
 
@@ -156,20 +146,14 @@ def user_achievements(request):
         achievements = UserAchievement.objects.filter(
             user_profile=profile
         ).select_related("achievement")
-        data = [
-            {"id": ua.id, "date_earned": ua.date_earned} for ua in achievements
-        ]
+        data = [{"id": ua.id, "date_earned": ua.date_earned} for ua in achievements]
         return Response(data)
 
     elif request.method == "DELETE":
         ach_id = request.data.get("achievement_id")
-        ua = get_object_or_404(
-            UserAchievement, pk=ach_id, user_profile=profile
-        )
+        ua = get_object_or_404(UserAchievement, pk=ach_id, user_profile=profile)
         ua.delete()
-        return Response(
-            {"message": "Achievement removed", "achievement_id": ach_id}
-        )
+        return Response({"message": "Achievement removed", "achievement_id": ach_id})
 
 
 @api_view(["GET, POST"])
@@ -209,9 +193,7 @@ def user_levels(request):
     if not profile:
         return Response({"detail": "Profile not found"}, status=400)
     current = (
-        profile.get_current_level()
-        if hasattr(profile, "get_current_level")
-        else None
+        profile.get_current_level() if hasattr(profile, "get_current_level") else None
     )
 
     next_xp = 1000 if current and current.level_rank == 1 else None

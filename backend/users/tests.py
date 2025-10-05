@@ -32,9 +32,7 @@ class UserDeletionTests(TestCase):
         response = self.client.delete(f"/api/user/{self.user.id}/")
 
         self.assertEqual(response.status_code, 200, response.data)
-        self.assertEqual(
-            response.data["message"], "Account deleted permanently"
-        )
+        self.assertEqual(response.data["message"], "Account deleted permanently")
 
     def test_cannot_delete_other_users(self):
         """Users cannot deactivate other accounts"""

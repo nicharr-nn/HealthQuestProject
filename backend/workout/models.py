@@ -26,9 +26,7 @@ class WorkoutProgram(models.Model):
     level_access = models.CharField(max_length=50, default="all")
     difficulty_level = models.CharField(max_length=50, default="easy")
     is_public = models.BooleanField(default=True)
-    duration = models.IntegerField(
-        help_text="Total duration in days", default=0
-    )
+    duration = models.IntegerField(help_text="Total duration in days", default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     category = models.CharField(
@@ -48,9 +46,7 @@ class WorkoutDay(models.Model):
     )
     day_number = models.PositiveIntegerField()
     title = models.CharField(max_length=255, blank=True, null=True)
-    video_links = models.JSONField(
-        default=list
-    )  # store multiple links as list
+    video_links = models.JSONField(default=list)  # store multiple links as list
     duration = models.IntegerField(default=30)  # minutes total
     completed_by = models.ManyToManyField(
         UserProfile,

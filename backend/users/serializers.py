@@ -20,9 +20,7 @@ class UserLevelSerializer(serializers.ModelSerializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    photo = serializers.ImageField(
-        use_url=True, required=False, allow_null=True
-    )
+    photo = serializers.ImageField(use_url=True, required=False, allow_null=True)
     fitness_goals = FitnessGoalSerializer(many=True, read_only=True)
     current_goal = serializers.SerializerMethodField()
     current_level = serializers.SerializerMethodField()

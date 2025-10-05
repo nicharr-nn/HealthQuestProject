@@ -35,7 +35,5 @@ urlpatterns = [
         views.complete_workout_day,
         name="complete-workout-day",
     ),
-    path(
-        "progress/<int:id>/", views.workout_progress, name="workout-progress"
-    ),
+    path("progress/<int:id>/", views.workout_progress, name="workout-progress"),
 ]

@@ -28,9 +28,7 @@ class UserProfile(models.Model):
     ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    photo = models.ImageField(
-        upload_to="profile_photos/", null=True, blank=True
-    )
+    photo = models.ImageField(upload_to="profile_photos/", null=True, blank=True)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES)
     height = models.FloatField(null=True, blank=True)  # in cm
     weight = models.FloatField(null=True, blank=True)  # in kg
@@ -93,9 +91,7 @@ class UserLevel(models.Model):
     goal_achieved = models.BooleanField(default=False)
 
     def __str__(self):
-        return (
-            f"{self.user_profile.user.username} - {self.level} (xp={self.xp})"
-        )
+        return f"{self.user_profile.user.username} - {self.level} (xp={self.xp})"
 
     def add_xp(self, amount: int):
         """
@@ -122,14 +118,10 @@ class Achievement(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
     xp_reward = models.IntegerField(default=0)
-    level_required = models.IntegerField(
-        default=1
-    )  # minimum level_rank required
+    level_required = models.IntegerField(default=1)  # minimum level_rank required
 
     def __str__(self):
-        return (
-            f"{self.title} - Level {self.level_required} - {self.xp_reward} XP"
-        )
+        return f"{self.title} - Level {self.level_required} - {self.xp_reward} XP"
 
 
 class UserAchievement(models.Model):
@@ -155,6 +147,4 @@ class FoodPost(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return (
-            f"Post by {self.user_profile.user.username} at {self.created_at}"
-        )
+        return f"Post by {self.user_profile.user.username} at {self.created_at}"

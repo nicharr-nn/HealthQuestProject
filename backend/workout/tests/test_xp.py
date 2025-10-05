@@ -14,10 +14,7 @@ def test_calculate_xp_difficulty_multipliers():
 
 def test_calculate_xp_with_intensity_and_rounding():
     # 10 minutes, easy (mult=1.0), intensity 1.5 -> 10 * 1 * 1.5 = 15
-    assert (
-        xr.calculate_xp(duration=10, difficulty_level="easy", intensity=1.5)
-        == 15
-    )
+    assert xr.calculate_xp(duration=10, difficulty_level="easy", intensity=1.5) == 15
 
 
 def test_calculate_xp_non_negative():

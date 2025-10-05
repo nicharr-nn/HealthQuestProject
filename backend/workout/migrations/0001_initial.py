@@ -103,9 +103,7 @@ class Migration(migrations.Migration):
                 ("is_public", models.BooleanField(default=True)),
                 (
                     "duration",
-                    models.IntegerField(
-                        default=0, help_text="Total duration in days"
-                    ),
+                    models.IntegerField(default=0, help_text="Total duration in days"),
                 ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),

@@ -55,13 +55,9 @@ def upload_certification(request):
             coach.status_approval = "pending"
             coach.approved_date = None
             coach.save()
-            return Response(
-                CoachSerializer(coach).data, status=status.HTTP_200_OK
-            )
+            return Response(CoachSerializer(coach).data, status=status.HTTP_200_OK)
 
-        return Response(
-            CoachSerializer(coach).data, status=status.HTTP_201_CREATED
-        )
+        return Response(CoachSerializer(coach).data, status=status.HTTP_201_CREATED)
 
 
 @api_view(["GET"])

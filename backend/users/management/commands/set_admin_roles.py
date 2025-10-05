@@ -19,7 +19,5 @@ class Command(BaseCommand):
                 )
             else:
                 self.stdout.write(
-                    self.style.WARNING(
-                        f"{user.username} already has admin role"
-                    )
+                    self.style.WARNING(f"{user.username} already has admin role")
                 )

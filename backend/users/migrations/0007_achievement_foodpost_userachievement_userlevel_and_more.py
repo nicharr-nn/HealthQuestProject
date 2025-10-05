@@ -51,9 +51,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "image",
-                    models.ImageField(
-                        blank=True, null=True, upload_to="food_posts/"
-                    ),
+                    models.ImageField(blank=True, null=True, upload_to="food_posts/"),
                 ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
@@ -209,9 +207,7 @@ class Migration(migrations.Migration):
                 ("is_public", models.BooleanField(default=True)),
                 (
                     "duration",
-                    models.IntegerField(
-                        default=0, help_text="Duration in minutes"
-                    ),
+                    models.IntegerField(default=0, help_text="Duration in minutes"),
                 ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
