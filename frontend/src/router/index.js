@@ -12,6 +12,8 @@ const CoachPortal = () => import('../views/CoachPortal.vue')
 const CoachDashboard = () => import('../views/CoachDashboard.vue')
 const Workout = () => import('../views/Workout.vue')
 const Program = () => import('../views/Program.vue')
+const MemberConnect = () => import('../views/MemberConnect.vue')
+const FoodRecipe = () => import('../views/FoodRecipe.vue')
 
 const routes = [
   { path: '/', name: 'LandingPage', component: LandingPage },
@@ -28,6 +30,18 @@ const routes = [
     path: '/workout/:id',
     name: 'Program',
     component: Program,
+    props: true,
+  },
+  {
+    path: '/coach',
+    name: 'MemberConnect',
+    component: MemberConnect,
+    props: true,
+  },
+  {
+    path: '/food-recipe',
+    name: 'FoodRecipe',
+    component: FoodRecipe,
     props: true,
   },
 ]
