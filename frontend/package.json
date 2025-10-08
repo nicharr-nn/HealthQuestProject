@@ -36,6 +36,9 @@
     "vite": "^7.0.6",
     "vite-plugin-vue-devtools": "^8.0.0"
   },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "^4.52.4"
+  },
   "description": "This template should help get you started developing with Vue 3 in Vite.",
   "main": "eslint.config.js",
   "keywords": [],
