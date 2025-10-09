@@ -130,7 +130,7 @@
 
         <!-- Today's Workout Card -->
         <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-lg">
-          <div class="flex flex-col sm:flex-row items-start justify-between mb-4 gap-2">
+          <div v-if="store.profile?.role === 'member'" class="flex flex-col sm:flex-row items-start justify-between mb-4 gap-2">
             <div class="font-body w-full">
               <h3 class="font-subtitle text-xl sm:text-2xl font-bold text-gray-800">Today's Workout</h3>
               <div class="flex flex-wrap items-center gap-2 mt-2">
@@ -142,11 +142,11 @@
                 </span>
               </div>
             </div>
+            
+            <p class="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">
+              {{ todayWorkout.description || 'No workout assigned today' }}
+            </p>
           </div>
-          
-          <p class="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">
-            {{ todayWorkout.description || 'No workout assigned today' }}
-          </p>
           
           <button 
             @click="startWorkout"

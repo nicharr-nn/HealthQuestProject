@@ -186,7 +186,7 @@
               <h3 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 mb-2">
                 Day Completed!
               </h3>
-              <p class="text-gray-600">You earned <span class="font-bold text-indigo-600">+50 XP</span></p>
+              <p class="text-gray-600">You earned <span class="font-bold text-indigo-600">+{{ xp }} XP</span></p>
             </div>
           </div>
         </div>
@@ -212,6 +212,7 @@ const daysContainer = ref(null)
 const workoutStates = ref({})
 const dayCompletionStates = ref({})
 const isCompletingDay = ref(false)
+const xp = ref(0)
 
 const selectedDayInfo = computed(() => days.value.find(d => d.id === selectedDay.value))
 
@@ -290,6 +291,15 @@ function allWorkoutsComplete(dayId) {
   return getCompletedCount(dayId) === day.video_links.length
 }
 
+async function getCurrentXp() {
+  const res = await fetch(`http://127.0.0.1:8000/api/user-info/`, {
+    credentials: "include",
+  })
+  if (!res.ok) throw new Error("Failed to load user info")
+  const data = await res.json()
+  return data?.user?.profile?.current_level?.xp ?? 0
+}
+
 async function completeDay(dayId) {
   if (!allWorkoutsComplete(dayId)) {
     alert('Please complete all workouts first!')
@@ -298,26 +308,31 @@ async function completeDay(dayId) {
 
   isCompletingDay.value = true
   try {
+    const before = await getCurrentXp()
+
     const res = await fetch(`http://127.0.0.1:8000/api/workout/day/${dayId}/complete/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({
-        programId: programId,
-        dayId: dayId,
-        completedAt: new Date().toISOString()
-      })
+      credentials: 'include'
     })
+
     if (!res.ok) throw new Error('Failed to complete day')
     dayCompletionStates.value[dayId] = true
-    alert('🎉 Congratulations! You earned 50 XP!')
 
-  } catch {
+    const after = await getCurrentXp()
+
+    xp.value = Math.max(0, (after || 0) - (before || 0))
+    console.log('XP before:', before, 'after:', after, 'earned:', xp.value)
+
+    alert(`🎉 Congratulations! You earned ${xp.value} XP!`)
+  } catch (err) {
+    console.error(err)
     alert('Failed to complete day. Please try again.')
   } finally {
     isCompletingDay.value = false
   }
 }
+
 </script>
 
 <style scoped>
