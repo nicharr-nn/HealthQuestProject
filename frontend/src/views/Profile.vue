@@ -441,7 +441,7 @@ function cancelEdit() {
 async function deleteAccount() {
   if (!confirm('Are you sure you want to deactivate your account?')) return
 
-  const res = await fetch(`http://127.0.0.1:8000/api/user/${userStore.user.id}/`, {
+  const res = await fetch(`http://127.0.0.1:8000/api/user-info/`, {
     method: 'DELETE',
     credentials: 'include',
     headers: {
