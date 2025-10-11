@@ -2,6 +2,7 @@ from django.apps import apps
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from rest_framework.test import APIClient
+from django.urls import reverse
 
 User = get_user_model()
 
@@ -29,7 +30,7 @@ class UserDeletionTests(TestCase):
     def test_user_deletion_via_api(self):
         """User DELETE request should delete the user account permanently"""
         self.client.force_authenticate(user=self.user)
-        response = self.client.delete(f"/api/user/{self.user.id}/")
+        response = self.client.delete(f"/api/user-info/")
 
         self.assertEqual(response.status_code, 200, response.data)
         self.assertEqual(response.data["message"], "Account deleted permanently")
@@ -52,5 +53,6 @@ class UserDeletionTests(TestCase):
 
     def test_unauthenticated_cannot_delete(self):
         """Unauthenticated users cannot deactivate accounts"""
-        response = self.client.delete(f"/api/user/{self.user.id}/")
+        url = reverse("user-info")
+        response = self.client.delete(url)
         self.assertIn(response.status_code, [401, 403])

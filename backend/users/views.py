@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
+from rest_framework import status
 
 from .models import Achievement, UserAchievement
 from .serializers import UserProfileSerializer, UserSerializer
@@ -42,8 +43,11 @@ def user_info(request):
     
     # 4. DELETE → Allow account deletion
     elif request.method == "DELETE":
-        user.delete()
-        return Response({"message": "Account deleted permanently"})
+        if not user.is_authenticated:
+            return Response({"detail": "Authentication required."}, status=401)
+        else:
+            user.delete()
+            return Response({"message": "Account deleted permanently"})
 
 
 @api_view(["POST"])
