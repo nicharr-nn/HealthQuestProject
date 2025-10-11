@@ -10,7 +10,7 @@
           HealthQuest
         </RouterLink>
 
-        <!-- Mobile Menu Button -->
+        <!-- Menu Button -->
         <button 
           @click="toggleMobileMenu"
           class="md:hidden text-white hover:text-[#c7d2fe] transition-colors"
@@ -35,6 +35,16 @@
 
         <!-- Desktop Navigation Links -->
         <ul class="hidden md:flex items-center space-x-8">
+           <li v-if="userStore.role === 'member'">
+            <RouterLink
+              to="/coach"
+              class="font-body text-white hover:text-[#c7d2fe] transition-colors"
+              active-class="text-[#c7d2fe]"
+            >
+              Coach
+            </RouterLink>
+          </li>
+
           <li>
             <RouterLink
               to="/dashboard"
@@ -157,8 +167,12 @@
 <script setup>
 import { ref } from 'vue'
 import { RouterLink } from 'vue-router'
+import { useUserStore } from '@/stores/user'
+
 
 const mobileMenuOpen = ref(false)
+const userStore = useUserStore()             
+
 
 function toggleMobileMenu() {
   mobileMenuOpen.value = !mobileMenuOpen.value
