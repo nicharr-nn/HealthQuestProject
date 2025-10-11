@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404
 from django.http import FileResponse, Http404
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
+from uritemplate import partial
 
 
 from .models import Recipe
@@ -141,3 +142,28 @@ def delete_recipe(request, id):
 
     recipe.delete()
     return Response({"detail": "Recipe deleted successfully."}, status=status.HTTP_200_OK)
+
+@api_view(["PUT", "PATCH"])
+@permission_classes([IsAuthenticated])
+def update_recipe(request, id):
+    """PUT/PATCH to update a recipe"""
+    recipe = get_object_or_404(Recipe, pk=id)
+    user_profile = request.user.userprofile
+
+    if recipe.user_profile != user_profile:
+        if user_profile.role != "coach" and user_profile.get_current_level().level != "Gold":
+            return Response(
+                {"detail": "Permission denied. You can only update your own recipes."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+    if request.method in ["PUT", "PATCH"]:
+
+        serializer = RecipeSerializer(
+            recipe, data=request.data, partial=(request.method == "PATCH")
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"success": True, "recipe": serializer.data}, status=200)
+    
+        return Response(serializer.errors, status=400)
