@@ -52,6 +52,8 @@ urlpatterns = [
     path("api/fitness/", include("fitness.urls")),
     path("api/workout/", include("workout.urls")),
     path("api/coach/", include("coach.urls")),
+    path("api/recipe/", include("recipe.urls")),
+    path("api/foodpost/", include("foodpost.urls")),
 ]
 
 if settings.DEBUG:

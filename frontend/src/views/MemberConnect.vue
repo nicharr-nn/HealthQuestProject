@@ -132,13 +132,13 @@ onMounted(() => {
 //     name: 'Coach Olivia Chen',
 //     email: 'olivia.chen@example.com'
 //   }
-//   coachStatus.value = 'accepted' // Already connected
-//   currentCoach.value = {
-//     name: 'Coach Emily Carter',
-//     email: 'emily.carter@example.com',
-//     specialization: 'Yoga & Mindfulness',
-//     joinedDate: '2024-05-10'
-//   }
+  coachStatus.value = 'accepted' // Already connected
+  currentCoach.value = {
+    name: 'Coach Emily Carter',
+    email: 'emily.carter@example.com',
+    specialization: 'Yoga & Mindfulness',
+    joinedDate: '2024-05-10'
+  }
  })
 
 // 📝 Send request (mock)
