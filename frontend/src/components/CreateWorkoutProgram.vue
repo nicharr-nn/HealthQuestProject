@@ -82,6 +82,27 @@
               <option>Full Body</option>
             </select>
           </div>
+
+          <div class="form-group">
+            <label class="form-label" for="visibility">Program Visibility *</label>
+            <select
+              id="visibility"
+              v-model="workoutProgram.visibility"
+              class="form-input"
+              required
+            >
+              <option value="" disabled>Select visibility</option>
+              <option value="public">Public - Available to all normal users</option>
+              <option value="private">Private - Only for my members</option>
+            </select>
+            <p class="form-hint">
+              {{ workoutProgram.visibility === 'public'
+                ? '✓ This program will be visible to all users in the public library'
+                : workoutProgram.visibility === 'private'
+                ? '✓ This program will only be accessible to your approved members'
+                : 'Choose who can access this program' }}
+            </p>
+          </div>
         </form>
       </div>
 
@@ -310,6 +331,7 @@ interface Props {
     level: string
     duration: number
     category: string
+    visibility: string
     dailyWorkouts: Record<number, DailyWorkout[]>
   } | null
 }
@@ -323,6 +345,7 @@ const emit = defineEmits<{
     level: string
     duration: number
     category: string
+    visibility: string
     dailyWorkouts: Record<number, DailyWorkout[]>
   }]
   cancel: []
@@ -350,6 +373,7 @@ interface WorkoutProgram {
   level: string
   duration: number
   category: string
+  visibility: string
   dailyWorkouts: Record<number, DailyWorkout[]>
 }
 
@@ -359,6 +383,7 @@ const workoutProgram = reactive<WorkoutProgram>({
   level: '',
   duration: 30,
   category: '',
+  visibility: '',
   dailyWorkouts: {}
 })
 
@@ -380,6 +405,7 @@ const canSubmitProgram = computed(() => {
   return workoutProgram.name &&
          workoutProgram.level &&
          workoutProgram.duration &&
+         workoutProgram.visibility &&
          Object.keys(workoutProgram.dailyWorkouts).length > 0
 })
 
@@ -473,7 +499,7 @@ function resetCurrentWorkout() {
 
 function submitProgram() {
   if (!canSubmitProgram.value) {
-    alert('Please fill in all required fields and add at least one daily workout')
+    alert('Please fill in all required fields (including visibility) and add at least one daily workout')
     return
   }
 
@@ -484,6 +510,7 @@ function submitProgram() {
     level: workoutProgram.level,
     duration: workoutProgram.duration,
     category: workoutProgram.category,
+    visibility: workoutProgram.visibility,
     dailyWorkouts: { ...workoutProgram.dailyWorkouts }
   })
 }
@@ -494,6 +521,7 @@ function resetProgram() {
   workoutProgram.level = ''
   workoutProgram.duration = 30
   workoutProgram.category = ''
+  workoutProgram.visibility = ''
   workoutProgram.dailyWorkouts = {}
 
   resetCurrentWorkout()
@@ -507,6 +535,7 @@ watch(() => props.existingProgram, (program) => {
     workoutProgram.level = program.level
     workoutProgram.duration = program.duration
     workoutProgram.category = program.category
+    workoutProgram.visibility = program.visibility
     workoutProgram.dailyWorkouts = { ...program.dailyWorkouts }
   } else {
     resetProgram()
@@ -542,6 +571,13 @@ watch(() => props.existingProgram, (program) => {
 .form-input:focus {
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+}
+
+.form-hint {
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 6px;
+  line-height: 1.4;
 }
 
 .form-section-title {
