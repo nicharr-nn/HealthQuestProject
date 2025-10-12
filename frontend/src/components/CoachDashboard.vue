@@ -65,6 +65,11 @@
           <div class="stat-number">{{ programsWithVideos }}</div>
           <div class="stat-label">Programs with Videos</div>
         </div>
+        <div class="stat-card clickable" @click="emit('view-members')">
+          <div class="stat-number">5</div>
+          <div class="stat-label">My Members</div>
+          <div class="stat-action">View All →</div>
+        </div>
         <div class="stat-card clickable" @click="emit('view-requests')">
           <div class="stat-number pending-highlight">3</div>
           <div class="stat-label">Pending Requests</div>
@@ -176,6 +181,7 @@ import CreateWorkoutProgram from './CreateWorkoutProgram.vue'
 
 const emit = defineEmits<{
   (e: 'view-requests'): void
+  (e: 'view-members'): void
 }>()
 
 interface WorkoutSession {
