@@ -4,6 +4,13 @@
       <div class="header-content">
         <h1 class="dashboard-title">Coach Dashboard</h1>
         <p class="dashboard-subtitle">Manage your workout programs and track your coaching progress</p>
+        <div class="coach-id-display">
+          <span class="coach-id-label">Your Coach ID:</span>
+          <span class="coach-id-value">{{ coachID }}</span>
+          <button class="btn-copy" @click="copyCoachID" title="Copy Coach ID">
+            📋 Copy
+          </button>
+        </div>
       </div>
       <div class="header-actions">
         <button
@@ -190,6 +197,7 @@ interface WorkoutProgram {
   createdAt: Date
 }
 
+const coachID = ref('COACH_' + Math.random().toString(36).substr(2, 9).toUpperCase()) // In real app, this comes from backend
 const approvalStatus = ref('pending') // 'pending', 'approved', 'rejected'
 const showCreateProgram = ref(false)
 const editingProgram = ref<WorkoutProgram | null>(null)
@@ -198,6 +206,11 @@ const filterLevel = ref('')
 const programs = ref<WorkoutProgram[]>([
   // Sample data - in real app this would come from API
 ])
+
+function copyCoachID() {
+  navigator.clipboard.writeText(coachID.value)
+  alert('Coach ID copied to clipboard! Share this with your members so they can find you.')
+}
 
 const isApproved = computed(() => approvalStatus.value === 'approved')
 
@@ -293,7 +306,49 @@ function handleProgramCreated(newProgram: Omit<WorkoutProgram, 'id' | 'createdAt
 .dashboard-subtitle {
   color: #6b7280;
   font-size: 16px;
-  margin: 0;
+  margin: 0 0 12px 0;
+}
+
+.coach-id-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #eff6ff;
+  border: 1px solid #3b82f6;
+  border-radius: 8px;
+  width: fit-content;
+}
+
+.coach-id-label {
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.coach-id-value {
+  font-size: 14px;
+  color: #1e40af;
+  font-weight: 700;
+  font-family: monospace;
+  letter-spacing: 0.5px;
+}
+
+.btn-copy {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-copy:hover {
+  background: #2563eb;
+  transform: scale(1.05);
 }
 
 .header-actions {
