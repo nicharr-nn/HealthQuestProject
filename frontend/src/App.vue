@@ -20,27 +20,27 @@
       <!-- Coach Portal for registration, then Dashboard for approved coaches -->
       <CoachPortal @approved="showDashboard = true" v-if="!showDashboard" />
 
-      <!-- Page Navigation (only show when dashboard is visible) -->
-      <div v-if="showDashboard" class="page-nav">
-        <button
-          class="page-btn"
-          :class="{ active: currentPage === 'dashboard' }"
-          @click="currentPage = 'dashboard'"
-        >
-          Dashboard
-        </button>
-        <button
-          class="page-btn"
-          :class="{ active: currentPage === 'requests' }"
-          @click="currentPage = 'requests'"
-        >
-          Member Requests
-        </button>
-      </div>
-
-      <!-- Show Dashboard or Member Requests based on currentPage -->
-      <CoachDashboard v-if="showDashboard && currentPage === 'dashboard'" />
-      <MemberRequests v-if="showDashboard && currentPage === 'requests'" />
+      <!-- Show Dashboard, Member Requests, Member Management, or Food Diary based on currentPage -->
+      <CoachDashboard
+        v-if="showDashboard && currentPage === 'dashboard'"
+        @view-requests="currentPage = 'requests'"
+        @view-members="currentPage = 'members'"
+      />
+      <MemberRequests
+        v-if="showDashboard && currentPage === 'requests'"
+        @back-to-dashboard="currentPage = 'dashboard'"
+      />
+      <MemberManagement
+        v-if="showDashboard && currentPage === 'members'"
+        @back-to-dashboard="currentPage = 'dashboard'"
+        @view-food-diary="(memberId) => viewFoodDiary(memberId, 'Member')"
+      />
+      <FoodDiary
+        v-if="showDashboard && currentPage === 'food-diary'"
+        :member-id="selectedMemberId"
+        :member-name="selectedMemberName"
+        @back-to-members="currentPage = 'members'"
+      />
     </div>
   </div>
 </template>
@@ -50,9 +50,19 @@ import { ref } from 'vue'
 import CoachPortal from './components/CoachPortal.vue'
 import CoachDashboard from './components/CoachDashboard.vue'
 import MemberRequests from './components/MemberRequests.vue'
+import MemberManagement from './components/MemberManagement.vue'
+import FoodDiary from './components/FoodDiary.vue'
 
 const showDashboard = ref(false)
-const currentPage = ref('dashboard') // 'dashboard' or 'requests'
+const currentPage = ref('dashboard') // 'dashboard', 'requests', 'members', or 'food-diary'
+const selectedMemberId = ref('')
+const selectedMemberName = ref('')
+
+function viewFoodDiary(memberId, memberName) {
+  selectedMemberId.value = memberId
+  selectedMemberName.value = memberName
+  currentPage.value = 'food-diary'
+}
 </script>
 
 <style>
