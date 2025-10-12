@@ -1,6 +1,9 @@
 <template>
   <div class="member-requests">
     <div class="page-header">
+      <button class="back-btn" @click="emit('back-to-dashboard')">
+        ← Back to Dashboard
+      </button>
       <div class="header-content">
         <h1 class="page-title">Member Requests</h1>
         <p class="page-subtitle">Review and manage membership requests from potential clients</p>
