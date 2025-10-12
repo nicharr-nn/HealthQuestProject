@@ -17,30 +17,30 @@
 
     <!-- Main Container -->
     <div class="container">
-      <!-- Page Navigation
-      <div class="page-nav">
-        <button
-          class="page-btn"
-          :class="{ active: currentPage === 'portal' }"
-          @click="currentPage = 'portal'"
-        >
-          Coach Portal
-        </button>
-        <button
-          class="page-btn"
-          :class="{ active: currentPage === 'create-workout' }"
-          @click="currentPage = 'create-workout'"
-        >
-          Create Workout Program
-        </button>
-      </div> -->
+      <!-- Coach Portal for registration, then Dashboard for approved coaches -->
+      <CoachPortal @approved="showDashboard = true" v-if="!showDashboard" />
 
-      <!-- Dynamic Component Display -->
-      <CoachPortal
-        v-if="currentPage === 'portal'"
-        @navigateToCreateProgram="currentPage = 'create-workout'"
-      />
-      <CreateWorkoutProgram v-if="currentPage === 'create-workout'" />
+      <!-- Page Navigation (only show when dashboard is visible) -->
+      <div v-if="showDashboard" class="page-nav">
+        <button
+          class="page-btn"
+          :class="{ active: currentPage === 'dashboard' }"
+          @click="currentPage = 'dashboard'"
+        >
+          Dashboard
+        </button>
+        <button
+          class="page-btn"
+          :class="{ active: currentPage === 'requests' }"
+          @click="currentPage = 'requests'"
+        >
+          Member Requests
+        </button>
+      </div>
+
+      <!-- Show Dashboard or Member Requests based on currentPage -->
+      <CoachDashboard v-if="showDashboard && currentPage === 'dashboard'" />
+      <MemberRequests v-if="showDashboard && currentPage === 'requests'" />
     </div>
   </div>
 </template>
@@ -48,9 +48,11 @@
 <script setup>
 import { ref } from 'vue'
 import CoachPortal from './components/CoachPortal.vue'
-import CreateWorkoutProgram from './components/CreateWorkoutProgram.vue'
+import CoachDashboard from './components/CoachDashboard.vue'
+import MemberRequests from './components/MemberRequests.vue'
 
-const currentPage = ref('portal')
+const showDashboard = ref(false)
+const currentPage = ref('dashboard') // 'dashboard' or 'requests'
 </script>
 
 <style>
