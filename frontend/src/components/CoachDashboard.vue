@@ -58,6 +58,11 @@
           <div class="stat-number">{{ programsWithVideos }}</div>
           <div class="stat-label">Programs with Videos</div>
         </div>
+        <div class="stat-card clickable" @click="emit('view-requests')">
+          <div class="stat-number pending-highlight">3</div>
+          <div class="stat-label">Pending Requests</div>
+          <div class="stat-action">View All →</div>
+        </div>
       </div>
 
       <!-- Programs List -->
@@ -161,6 +166,10 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import CreateWorkoutProgram from './CreateWorkoutProgram.vue'
+
+const emit = defineEmits<{
+  (e: 'view-requests'): void
+}>()
 
 interface WorkoutSession {
   name: string
@@ -359,6 +368,17 @@ function handleProgramCreated(newProgram: Omit<WorkoutProgram, 'id' | 'createdAt
   padding: 24px;
   text-align: center;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: all 0.2s ease;
+}
+
+.stat-card.clickable {
+  cursor: pointer;
+}
+
+.stat-card.clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  border-color: #3b82f6;
 }
 
 .stat-number {
@@ -368,9 +388,20 @@ function handleProgramCreated(newProgram: Omit<WorkoutProgram, 'id' | 'createdAt
   margin-bottom: 8px;
 }
 
+.stat-number.pending-highlight {
+  color: #f59e0b;
+}
+
 .stat-label {
   color: #6b7280;
   font-weight: 500;
+}
+
+.stat-action {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #3b82f6;
+  font-weight: 600;
 }
 
 .programs-section {
