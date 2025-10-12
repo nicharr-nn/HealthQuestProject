@@ -79,6 +79,7 @@
               </div>
               <div class="member-details">
                 <div class="member-name">{{ request.memberName }}</div>
+                <div class="member-id">ID: {{ request.memberId }}</div>
                 <div class="member-email">{{ request.email }}</div>
               </div>
             </div>
@@ -89,6 +90,10 @@
 
           <!-- Request Info -->
           <div class="request-info">
+            <div class="info-row">
+              <span class="info-label">Member ID:</span>
+              <span class="info-value member-id-value">{{ request.memberId }}</span>
+            </div>
             <div class="info-row">
               <span class="info-label">Program:</span>
               <span class="info-value">{{ request.programName || 'Any Program' }}</span>
@@ -160,6 +165,7 @@ const emit = defineEmits<{
 
 interface MemberRequest {
   id: string
+  memberId: string
   memberName: string
   email: string
   programName?: string
@@ -176,6 +182,7 @@ const activeTab = ref<'all' | 'pending' | 'approved' | 'rejected'>('all')
 const requests = ref<MemberRequest[]>([
   {
     id: 'req_001',
+    memberId: 'MEM_JS2024',
     memberName: 'John Smith',
     email: 'john.smith@example.com',
     programName: 'Full Body Strength',
@@ -187,6 +194,7 @@ const requests = ref<MemberRequest[]>([
   },
   {
     id: 'req_002',
+    memberId: 'MEM_SJ2024',
     memberName: 'Sarah Johnson',
     email: 'sarah.j@example.com',
     programName: 'HIIT Training',
@@ -198,6 +206,7 @@ const requests = ref<MemberRequest[]>([
   },
   {
     id: 'req_003',
+    memberId: 'MEM_MC2024',
     memberName: 'Mike Chen',
     email: 'mike.chen@example.com',
     experienceLevel: 'Advanced',
@@ -208,6 +217,7 @@ const requests = ref<MemberRequest[]>([
   },
   {
     id: 'req_004',
+    memberId: 'MEM_ED2024',
     memberName: 'Emily Davis',
     email: 'emily.d@example.com',
     programName: 'Beginner Fitness',
@@ -486,7 +496,15 @@ function contactMember(request: MemberRequest) {
   font-size: 18px;
   font-weight: 600;
   color: #111827;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
+}
+
+.member-id {
+  font-size: 12px;
+  color: #3b82f6;
+  font-weight: 600;
+  font-family: monospace;
+  margin-bottom: 4px;
 }
 
 .member-email {
@@ -541,6 +559,14 @@ function contactMember(request: MemberRequest) {
 .info-value {
   color: #374151;
   font-weight: 600;
+}
+
+.member-id-value {
+  font-family: monospace;
+  color: #3b82f6;
+  background: #eff6ff;
+  padding: 2px 6px;
+  border-radius: 4px;
 }
 
 .request-message {
