@@ -153,6 +153,10 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 
+const emit = defineEmits<{
+  (e: 'back-to-dashboard'): void
+}>()
+
 interface MemberRequest {
   id: string
   memberName: string
