@@ -33,7 +33,7 @@
       <MemberManagement
         v-if="showDashboard && currentPage === 'members'"
         @back-to-dashboard="currentPage = 'dashboard'"
-        @view-food-diary="(memberId) => viewFoodDiary(memberId, 'Member')"
+        @view-food-diary="(memberId, memberName) => viewFoodDiary(memberId, memberName)"
       />
       <FoodDiary
         v-if="showDashboard && currentPage === 'food-diary'"
