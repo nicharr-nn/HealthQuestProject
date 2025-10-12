@@ -90,7 +90,7 @@ import { ref } from 'vue'
 
 const emit = defineEmits<{
   (e: 'back-to-dashboard'): void
-  (e: 'view-food-diary', memberId: string): void
+  (e: 'view-food-diary', memberId: string, memberName: string): void
 }>()
 
 interface Member {
@@ -156,8 +156,7 @@ function viewProgress(member: Member) {
 
 function viewFoodDiary(member: Member) {
   // Emit event to show food diary where coach can comment
-  emit('view-food-diary', member.memberId)
-  alert(`View food diary for ${member.name}\n\nThis will take you to their food diary where you can comment on their meals.`)
+  emit('view-food-diary', member.memberId, member.name)
 }
 
 function sendMessage(member: Member) {
