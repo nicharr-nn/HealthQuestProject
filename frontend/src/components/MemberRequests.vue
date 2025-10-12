@@ -1,9 +1,10 @@
 <template>
   <div class="member-requests">
+    <button class="back-btn" @click="emit('back-to-dashboard')">
+      ← Back to Dashboard
+    </button>
+
     <div class="page-header">
-      <button class="back-btn" @click="emit('back-to-dashboard')">
-        ← Back to Dashboard
-      </button>
       <div class="header-content">
         <h1 class="page-title">Member Requests</h1>
         <p class="page-subtitle">Review and manage membership requests from potential clients</p>
@@ -285,12 +286,34 @@ function contactMember(request: MemberRequest) {
   padding: 24px;
 }
 
+.back-btn {
+  background: transparent;
+  border: none;
+  color: #3b82f6;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 8px 12px;
+  margin-bottom: 16px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: fit-content;
+}
+
+.back-btn:hover {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 24px;
   gap: 20px;
+  margin-bottom: 24px;
 }
 
 .header-content {
