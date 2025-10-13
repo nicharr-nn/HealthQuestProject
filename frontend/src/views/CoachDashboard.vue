@@ -4,6 +4,13 @@
       <div class="header-content">
         <h1 class="dashboard-title">Coach Dashboard</h1>
         <p class="dashboard-subtitle">Manage your workout programs and track your coaching progress</p>
+        <div class="coach-id-display">
+          <span class="coach-id-label">Your Coach ID:</span>
+          <span class="coach-id-value">{{ coachID }}</span>
+          <button class="btn-copy" @click="copyCoachID" title="Copy Coach ID">
+            📋 Copy
+          </button>
+        </div>
       </div>
       <div class="header-actions">
         <button
@@ -57,6 +64,16 @@
         <div class="stat-card">
           <div class="stat-number">{{ programsWithVideos }}</div>
           <div class="stat-label">Programs with Videos</div>
+        </div>
+        <div class="stat-card clickable" @click="emit('view-members')">
+          <div class="stat-number">5</div>
+          <div class="stat-label">My Members</div>
+          <div class="stat-action">View All →</div>
+        </div>
+        <div class="stat-card clickable" @click="emit('view-requests')">
+          <div class="stat-number pending-highlight">3</div>
+          <div class="stat-label">Pending Requests</div>
+          <div class="stat-action">View All →</div>
         </div>
       </div>
 
@@ -161,9 +178,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import CreateWorkoutProgram from '../components/CreateWorkoutProgram.vue'
+import { ref, computed } from 'vue'
+import CreateWorkoutProgram from './CreateWorkoutProgram.vue'
 
+const emit = defineEmits<{
+  (e: 'view-requests'): void
+  (e: 'view-members'): void
+}>()
 interface WorkoutDay {
   day_number: number
   title: string
@@ -187,8 +208,14 @@ const showCreateProgram = ref(false)
 const editingProgram = ref<WorkoutProgram | null>(null)
 const filterLevel = ref('')
 
-const programs = ref<WorkoutProgram[]>([])
+const programs = ref<WorkoutProgram[]>([
+  // Sample data - in real app this would come from API
+])
 
+function copyCoachID() {
+  navigator.clipboard.writeText(coachID.value)
+  alert('Coach ID copied to clipboard! Share this with your members so they can find you.')
+}
 const isApproved = computed(() => approvalStatus.value === 'approved')
 
 const API_BASE = 'http://127.0.0.1:8000/api/workout/programs/'
@@ -371,7 +398,49 @@ async function handleProgramCreated(apiProgram: any) {
 .dashboard-subtitle {
   color: #6b7280;
   font-size: 16px;
-  margin: 0;
+  margin: 0 0 12px 0;
+}
+
+.coach-id-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #eff6ff;
+  border: 1px solid #3b82f6;
+  border-radius: 8px;
+  width: fit-content;
+}
+
+.coach-id-label {
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.coach-id-value {
+  font-size: 14px;
+  color: #1e40af;
+  font-weight: 700;
+  font-family: monospace;
+  letter-spacing: 0.5px;
+}
+
+.btn-copy {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-copy:hover {
+  background: #2563eb;
+  transform: scale(1.05);
 }
 
 .header-actions {
@@ -446,6 +515,17 @@ async function handleProgramCreated(apiProgram: any) {
   padding: 24px;
   text-align: center;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: all 0.2s ease;
+}
+
+.stat-card.clickable {
+  cursor: pointer;
+}
+
+.stat-card.clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  border-color: #3b82f6;
 }
 
 .stat-number {
@@ -455,9 +535,20 @@ async function handleProgramCreated(apiProgram: any) {
   margin-bottom: 8px;
 }
 
+.stat-number.pending-highlight {
+  color: #f59e0b;
+}
+
 .stat-label {
   color: #6b7280;
   font-weight: 500;
+}
+
+.stat-action {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #3b82f6;
+  font-weight: 600;
 }
 
 .programs-section {
