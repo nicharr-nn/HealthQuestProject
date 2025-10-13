@@ -1,9 +1,15 @@
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.response import Response
-from .serializers import UserProfileSerializer, UserSerializer
-from django.core.files.storage import default_storage
+from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
+from django.shortcuts import get_object_or_404
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+
+from .models import Achievement, FoodPost, UserAchievement
+from .serializers import UserProfileSerializer, UserSerializer
+
+User = get_user_model()
 
 
 @api_view(["GET", "PUT", "PATCH"])
@@ -51,45 +57,6 @@ def set_role(request):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-def set_goal(request):
-    """Set user fitness goal"""
-    from django.apps import apps
-
-    FitnessGoal = apps.get_model("users", "FitnessGoal")
-
-    try:
-        profile = request.user.userprofile
-
-        # Only normal users can have fitness goals
-        if profile.role != "normal":
-            return Response(
-                {"detail": "Only normal users can set fitness goals."}, status=400
-            )
-
-        goal_type = request.data.get("goal_type")
-        end_date = request.data.get("end_date")
-
-        if not goal_type:
-            return Response({"detail": "Goal type is required."}, status=400)
-
-        # Create new FitnessGoal
-        FitnessGoal.objects.create(
-            user_profile=profile, goal_type=goal_type, end_date=end_date
-        )
-
-        # Serialize the updated user profile
-        from .serializers import UserSerializer
-
-        serializer = UserSerializer(request.user)
-
-        return Response({"status": "success", "user": serializer.data})
-
-    except Exception as e:
-        return Response({"status": "error", "message": str(e)}, status=400)
-
-
-@api_view(["POST"])
-@permission_classes([IsAuthenticated])
 def update_profile(request):
     """Update user profile data"""
     try:
@@ -131,3 +98,146 @@ def upload_photo(request):
             "photo_url": full_url,
         }
     )
+
+
+@api_view(["GET", "PUT", "PATCH", "DELETE"])
+@permission_classes([IsAuthenticated])
+def user_detail(request, id):
+    """Retrieve, update, or deactivate user account"""
+    if request.user.id != id:
+        return Response({"detail": "Not authorized."}, status=403)
+
+    user = get_object_or_404(User, pk=id)
+
+    if request.method == "GET":
+        return Response(UserSerializer(user).data)
+
+    elif request.method in ["PUT", "PATCH"]:
+        profile = getattr(user, "userprofile", None)
+        if not profile:
+            return Response({"error": "Profile not found"}, status=404)
+
+        serializer = UserProfileSerializer(profile, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
+
+    elif request.method == "DELETE":
+        user.delete()
+        return Response({"message": "Account deleted permanently"})
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def achievements(request):
+    """List all achievements"""
+    data = Achievement.objects.all().values("id", "title", "description", "xp_reward")
+    return Response(list(data))
+
+
+@api_view(["GET, DELETE"])
+@permission_classes([IsAuthenticated])
+def user_achievements(request):
+    """get or remove an achievement for the authenticated user"""
+    profile = request.user.userprofile
+
+    if request.method == "GET":
+        achievements = UserAchievement.objects.filter(
+            user_profile=profile
+        ).select_related("achievement")
+        data = [{"id": ua.id, "date_earned": ua.date_earned} for ua in achievements]
+        return Response(data)
+
+    elif request.method == "DELETE":
+        ach_id = request.data.get("achievement_id")
+        ua = get_object_or_404(UserAchievement, pk=ach_id, user_profile=profile)
+        ua.delete()
+        return Response({"message": "Achievement removed", "achievement_id": ach_id})
+
+
+@api_view(["GET, POST"])
+@permission_classes([IsAuthenticated])
+def food_posts(request):
+    """List or create food posts"""
+    if request.method == "GET":
+        posts = FoodPost.objects.all().select_related("user_profile")
+        data = [
+            {
+                "id": p.id,
+                "title": p.title,
+                "content": p.content,
+                "visibility": p.visibility,
+                "image": p.image.url if p.image else None,
+                "author": p.user_profile.user.username,
+                "created_at": p.created_at,
+            }
+            for p in posts
+        ]
+        return Response(data)
+
+    elif request.method == "POST":
+        profile = request.user.userprofile
+        post = FoodPost.objects.create(
+            user_profile=profile,
+            title=request.data.get("title"),
+            content=request.data.get("content"),
+        )
+        return Response({"message": "Post created", "post_id": post.id})
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def user_levels(request):
+    profile = getattr(request.user, "userprofile", None)
+    if not profile:
+        return Response({"detail": "Profile not found"}, status=400)
+    current = (
+        profile.get_current_level() if hasattr(profile, "get_current_level") else None
+    )
+
+    next_xp = 1000 if current and current.level_rank == 1 else None
+    payload = {
+        "current": (
+            {
+                "level": current.level,
+                "level_rank": current.level_rank,
+                "xp": current.xp,
+            }
+            if current
+            else None
+        ),
+        "next_xp": next_xp,
+    }
+    return Response(payload)
+
+
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# def food_post_comment(request, id):
+#     """Add a comment to a food post"""
+#     profile = request.user.userprofile
+#     post = get_object_or_404(FoodPost, pk=id)
+
+#     comment = FoodPostComment.objects.create(
+#         post=post, user_profile=profile, content=request.data.get("content")
+#     )
+#     return Response({"message": "Comment added", "comment_id": comment.id})
+
+
+@api_view(["PUT", "PATCH", "DELETE"])
+@permission_classes([IsAuthenticated])
+def food_post_update(request, id):
+    """update or delete to a food post"""
+    profile = request.user.userprofile
+    post = get_object_or_404(FoodPost, pk=id, user_profile=profile)
+
+    if request.method in ["PUT", "PATCH"]:
+        post.title = request.data.get("title", post.title)
+        post.content = request.data.get("description", post.description)
+        post.save()
+        return Response({"message": "Post updated"})
+
+    elif request.method == "DELETE":
+        post.delete()
+        return Response({"message": "Post deleted"})
