@@ -33,19 +33,44 @@ def food_posts(request):
         )
         return Response({"message": "Post created", "post_id": post.id})
 
-@api_view(["PUT", "PATCH", "DELETE"])
+@api_view(["PUT", "PATCH"])
 @permission_classes([IsAuthenticated])
 def food_post_update(request, id):
-    """update or delete to a food post"""
+    """update to a food post"""
     profile = request.user.userprofile
     post = get_object_or_404(FoodPost, pk=id, user_profile=profile)
 
     if request.method in ["PUT", "PATCH"]:
         post.title = request.data.get("title", post.title)
-        post.content = request.data.get("description", post.description)
+        post.content = request.data.get("content", post.content)
         post.save()
         return Response({"message": "Post updated"})
 
-    elif request.method == "DELETE":
-        post.delete()
-        return Response({"message": "Post deleted"})
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def upload_food_post_image(request, id):
+    """Upload an image for a food post"""
+    profile = request.user.userprofile
+    post = get_object_or_404(FoodPost, pk=id, user_profile=profile)
+
+    if "image" not in request.FILES:
+        return Response({"error": "No image provided"}, status=400)
+
+    post.image = request.FILES["image"]
+    post.save()
+    return Response(
+        {
+            "message": "Image uploaded",
+            "image_url": post.image.url if post.image else None,
+        },
+        status=200,
+    )
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def food_post_delete(request, id):
+    """Delete a food post"""
+    profile = request.user.userprofile
+    post = get_object_or_404(FoodPost, pk=id, user_profile=profile)
+    post.delete()
+    return Response({"message": "Post deleted"}, status=204)

@@ -6,7 +6,6 @@ from django.shortcuts import get_object_or_404
 from django.http import FileResponse, Http404
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
-from uritemplate import partial
 
 
 from .models import Recipe
@@ -156,14 +155,14 @@ def update_recipe(request, id):
                 {"detail": "Permission denied. You can only update your own recipes."},
                 status=status.HTTP_403_FORBIDDEN,
             )
+    partial = request.method == "PATCH"
+    serializer = RecipeSerializer(recipe, data=request.data, partial=partial)
 
-    if request.method in ["PUT", "PATCH"]:
-
-        serializer = RecipeSerializer(
-            recipe, data=request.data, partial=(request.method == "PATCH")
+    if serializer.is_valid():
+        serializer.save()
+        return Response(
+            {"success": True, "recipe": serializer.data},
+            status=status.HTTP_200_OK,
         )
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"success": True, "recipe": serializer.data}, status=200)
-    
-        return Response(serializer.errors, status=400)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -71,3 +71,5 @@ class WorkoutDayCompletionTest(TestCase):
             WorkoutDayCompletion.objects.filter(user_profile=self.profile, workout_day=self.workout_day).exists(),
             "WorkoutDayCompletion record should exist after completion"
         )
+
+# in backend : python manage.py test workout
