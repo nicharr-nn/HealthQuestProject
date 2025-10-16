@@ -249,17 +249,39 @@ def workout_day_videos(request, id):
         )
 
 
-@api_view(["POST"])
+@api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def complete_workout_day(request, id):
     profile = request.user.userprofile
     workout_day = get_object_or_404(WorkoutDay, pk=id)
 
-    # prevent duplicate
-    if WorkoutDayCompletion.objects.filter(
+    # Check if already completed
+    completion = WorkoutDayCompletion.objects.filter(
         user_profile=profile, workout_day=workout_day
-    ).exists():
-        return Response({"message": "Already completed"}, status=400)
+    ).first()
+
+    # check completion status
+    if request.method == "GET":
+        if completion:
+            return Response(
+                {
+                    "completed": True,
+                    "xp_earned": completion.xp_earned,
+                    "completed_at": completion.completed_at,
+                }
+            )
+        return Response({"completed": False})
+
+    # mark as completed
+    if completion:
+        return Response(
+            {
+                "message": "Already completed",
+                "completed": True,
+                "xp_earned": completion.xp_earned,
+            },
+            status=status.HTTP_200_OK,
+        )
 
     # calculate XP
     xp_value = calculate_xp(
