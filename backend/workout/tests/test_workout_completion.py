@@ -42,6 +42,10 @@ class WorkoutDayCompletionTest(TestCase):
             duration=45,
         )
 
+        self.program.days.add(self.workout_day)
+        self.program.save()
+        self.workout_day.save()
+
         # Log in as normal user
         self.client.force_login(self.user)
 
