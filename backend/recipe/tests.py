@@ -150,3 +150,5 @@ class RecipeTests(TestCase):
         self.assertEqual(edit_response.status_code, 200)
         self.assertEqual(edit_response.data['success'], True)
         self.client.logout()
+
+# run the tests in backend with: python manage.py test recipe

@@ -180,7 +180,7 @@
         </div>
 
         <!-- Recipe Library Card -->
-        <div class="bg-gradient-to-br from-[#f4e285] to-[#f4e285] rounded-3xl p-5 sm:p-6 shadow-lg">
+        <div v-if="currentLevel !== 'Bronze'" class="bg-gradient-to-br from-[#f4e285] to-[#f4e285] rounded-3xl p-5 sm:p-6 shadow-lg">
           <div class="flex items-start justify-between mb-3 sm:mb-4">
             <h3 class="font-subtitle text-base sm:text-lg text-gray-800">Recipe Library</h3>
             <div class="font-body bg-emerald-500 text-white px-2.5 py-1 rounded-lg text-[10px] font-extrabold">
