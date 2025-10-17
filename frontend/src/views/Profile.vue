@@ -189,7 +189,7 @@
                         </template>
                         <template v-else>
                           <span class="text-teal-600 text-lg font-medium break-words">
-                            {{ profile.location }}
+                            {{ formatLocationName(profile.location) }}
                           </span>
                         </template>
                       </div>
@@ -374,6 +374,19 @@ function formatGoalName(goalValue) {
   return goalMap[goalValue] || goalValue;
 }
 
+function formatLocationName(locationValue) {
+  const locationMap = {
+    'TH': 'Thailand',
+    'USA': 'United States',
+    'UK': 'United Kingdom',
+    'JP': 'Japan',
+    'LA': 'Laos',
+    'KR': 'South Korea',
+    'O': 'Other'
+  };
+  return locationMap[locationValue] || locationValue;
+} 
+
 function handleFileChange(event) {
   selectedFile.value = event.target.files[0]
   uploadMessage.value = `Selected file: ${selectedFile.value.name}`
@@ -494,7 +507,6 @@ async function saveChanges() {
 }
 
 const profileComplete = ref(userStore.profile_complete)
-const isAuthenticated = computed(() => userStore.isAuthenticated)
 
 async function fetchUserProfile() {
   try {

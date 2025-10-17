@@ -56,7 +56,6 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useUserStore } from '@/stores/user'
 
 const isOpen = ref(false)
 </script>
