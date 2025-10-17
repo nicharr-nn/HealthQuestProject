@@ -30,16 +30,16 @@ def user_info(request):
 
     # 3. PUT/PATCH → Update profile
     elif request.method in ["PUT", "PATCH"]:
-        if not user.is_authenticated:
-            return Response({"detail": "Authentication required."}, status=401)
+        profile = request.user.userprofile
+        if not profile:
+            return Response({"error": "Profile not found"}, status=404)
 
-        serializer = UserSerializer(
-            user, data=request.data, partial=(request.method == "PATCH")
-        )
+        serializer = UserProfileSerializer(profile, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response({"isAuthenticated": True, "user": serializer.data})
+            return Response(serializer.data)
         return Response(serializer.errors, status=400)
+    
     
     # 4. DELETE → Allow account deletion
     elif request.method == "DELETE":
