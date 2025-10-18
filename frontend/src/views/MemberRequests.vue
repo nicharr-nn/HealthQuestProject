@@ -1,6 +1,6 @@
 <template>
   <div class="member-requests">
-     <button class="btn primary" @click="goBackToDashboard">
+    <button class="btn primary" @click="goBackToDashboard">
       ← Back to Dashboard
     </button>
 
@@ -23,39 +23,27 @@
 
     <!-- Filter Tabs -->
     <div class="filter-tabs">
-      <button
-        class="tab-btn"
-        :class="{ active: activeTab === 'all' }"
-        @click="activeTab = 'all'"
-      >
+      <button class="tab-btn" :class="{ active: activeTab === 'all' }" @click="activeTab = 'all'">
         All Requests ({{ requests.length }})
       </button>
-      <button
-        class="tab-btn"
-        :class="{ active: activeTab === 'pending' }"
-        @click="activeTab = 'pending'"
-      >
+      <button class="tab-btn" :class="{ active: activeTab === 'pending' }" @click="activeTab = 'pending'">
         Pending ({{ pendingRequests.length }})
       </button>
-      <button
-        class="tab-btn"
-        :class="{ active: activeTab === 'approved' }"
-        @click="activeTab = 'approved'"
-      >
+      <button class="tab-btn" :class="{ active: activeTab === 'approved' }" @click="activeTab = 'approved'">
         Approved ({{ approvedRequests.length }})
       </button>
-      <button
-        class="tab-btn"
-        :class="{ active: activeTab === 'rejected' }"
-        @click="activeTab = 'rejected'"
-      >
+      <button class="tab-btn" :class="{ active: activeTab === 'rejected' }" @click="activeTab = 'rejected'">
         Rejected ({{ rejectedRequests.length }})
       </button>
     </div>
 
     <!-- Requests List -->
     <div class="requests-container">
-      <div v-if="filteredRequests.length === 0" class="empty-state">
+      <div v-if="loading" class="empty-state">
+        Loading requests...
+      </div>
+
+      <div v-else-if="filteredRequests.length === 0" class="empty-state">
         <div class="empty-icon">📋</div>
         <div class="empty-title">No {{ activeTab === 'all' ? '' : activeTab }} requests</div>
         <div class="empty-message">
@@ -66,88 +54,47 @@
       </div>
 
       <div v-else class="requests-grid">
-        <div
-          v-for="request in filteredRequests"
-          :key="request.id"
-          class="request-card"
-        >
-          <!-- Request Header -->
+        <div v-for="request in filteredRequests" :key="request.id" class="request-card">
           <div class="request-header">
             <div class="member-info">
-              <div class="member-avatar">
-                {{ request.memberName.charAt(0).toUpperCase() }}
-              </div>
+              <div class="member-avatar">{{ request.memberName.charAt(0).toUpperCase() }}</div>
               <div class="member-details">
                 <div class="member-name">{{ request.memberName }}</div>
                 <div class="member-id">ID: {{ request.memberId }}</div>
                 <div class="member-email">{{ request.email }}</div>
               </div>
             </div>
-            <div class="request-status" :class="request.status">
-              {{ request.status }}
-            </div>
+            <div class="request-status" :class="request.status">{{ request.status }}</div>
           </div>
 
-          <!-- Request Info -->
           <div class="request-info">
-            <div class="info-row">
-              <span class="info-label">Member ID:</span>
-              <span class="info-value member-id-value">{{ request.memberId }}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Program:</span>
-              <span class="info-value">{{ request.programName || 'Any Program' }}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Experience Level:</span>
-              <span class="info-value">{{ request.experienceLevel }}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Submitted:</span>
-              <span class="info-value">{{ formatDate(request.submittedAt) }}</span>
-            </div>
+            <div class="info-row"><span class="info-label">Member ID:</span><span class="info-value member-id-value">{{ request.memberId }}</span></div>
+            <div class="info-row"><span class="info-label">Program:</span><span class="info-value">{{ request.programName || 'Any Program' }}</span></div>
+            <div class="info-row"><span class="info-label">Experience Level:</span><span class="info-value">{{ request.experienceLevel }}</span></div>
+            <div class="info-row"><span class="info-label">Submitted:</span><span class="info-value">{{ formatDate(request.submittedAt) }}</span></div>
           </div>
 
-          <!-- Request Message -->
           <div v-if="request.message" class="request-message">
             <div class="message-label">Message:</div>
             <div class="message-content">{{ request.message }}</div>
           </div>
 
-          <!-- Goals -->
-          <div v-if="request.goals && request.goals.length > 0" class="request-goals">
+          <div v-if="request.goals?.length" class="request-goals">
             <div class="goals-label">Goals:</div>
             <div class="goals-tags">
-              <span
-                v-for="goal in request.goals"
-                :key="goal"
-                class="goal-tag"
-              >
-                {{ goal }}
-              </span>
+              <span v-for="goal in request.goals" :key="goal" class="goal-tag">{{ goal }}</span>
             </div>
           </div>
 
-          <!-- Actions -->
           <div class="request-actions">
             <template v-if="request.status === 'pending'">
-              <button class="btn small success" @click="approveRequest(request.id)">
-                ✓ Approve
-              </button>
-              <button class="btn small danger" @click="rejectRequest(request.id)">
-                ✕ Reject
-              </button>
-              <button class="btn small ghost" @click="viewDetails(request)">
-                View Details
-              </button>
+              <button class="btn small success" @click="updateRequestStatus(request.id, 'approved')">✓ Approve</button>
+              <button class="btn small danger" @click="updateRequestStatus(request.id, 'rejected')">✕ Reject</button>
+              <button class="btn small ghost" @click="viewDetails(request)">View Details</button>
             </template>
             <template v-else>
-              <button class="btn small ghost" @click="viewDetails(request)">
-                View Details
-              </button>
-              <button v-if="request.status === 'approved'" class="btn small ghost" @click="contactMember(request)">
-                Contact Member
-              </button>
+              <button class="btn small ghost" @click="viewDetails(request)">View Details</button>
+              <button v-if="request.status === 'approved'" class="btn small ghost" @click="contactMember(request)">Contact Member</button>
             </template>
           </div>
         </div>
@@ -157,14 +104,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-
-const router = useRouter()
-
-function goBackToDashboard() {
-  router.push('/coach-dashboard') // navigate back to dashboard
-}
 
 interface MemberRequest {
   id: string
@@ -176,78 +117,25 @@ interface MemberRequest {
   message?: string
   goals?: string[]
   status: 'pending' | 'approved' | 'rejected'
-  submittedAt: Date
+  submittedAt: string
 }
 
+const router = useRouter()
+const requests = ref<MemberRequest[]>([])
 const activeTab = ref<'all' | 'pending' | 'approved' | 'rejected'>('all')
+const loading = ref(true)
 
-// Sample data - in real app this would come from API
-const requests = ref<MemberRequest[]>([
-  {
-    id: 'req_001',
-    memberId: 'MEM_JS2024',
-    memberName: 'John Smith',
-    email: 'john.smith@example.com',
-    programName: 'Full Body Strength',
-    experienceLevel: 'Beginner',
-    message: 'I\'m looking to build strength and improve my overall fitness. I can train 3-4 times per week.',
-    goals: ['Build Muscle', 'Lose Weight', 'Improve Endurance'],
-    status: 'pending',
-    submittedAt: new Date('2024-01-15')
-  },
-  {
-    id: 'req_002',
-    memberId: 'MEM_SJ2024',
-    memberName: 'Sarah Johnson',
-    email: 'sarah.j@example.com',
-    programName: 'HIIT Training',
-    experienceLevel: 'Intermediate',
-    message: 'Looking for a challenging HIIT program to improve my cardio and lose fat.',
-    goals: ['Lose Weight', 'Improve Endurance'],
-    status: 'pending',
-    submittedAt: new Date('2024-01-14')
-  },
-  {
-    id: 'req_003',
-    memberId: 'MEM_MC2024',
-    memberName: 'Mike Chen',
-    email: 'mike.chen@example.com',
-    experienceLevel: 'Advanced',
-    message: 'Experienced lifter looking for an advanced strength program.',
-    goals: ['Build Muscle', 'Increase Strength'],
-    status: 'approved',
-    submittedAt: new Date('2024-01-10')
-  },
-  {
-    id: 'req_004',
-    memberId: 'MEM_ED2024',
-    memberName: 'Emily Davis',
-    email: 'emily.d@example.com',
-    programName: 'Beginner Fitness',
-    experienceLevel: 'Beginner',
-    status: 'rejected',
-    submittedAt: new Date('2024-01-08')
-  }
-])
+const pendingRequests = computed(() => requests.value.filter(r => r.status === 'pending'))
+const approvedRequests = computed(() => requests.value.filter(r => r.status === 'approved'))
+const rejectedRequests = computed(() => requests.value.filter(r => r.status === 'rejected'))
+const filteredRequests = computed(() => activeTab.value === 'all' ? requests.value : requests.value.filter(r => r.status === activeTab.value))
 
-const pendingRequests = computed(() =>
-  requests.value.filter(r => r.status === 'pending')
-)
+function goBackToDashboard() {
+  router.push('/coach-dashboard')
+}
 
-const approvedRequests = computed(() =>
-  requests.value.filter(r => r.status === 'approved')
-)
-
-const rejectedRequests = computed(() =>
-  requests.value.filter(r => r.status === 'rejected')
-)
-
-const filteredRequests = computed(() => {
-  if (activeTab.value === 'all') return requests.value
-  return requests.value.filter(r => r.status === activeTab.value)
-})
-
-function formatDate(date: Date): string {
+function formatDate(dateStr: string) {
+  const date = new Date(dateStr)
   const now = new Date()
   const diffTime = Math.abs(now.getTime() - date.getTime())
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
@@ -255,41 +143,53 @@ function formatDate(date: Date): string {
   if (diffDays === 0) return 'Today'
   if (diffDays === 1) return 'Yesterday'
   if (diffDays < 7) return `${diffDays} days ago`
-
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric'
-  })
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-function approveRequest(requestId: string) {
-  const request = requests.value.find(r => r.id === requestId)
-  if (request && confirm(`Approve membership request from ${request.memberName}?`)) {
-    request.status = 'approved'
-    alert(`Request approved! ${request.memberName} has been notified.`)
-    // In real app: POST to API to approve request
+async function loadRequests() {
+  loading.value = true
+  try {
+    const res = await fetch('http://127.0.0.1:8000/api/member/coach-requests/', { credentials: 'include' })
+    if (!res.ok) throw new Error('Failed to fetch')
+    const data: MemberRequest[] = await res.json()
+    requests.value = data
+  } catch (err) {
+    console.error(err)
+    requests.value = []
+  } finally {
+    loading.value = false
   }
 }
 
-function rejectRequest(requestId: string) {
-  const request = requests.value.find(r => r.id === requestId)
-  if (request && confirm(`Reject membership request from ${request.memberName}?`)) {
-    request.status = 'rejected'
-    alert(`Request rejected. ${request.memberName} has been notified.`)
-    // In real app: POST to API to reject request
+async function updateRequestStatus(requestId: string, status: 'approved' | 'rejected') {
+  try {
+    const res = await fetch(`http://127.0.0.1:8000/api/member/coach-requests/${requestId}/`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ status })
+    })
+    if (!res.ok) throw new Error('Failed to update status')
+    // Update locally
+    const req = requests.value.find(r => r.id === requestId)
+    if (req) req.status = status
+  } catch (err) {
+    console.error(err)
+    alert('Failed to update request status')
   }
 }
 
 function viewDetails(request: MemberRequest) {
-  alert(`View details for ${request.memberName}\n\nThis would open a detailed modal with full member information, history, and notes.`)
-  // In real app: Open modal with detailed view
+  alert(`View details for ${request.memberName}`)
 }
 
 function contactMember(request: MemberRequest) {
-  alert(`Contact ${request.memberName}\n\nEmail: ${request.email}\n\nThis would open your email client or messaging system.`)
-  // In real app: Open messaging/email interface
+  alert(`Contact ${request.memberName} at ${request.email}`)
 }
+
+onMounted(() => {
+  loadRequests()
+})
 </script>
 
 <style scoped>
