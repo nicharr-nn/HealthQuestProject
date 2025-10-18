@@ -1,6 +1,6 @@
 <template>
   <div class="member-management">
-    <button class="back-btn" @click="emit('back-to-dashboard')">
+    <button class="btn primary" @click="goBackToDashboard">
       ← Back to Dashboard
     </button>
 
@@ -87,9 +87,15 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+function goBackToDashboard() {
+  router.push('/coach-dashboard') // navigate back to dashboard
+}
 
 const emit = defineEmits<{
-  (e: 'back-to-dashboard'): void
   (e: 'view-food-diary', memberId: string, memberName: string): void
 }>()
 
