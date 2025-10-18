@@ -104,7 +104,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import CreateWorkoutProgram from './CreateWorkoutProgram.vue'
 
 const router = useRouter()
 
@@ -112,31 +111,40 @@ const loading = ref(true)
 const showCreateProgram = ref(false)
 const approvalStatus = ref<'pending'|'approved'|'rejected'>('pending')
 const programs = ref<any[]>([])
-const coachID = ref('COACH-1234')
+const coachID = ref<string>('')
+const pendingRequestCount = ref(0)
+const memberCount = ref(0)
 
 const isApproved = computed(() => approvalStatus.value === 'approved')
-const totalSessions = computed(() => programs.value.reduce((sum, p) => sum.days?.length + sum || 0, 0))
+const totalSessions = computed(() => programs.value.reduce((sum, p) => sum + (p.days?.length || 0), 0))
 const programsWithVideos = computed(() => programs.value.filter(p => p.days?.some(d => d.video_links?.length > 0)).length)
 const filteredPrograms = computed(() => programs.value)
 
 function copyCoachID() {
-  navigator.clipboard.writeText(coachID.value)
-  alert('Coach ID copied to clipboard!')
+  if (coachID.value) {
+    navigator.clipboard.writeText(coachID.value)
+    alert('Coach ID copied to clipboard!')
+  }
 }
 
-async function loadApprovalStatus() {
+async function loadCoachStatus() {
   try {
     const res = await fetch('http://127.0.0.1:8000/api/coach/status/', { credentials: 'include' })
     if (!res.ok) {
       approvalStatus.value = 'pending'
+      coachID.value = ''
       return
     }
+
     const data = await res.json()
     const status = data?.coach?.status_approval ?? data?.status_approval ?? null
     approvalStatus.value = status === 'approved' ? 'approved' : status === 'rejected' ? 'rejected' : 'pending'
+
+    coachID.value = data?.coach?.coach_id ?? ''
   } catch (err) {
     console.error('Error loading coach status', err)
     approvalStatus.value = 'pending'
+    coachID.value = ''
   }
 }
 
@@ -150,15 +158,28 @@ async function loadPrograms() {
   }
 }
 
-function simulateApproval() {
-  approvalStatus.value = 'approved'
+async function loadPendingRequests() {
+  try {
+    const res = await fetch('http://127.0.0.1:8000/api/member/coach-requests/', { credentials: 'include' })
+    if (!res.ok) throw new Error('Failed to fetch requests')
+    const data = await res.json()
+
+    pendingRequestCount.value = data.filter((r: any) => r.status === 'pending').length
+    memberCount.value = data.filter((r: any) => r.status === 'approved').length
+  } catch (err) {
+    console.error('Failed to load pending requests', err)
+    pendingRequestCount.value = 0
+    memberCount.value = 0
+  }
 }
 
 onMounted(async () => {
-  await loadApprovalStatus()
+  await loadCoachStatus()
+
   if (isApproved.value) {
-    await loadPrograms()
+    await Promise.all([loadPrograms(), loadPendingRequests()])
   }
+
   loading.value = false
 })
 </script>
