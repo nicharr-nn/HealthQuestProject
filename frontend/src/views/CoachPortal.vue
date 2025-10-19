@@ -32,9 +32,11 @@
               rows="4"
               placeholder="Tell us a bit about your coaching style and experience"
               :disabled="hasSubmitted && !isEditingProfile"
+              maxlength="250"
             ></textarea>
+            <small class="text-gray-500">{{ coachForm.bio.length }}/250 characters</small>
           </div>
-          
+
           <div v-if="!hasSubmitted || isResubmitting" class="form-group">
             <label for="certDoc" class="file-upload-label">
               <input
@@ -47,7 +49,6 @@
               />
               <span class="btn ghost">Choose File</span>
             </label>
-
             <span class="ml-2 mt-5 font-body text-gray-700">
               {{ selectedFile?.name || 'No file chosen' }}
             </span>
@@ -117,7 +118,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, onMounted, computed } from 'vue'
+import { reactive, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 
@@ -127,7 +128,6 @@ const router = useRouter()
 interface CoachForm {
   bio: string
 }
-
 
 const coachForm = reactive({ bio: '' })
 const selectedFile = ref<File | null>(null)
@@ -154,14 +154,13 @@ function onFileSelected(event: Event) {
 onMounted(async () => {
   const res = await fetch("http://127.0.0.1:8000/api/coach/status/", { credentials: 'include' })
   if (!userStore.user || !userStore.profile) {
-        await userStore.init()
+    await userStore.init()
   }
 
   googleName.value = userStore.user?.name || userStore.displayName || ''
 
   if (res.ok) {
     const data = await res.json()
-   
     if (data.coach) {
       coachForm.bio = data.coach.bio || ''
       coachStatus.value = data.coach.status_approval
@@ -179,6 +178,11 @@ onMounted(async () => {
 async function submitApplication() {
   if (!selectedFile.value && !hasSubmitted.value) {
     alert('Please upload a Certification PDF.')
+    return
+  }
+
+  if (coachForm.bio.length > 250) {
+    alert('Short Bio cannot exceed 250 characters.')
     return
   }
 
@@ -209,7 +213,6 @@ async function submitApplication() {
     selectedFileName.value = selectedFile.value?.name || null
     selectedFile.value = null
     alert('Application submitted! Status is now pending.')
-
   } catch (err) {
     console.error(err)
     alert('Upload failed')
@@ -243,24 +246,17 @@ function startEditProfile() {
   isEditingProfile.value = true
 }
 
-// Cancel profile editing
 function cancelEdit() {
   isEditingProfile.value = false
   coachForm.bio = originalBio.value
   googleName.value = originalName.value
 }
 
-// Save profile changes
 async function saveProfile() {
   const payload: Record<string, any> = {}
 
-  if (coachForm.bio !== originalBio.value) {
-    payload.bio = coachForm.bio
-  }
-
-  if (googleName.value !== originalName.value) {
-    payload.name = googleName.value
-  }
+  if (coachForm.bio !== originalBio.value) payload.bio = coachForm.bio
+  if (googleName.value !== originalName.value) payload.name = googleName.value
 
   if (Object.keys(payload).length === 0) {
     alert("No changes detected.")
@@ -282,11 +278,8 @@ async function saveProfile() {
     coachForm.bio = data.bio
     googleName.value = data.name
 
-    // Update originals
     originalBio.value = data.bio
     originalName.value = data.name
-    
-    // Exit edit mode
     isEditingProfile.value = false
   } catch (err) {
     console.error(err)
@@ -296,15 +289,30 @@ async function saveProfile() {
 </script>
 
 <style scoped>
-.coach-portal { max-width: 1100px; margin: 0 auto; padding: 24px; }
+.coach-portal {
+  width: 100%;
+  padding: 24px;
+  box-sizing: border-box;
+}
 .page-header { margin-bottom: 24px; }
 .page-title { font-size: 28px; font-weight: 700; margin: 0; }
 .page-subtitle { color: #6b7280; margin-top: 6px; }
 
-.content-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+.content-grid {
+  display: flex;
+  gap: 16px;
+}
 @media (min-width: 900px) { .content-grid { grid-template-columns: 1fr 1fr; } }
 
-.content-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+.content-card {
+  flex: 1;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  min-width: 0;
+}
 .card-title { font-weight: 600; font-size: 18px; }
 .muted { color: #6b7280; }
 .text-gray-700 { color: #374151; }
