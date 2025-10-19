@@ -630,14 +630,9 @@ function resetProgram() {
   workoutProgram.difficulty_level = ''
   workoutProgram.duration = 30
   workoutProgram.category = ''
-<<<<<<< HEAD
-  workoutProgram.visibility = ''
-  workoutProgram.dailyWorkouts = {}
-=======
   workoutProgram.is_public = true
   workoutProgram.level_access = 'all'
   workoutProgram.WorkoutDays = {}
->>>>>>> ba32cf8d0da15baf385bc60feaace7a31ec34481
 
   resetCurrentWorkout()
 }
