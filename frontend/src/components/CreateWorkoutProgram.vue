@@ -382,12 +382,7 @@ interface Props {
     difficulty_level: string
     duration: number
     category: string
-<<<<<<< HEAD
-    visibility: string
-    dailyWorkouts: Record<number, DailyWorkout[]>
-=======
     WorkoutDays: Record<number, WorkoutDay[]>
->>>>>>> ba32cf8d0da15baf385bc60feaace7a31ec34481
   } | null
 }
 
@@ -400,12 +395,7 @@ const emit = defineEmits<{
     difficulty_level: string
     duration: number
     category: string
-<<<<<<< HEAD
-    visibility: string
-    dailyWorkouts: Record<number, DailyWorkout[]>
-=======
     WorkoutDays: Record<number, WorkoutDay[]>
->>>>>>> ba32cf8d0da15baf385bc60feaace7a31ec34481
   }]
   cancel: []
 }>()
