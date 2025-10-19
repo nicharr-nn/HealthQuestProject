@@ -72,13 +72,13 @@
           @blur="validateField('location')"
         >
           <option value="" disabled>Select Location</option>
-          <option value="Thailand">Thailand</option>
+          <option value="TH">Thailand</option>
           <option value="USA">United States</option>
           <option value="UK">United Kingdom</option>
-          <option value="Japan">Japan</option>
-          <option value="Lao">Lao</option>
-          <option value="Korea">Korea</option>
-          <option value="Other">Other</option>
+          <option value="JP">Japan</option>
+          <option value="LA">Lao</option>
+          <option value="KR">Korea</option>
+          <option value="O">Other</option>
         </select>
         <p v-if="errors.location" class="text-red-500 text-sm mt-1">{{ errors.location }}</p>
       </div>
@@ -96,9 +96,11 @@
 <script setup>
 import { ref, reactive } from "vue";
 import { useRouter } from "vue-router";
+import { useUserStore } from '@/stores/user'
 
 const router = useRouter();
 const loading = ref(false);
+const userStore = useUserStore();
 
 const form = reactive({
   height: "",
@@ -187,6 +189,10 @@ async function submitProfile() {
     return;
   }
 
+  if (userStore.loading) {
+    await userStore.init();
+  }
+
   loading.value = true;
   try {
     const payload = {
@@ -207,14 +213,21 @@ async function submitProfile() {
       body: JSON.stringify(payload)
     });
 
-    if (response.ok) {
-      const data = await response.json();
-      console.log("Profile updated:", data);
-      router.push("/dashboard");
-    } else {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Failed to update profile");
-    }
+if (response.ok) {
+  const res = await response.json()
+  console.log("Profile updated:", res)
+
+  const profile = res.data
+  userStore.setRole(profile.role) 
+
+  if (profile.role === "coach") {
+    router.push("/coach-portal")
+  } else {
+    router.push("/dashboard")
+  }
+}
+
+
   } catch (error) {
     console.error("Error updating profile:", error);
     alert("Failed to update profile. Please try again.");

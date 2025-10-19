@@ -9,9 +9,17 @@
   --color-cardBlue: #B8D7DF;
   --color-cardPink: #EDB6B6;
   --color-paper: #FAF4E8;
-
+  --font-bold: 600;
   --radius-xl2: 1.25rem;
-  --animate-fadeIn: fadeIn 0.3s ease-out;
+  --radius-3xl: 1.5rem;
+  --radius-4xl: 2rem;
+}
+
+@layer base {
+  body {
+    @apply bg-[#FAF4E8];
+  }
+    --animate-fadeIn: fadeIn 0.3s ease-out;
   --animate-slideUp: slideUp 0.3s ease-out;
 
   @keyframes fadeIn {

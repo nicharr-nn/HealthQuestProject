@@ -15,7 +15,7 @@
             <label class="form-label" for="programName">Program Name *</label>
             <input
               id="programName"
-              v-model="workoutProgram.name"
+              v-model="workoutProgram.title"
               type="text"
               class="form-input"
               placeholder="e.g., 8-Week Fat Loss Program"
@@ -39,7 +39,7 @@
               <label class="form-label" for="level">Difficulty Level *</label>
               <select
                 id="level"
-                v-model="workoutProgram.level"
+                v-model="workoutProgram.difficulty_level"
                 class="form-input"
                 required
               >
@@ -73,38 +73,52 @@
               class="form-input"
             >
               <option value="" disabled>Select category</option>
-              <option>Strength Training</option>
-              <option>Cardio</option>
-              <option>Weight Loss</option>
-              <option>Muscle Building</option>
-              <option>Endurance</option>
-              <option>Flexibility</option>
-              <option>Full Body</option>
+              <option value="strength_training">Strength Training</option>
+              <option value="cardio">Cardio</option>
+              <option value="weight_loss">Weight Loss</option>
+              <option value="muscle_building">Muscle Building</option>
+              <option value="endurance">Endurance</option>
+              <option value="flexibility">Flexibility</option>
+              <option value="full_body">Full Body</option>
+            </select>
+          </div>
+
+          <!-- Level access (who can use this program) -->
+          <div class="form-group">
+            <label class="form-label" for="levelAccess">Level Access</label>
+            <select id="levelAccess" v-model="workoutProgram.level_access" class="form-input">
+              <option value="all">All levels</option>
+              <option value="bronze">Bronze only</option>
+              <option value="silver">Silver only</option>
+              <option value="gold">Gold only</option>
             </select>
           </div>
 
           <div class="form-group">
-            <label class="form-label" for="visibility">Program Visibility *</label>
-            <select
-              id="visibility"
-              v-model="workoutProgram.visibility"
-              class="form-input"
-              required
-            >
-              <option value="" disabled>Select visibility</option>
-              <option value="public">Public - Available to all normal users</option>
-              <option value="private">Private - Only for my members</option>
-            </select>
-            <p class="form-hint">
-              {{ workoutProgram.visibility === 'public'
-                ? '✓ This program will be visible to all users in the public library'
-                : workoutProgram.visibility === 'private'
-                ? '✓ This program will only be accessible to your approved members'
-                : 'Choose who can access this program' }}
-            </p>
+           <label class="form-label">Visibility</label>
+            <div class="visibility-toggle">
+              <button
+                type="button"
+                :class="['btn', workoutProgram.is_public ? 'primary' : 'ghost']"
+                @click="workoutProgram.is_public = true"
+              >
+                Public
+              </button>
+              <button
+                type="button"
+                :class="['btn', !workoutProgram.is_public ? 'primary' : 'ghost']"
+                @click="workoutProgram.is_public = false"
+              >
+                Private
+              </button>
+            </div>
+            <div class="muted" style="margin-top:8px;font-size:13px">
+              Public programs are discoverable by users. Private programs are only visible to your assigned clients.
+            </div>
           </div>
         </form>
       </div>
+      
 
       <!-- Daily Workout Schedule -->
       <div class="content-card">
@@ -121,23 +135,23 @@
         <div class="day-selector mb-4">
           <label class="form-label">Select Day to Add Workout:</label>
           <select v-model="selectedDay" class="form-input day-select">
-            <option value="" disabled>Choose a day...</option>
+            <option value="" disabled class="ml-10 pr-16">Choose a day</option>
             <option
               v-for="day in workoutProgram.duration"
               :key="day"
               :value="day"
             >
-              Day {{ day }} {{ workoutProgram.dailyWorkouts[day]?.length ? `(${workoutProgram.dailyWorkouts[day].length} workouts)` : '' }}
+              Day {{ day }} {{ workoutProgram.WorkoutDays[day]?.length ? `(${workoutProgram.WorkoutDays[day].length} workouts)` : '' }}
             </option>
           </select>
         </div>
 
         <!-- Existing Daily Workouts -->
-        <div v-if="Object.keys(workoutProgram.dailyWorkouts).length > 0" class="daily-workouts-list mb-4">
+        <div v-if="Object.keys(workoutProgram.WorkoutDays).length > 0" class="daily-workouts-list mb-4">
           <h4 class="form-section-title">Added Workouts</h4>
           <div class="days-container">
             <div
-              v-for="(workouts, day) in workoutProgram.dailyWorkouts"
+              v-for="(workouts, day) in workoutProgram.WorkoutDays"
               :key="day"
               class="day-container"
             >
@@ -153,7 +167,7 @@
                   class="workout-card"
                 >
                   <div class="workout-header">
-                    <div class="workout-title">{{ workout.name }}</div>
+                    <div class="workout-title">{{ workout.title }}</div>
                     <div class="workout-actions">
                       <button
                         type="button"
@@ -175,12 +189,9 @@
                     <span>{{ workout.duration }} min</span>
                     <span class="separator">•</span>
                     <span>{{ workout.type || 'General' }}</span>
-                    <span v-if="workout.youtubeUrl" class="youtube-indicator">
+                    <span v-if="workout.video_link" class="youtube-indicator">
                       📹 Video
                     </span>
-                  </div>
-                  <div v-if="workout.notes" class="workout-notes">
-                    {{ workout.notes.substring(0, 100) }}{{ workout.notes.length > 100 ? '...' : '' }}
                   </div>
                 </div>
               </div>
@@ -198,7 +209,7 @@
             <label class="form-label" for="workoutName">Workout Name *</label>
             <input
               id="workoutName"
-              v-model="currentWorkout.name"
+              v-model="currentWorkout.title"
               type="text"
               class="form-input"
               placeholder="e.g., Upper Body Strength Training"
@@ -243,35 +254,25 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label" for="workoutYoutubeUrl">YouTube Video URL</label>
+            <label class="form-label" for="workoutvideo_link">YouTube Video URL</label>
             <input
-              id="workoutYoutubeUrl"
-              v-model="currentWorkout.youtubeUrl"
+              id="workoutvideo_link"
+              v-model="currentWorkout.video_link"
               type="url"
               class="form-input"
               placeholder="https://www.youtube.com/watch?v=..."
-              @blur="validateYouTubeUrl"
+              @blur="validatevideo_link"
             />
             <div v-if="youtubeError" class="error-message">{{ youtubeError }}</div>
           </div>
 
-          <div class="form-group">
-            <label class="form-label" for="workoutNotes">Workout Instructions</label>
-            <textarea
-              id="workoutNotes"
-              v-model="currentWorkout.notes"
-              class="form-input"
-              rows="4"
-              placeholder="Detailed instructions, exercises, sets/reps, equipment needed, etc."
-            />
-          </div>
 
           <div class="form-actions-inline">
             <button
               type="button"
               class="btn primary"
               @click="saveDayWorkout"
-              :disabled="!currentWorkout.name || !currentWorkout.duration"
+              :disabled="!currentWorkout.title || !currentWorkout.duration"
             >
               {{ editingDay !== null ? 'Update Workout' : 'Add Workout' }}
             </button>
@@ -285,7 +286,7 @@
           </div>
         </div>
 
-        <div v-if="!selectedDay && editingDay === null && Object.keys(workoutProgram.dailyWorkouts).length === 0" class="empty-state">
+        <div v-if="!selectedDay && editingDay === null && Object.keys(workoutProgram.WorkoutDays).length === 0" class="empty-state">
           <div class="empty-icon">📅</div>
           <div class="empty-title">No daily workouts added yet</div>
           <div class="empty-message">Select a day above to start building your workout program schedule.</div>
@@ -322,17 +323,71 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, computed, watch } from 'vue'
+import { reactive, ref, computed, watch, onMounted } from 'vue'
+
+const coachUserProfileId = ref<number | null>(null)
+
+onMounted(async () => {
+  try {
+    const response = await fetch('http://127.0.0.1:8000/api/coach/status/', {
+      credentials: 'include',
+    })
+    
+    if (response.ok) {
+      const data = await response.json()
+      console.log('Coach status response:', data)
+      
+      coachUserProfileId.value = 
+        data.user?.id ||           // This is where it actually is!
+        data.coach?.user?.id ||
+        null
+      
+      if (coachUserProfileId.value) {
+        console.log('Found UserProfile ID for coach:', coachUserProfileId.value)
+      } else {
+        console.error('No UserProfile ID found in coach status response')
+        // Fallback to user-info endpoint
+        await fetchUserProfileId()
+      }
+    } else {
+      console.error('Failed to fetch coach status:', response.status)
+      await fetchUserProfileId()
+    }
+  } catch (error) {
+    console.error('Failed to fetch coach status:', error)
+    await fetchUserProfileId()
+  }
+})
+
+// Update the fallback function to use the correct path
+async function fetchUserProfileId() {
+  try {
+    const response = await fetch('http://127.0.0.1:8000/api/user-info/', {
+      credentials: 'include',
+    })
+    if (response.ok) {
+      const data = await response.json()
+      coachUserProfileId.value = data.user?.id
+    }
+  } catch (error) {
+    console.error('Failed to fetch user profile:', error)
+  }
+}
+
 
 interface Props {
   existingProgram?: {
-    name: string
+    title: string
     description: string
-    level: string
+    difficulty_level: string
     duration: number
     category: string
+<<<<<<< HEAD
     visibility: string
     dailyWorkouts: Record<number, DailyWorkout[]>
+=======
+    WorkoutDays: Record<number, WorkoutDay[]>
+>>>>>>> ba32cf8d0da15baf385bc60feaace7a31ec34481
   } | null
 }
 
@@ -340,143 +395,154 @@ const props = defineProps<Props>()
 
 const emit = defineEmits<{
   programCreated: [program: {
-    name: string
+    title: string
     description: string
-    level: string
+    difficulty_level: string
     duration: number
     category: string
+<<<<<<< HEAD
     visibility: string
     dailyWorkouts: Record<number, DailyWorkout[]>
+=======
+    WorkoutDays: Record<number, WorkoutDay[]>
+>>>>>>> ba32cf8d0da15baf385bc60feaace7a31ec34481
   }]
   cancel: []
 }>()
 
-interface WorkoutSession {
-  name: string
-  duration: number
-  type: string
-  youtubeUrl: string
-  notes: string
-}
 
-interface DailyWorkout {
-  name: string
+interface WorkoutDay {
+  title: string
   duration: number
   type: string
-  youtubeUrl: string
-  notes: string
+  video_link: string
 }
 
 interface WorkoutProgram {
-  name: string
+  title: string
   description: string
-  level: string
+  difficulty_level: string
   duration: number
   category: string
+<<<<<<< HEAD
   visibility: string
   dailyWorkouts: Record<number, DailyWorkout[]>
+=======
+  is_public: boolean
+  level_access: string
+  WorkoutDays: Record<number, WorkoutDay[]>
+>>>>>>> ba32cf8d0da15baf385bc60feaace7a31ec34481
 }
 
+
 const workoutProgram = reactive<WorkoutProgram>({
-  name: '',
+  title: '',
   description: '',
-  level: '',
+  difficulty_level: '',
   duration: 30,
   category: '',
+<<<<<<< HEAD
   visibility: '',
   dailyWorkouts: {}
+=======
+  is_public: true,
+  level_access: 'all',
+  WorkoutDays: {}
+>>>>>>> ba32cf8d0da15baf385bc60feaace7a31ec34481
 })
+
+const currentWorkout = reactive<WorkoutDay>({
+  title: '',
+  duration: 45,
+  type: '',
+  video_link: '',
+})
+
 
 const selectedDay = ref<number | ''>('')
 const editingDay = ref<number | null>(null)
 const editingWorkoutIndex = ref<number | null>(null)
 
-const currentWorkout = reactive<DailyWorkout>({
-  name: '',
-  duration: 45,
-  type: '',
-  youtubeUrl: '',
-  notes: ''
-})
-
 const youtubeError = ref('')
 
 const canSubmitProgram = computed(() => {
-  return workoutProgram.name &&
-         workoutProgram.level &&
+  return workoutProgram.title &&
+         workoutProgram.difficulty_level &&
          workoutProgram.duration &&
+<<<<<<< HEAD
          workoutProgram.visibility &&
          Object.keys(workoutProgram.dailyWorkouts).length > 0
+=======
+         Object.keys(workoutProgram.WorkoutDays).length > 0
+>>>>>>> ba32cf8d0da15baf385bc60feaace7a31ec34481
 })
 
-function validateYouTubeUrl() {
+function validatevideo_link() {
   youtubeError.value = ''
 
-  if (!currentWorkout.youtubeUrl) return
+  if (!currentWorkout.video_link) return
 
   const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)[a-zA-Z0-9_-]{11}/
 
-  if (!youtubeRegex.test(currentWorkout.youtubeUrl)) {
+  if (!youtubeRegex.test(currentWorkout.video_link)) {
     youtubeError.value = 'Please enter a valid YouTube URL'
   }
 }
 
 function saveDayWorkout() {
-  if (!currentWorkout.name || !currentWorkout.duration) {
-    alert('Please fill in workout name and duration')
+  if (!currentWorkout.title || !currentWorkout.duration) {
+    alert('Please fill in workout title and duration')
     return
   }
 
-  if (currentWorkout.youtubeUrl) {
-    validateYouTubeUrl()
+  if (currentWorkout.video_link) {
+    validatevideo_link()
     if (youtubeError.value) return
   }
 
   const targetDay = editingDay.value || selectedDay.value as number
 
-  const workout: DailyWorkout = {
-    name: currentWorkout.name,
+  const workout: WorkoutDay = {
+    title: currentWorkout.title,
     duration: currentWorkout.duration,
     type: currentWorkout.type,
-    youtubeUrl: currentWorkout.youtubeUrl,
-    notes: currentWorkout.notes
+    video_link: currentWorkout.video_link,
   }
 
   if (editingDay.value !== null && editingWorkoutIndex.value !== null) {
     // Editing existing workout
-    workoutProgram.dailyWorkouts[editingDay.value][editingWorkoutIndex.value] = workout
+    workoutProgram.WorkoutDays[editingDay.value][editingWorkoutIndex.value] = workout
   } else {
     // Adding new workout
-    if (!workoutProgram.dailyWorkouts[targetDay]) {
-      workoutProgram.dailyWorkouts[targetDay] = []
+    if (!workoutProgram.WorkoutDays[targetDay]) {
+      workoutProgram.WorkoutDays[targetDay] = []
     }
-    workoutProgram.dailyWorkouts[targetDay].push(workout)
+    workoutProgram.WorkoutDays[targetDay].push(workout)
   }
 
   resetCurrentWorkout()
 }
 
 function editWorkout(day: number, workoutIndex: number) {
-  const workout = workoutProgram.dailyWorkouts[day]?.[workoutIndex]
+  const workout = workoutProgram.WorkoutDays[day]?.[workoutIndex]
   if (workout) {
     editingDay.value = day
     editingWorkoutIndex.value = workoutIndex
     selectedDay.value = ''
-    currentWorkout.name = workout.name
+    currentWorkout.title = workout.title
     currentWorkout.duration = workout.duration
     currentWorkout.type = workout.type
-    currentWorkout.youtubeUrl = workout.youtubeUrl
-    currentWorkout.notes = workout.notes
+    currentWorkout.video_link = workout.video_link
   }
 }
 
 function removeWorkout(day: number, workoutIndex: number) {
-  if (workoutProgram.dailyWorkouts[day]) {
-    workoutProgram.dailyWorkouts[day].splice(workoutIndex, 1)
+  if (workoutProgram.WorkoutDays[day]) {
+    workoutProgram.WorkoutDays[day].splice(workoutIndex, 1)
 
     // Remove the day entirely if no workouts left
-    if (workoutProgram.dailyWorkouts[day].length === 0) {
-      delete workoutProgram.dailyWorkouts[day]
+    if (workoutProgram.WorkoutDays[day].length === 0) {
+      delete workoutProgram.WorkoutDays[day]
     }
   }
 }
@@ -489,40 +555,121 @@ function resetCurrentWorkout() {
   selectedDay.value = ''
   editingDay.value = null
   editingWorkoutIndex.value = null
-  currentWorkout.name = ''
+  currentWorkout.title = ''
   currentWorkout.duration = 45
   currentWorkout.type = ''
-  currentWorkout.youtubeUrl = ''
-  currentWorkout.notes = ''
+  currentWorkout.video_link = ''
   youtubeError.value = ''
 }
 
-function submitProgram() {
+// Update your submitProgram function
+async function submitProgram() {
   if (!canSubmitProgram.value) {
     alert('Please fill in all required fields (including visibility) and add at least one daily workout')
     return
   }
 
-  // Emit the program data to parent component
-  emit('programCreated', {
-    name: workoutProgram.name,
+  if (!coachUserProfileId.value) {
+    // Try one more time before failing
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/user-info/', { 
+        credentials: 'include' 
+      })
+      if (response.ok) {
+        const data = await response.json()
+        coachUserProfileId.value = data.user?.profile?.id
+        console.log('Retrieved UserProfile ID:', coachUserProfileId.value)
+      }
+    } catch (e) {
+      console.error('UserProfile fetch retry failed', e)
+    }
+  }
+
+  if (!coachUserProfileId.value) {
+    alert('Coach profile not found. Please create or confirm your coach profile before creating a program.')
+    return
+  }
+
+  const days = Object.entries(workoutProgram.WorkoutDays).map(([day, workouts]) => ({
+    day_number: Number(day),
+    title: `Day ${day}`,
+    video_links: workouts.map(w => w.video_link).filter(Boolean),
+    duration_minutes: workouts.reduce((sum, w) => sum + (w.duration || 0), 0),
+  }))
+
+  const payload = {
+    coach: coachUserProfileId.value,  // Use UserProfile ID instead of coach_id
+    title: workoutProgram.title,
     description: workoutProgram.description,
-    level: workoutProgram.level,
+    difficulty_level: workoutProgram.difficulty_level,
+    level_access: workoutProgram.level_access || "all",
+    is_public: workoutProgram.is_public ?? true,
     duration: workoutProgram.duration,
+<<<<<<< HEAD
     category: workoutProgram.category,
     visibility: workoutProgram.visibility,
     dailyWorkouts: { ...workoutProgram.dailyWorkouts }
   })
+=======
+    category: workoutProgram.category || "full_body",
+    days
+  }
+
+
+  const url = props.existingProgram 
+    ? `http://127.0.0.1:8000/api/workout/programs/${(props.existingProgram as any).id}/` 
+    : 'http://127.0.0.1:8000/api/workout/programs/'
+
+  try {
+    const response = await fetch(url, {
+      method: props.existingProgram ? 'PUT' : 'POST',
+      credentials: 'include',
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCsrfToken()
+      },
+      body: JSON.stringify(payload)
+    })
+
+    const text = await response.text()
+    let body = null
+    try { body = JSON.parse(text) } catch { body = text }
+
+    if (!response.ok) {
+      console.error('Save program failed:', response.status, body)
+      const message = body?.detail || body?.errors || body || `HTTP ${response.status}`
+      alert('Failed to save program: ' + JSON.stringify(message))
+      return
+    }
+    emit('programCreated', body)
+    alert('Program saved successfully!')
+    
+  } catch (error) {
+    console.error('Error saving program:', error)
+    alert('Failed to save program: ' + error.message)
+  }
+}
+
+function getCsrfToken() {
+  const match = document.cookie.match(new RegExp('(^| )csrftoken=([^;]+)'))
+  return match ? match[2] : ''
+>>>>>>> ba32cf8d0da15baf385bc60feaace7a31ec34481
 }
 
 function resetProgram() {
-  workoutProgram.name = ''
+  workoutProgram.title = ''
   workoutProgram.description = ''
-  workoutProgram.level = ''
+  workoutProgram.difficulty_level = ''
   workoutProgram.duration = 30
   workoutProgram.category = ''
+<<<<<<< HEAD
   workoutProgram.visibility = ''
   workoutProgram.dailyWorkouts = {}
+=======
+  workoutProgram.is_public = true
+  workoutProgram.level_access = 'all'
+  workoutProgram.WorkoutDays = {}
+>>>>>>> ba32cf8d0da15baf385bc60feaace7a31ec34481
 
   resetCurrentWorkout()
 }
@@ -530,13 +677,19 @@ function resetProgram() {
 // Watch for existing program prop and populate form
 watch(() => props.existingProgram, (program) => {
   if (program) {
-    workoutProgram.name = program.name
+    workoutProgram.title = program.title
     workoutProgram.description = program.description
-    workoutProgram.level = program.level
+    workoutProgram.difficulty_level = program.difficulty_level
     workoutProgram.duration = program.duration
     workoutProgram.category = program.category
+<<<<<<< HEAD
     workoutProgram.visibility = program.visibility
     workoutProgram.dailyWorkouts = { ...program.dailyWorkouts }
+=======
+    workoutProgram.is_public = (program as any).is_public ?? true
+    workoutProgram.level_access = (program as any).level_access ?? 'all'
+    workoutProgram.WorkoutDays = { ...program.WorkoutDays }
+>>>>>>> ba32cf8d0da15baf385bc60feaace7a31ec34481
   } else {
     resetProgram()
   }
