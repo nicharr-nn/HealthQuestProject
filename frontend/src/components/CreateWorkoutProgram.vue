@@ -414,14 +414,9 @@ interface WorkoutProgram {
   difficulty_level: string
   duration: number
   category: string
-<<<<<<< HEAD
-  visibility: string
-  dailyWorkouts: Record<number, DailyWorkout[]>
-=======
   is_public: boolean
   level_access: string
   WorkoutDays: Record<number, WorkoutDay[]>
->>>>>>> ba32cf8d0da15baf385bc60feaace7a31ec34481
 }
 
 
@@ -431,14 +426,9 @@ const workoutProgram = reactive<WorkoutProgram>({
   difficulty_level: '',
   duration: 30,
   category: '',
-<<<<<<< HEAD
-  visibility: '',
-  dailyWorkouts: {}
-=======
   is_public: true,
   level_access: 'all',
   WorkoutDays: {}
->>>>>>> ba32cf8d0da15baf385bc60feaace7a31ec34481
 })
 
 const currentWorkout = reactive<WorkoutDay>({
@@ -459,12 +449,7 @@ const canSubmitProgram = computed(() => {
   return workoutProgram.title &&
          workoutProgram.difficulty_level &&
          workoutProgram.duration &&
-<<<<<<< HEAD
-         workoutProgram.visibility &&
-         Object.keys(workoutProgram.dailyWorkouts).length > 0
-=======
          Object.keys(workoutProgram.WorkoutDays).length > 0
->>>>>>> ba32cf8d0da15baf385bc60feaace7a31ec34481
 })
 
 function validatevideo_link() {
