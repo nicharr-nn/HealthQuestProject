@@ -13,7 +13,11 @@
       </div>
 
       <div class="header-actions">
-        <button class="btn primary" @click="showCreateProgram = true" :disabled="!isApproved">
+        <button 
+          class="btn primary" 
+          @click="router.push('/create-workout-program')" 
+          :disabled="!isApproved"
+        >
           + Create New Program
         </button>
       </div>
@@ -84,7 +88,9 @@
           <div class="empty-message">
             Start creating your first workout program to help your clients achieve their goals!
           </div>
-          <button class="btn primary" @click="showCreateProgram = true">Create Your First Program</button>
+          <button class="btn primary" @click="router.push('/create-workout-program')">
+            Create Your First Program
+          </button>
         </div>
 
         <div v-else class="programs-grid">

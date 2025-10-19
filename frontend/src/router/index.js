@@ -15,6 +15,7 @@ const Workout = () => import('../views/Workout.vue')
 const Program = () => import('../views/Program.vue')
 const MemberManagement = () => import('../views/MemberManagement.vue')
 const MemberRequests = () => import('../views/MemberRequests.vue')
+const CreateWorkoutProgram = () => import('../views/CreateWorkoutProgram.vue')
 
 const routes = [
   { path: '/', name: 'LandingPage', component: LandingPage },
@@ -30,6 +31,7 @@ const routes = [
   { path: '/workout/:id', name: 'Program', component: Program, props: true },
   { path: '/view-member', name: 'ViewMember', component: MemberManagement, meta: { requiresCoach: true } },
   { path: '/view-request', name: 'ViewRequest', component: MemberRequests, meta: { requiresCoach: true } },
+  { path: '/create-workout-program', name: 'CreateWorkoutProgram', component: CreateWorkoutProgram, meta: { requiresCoach: true } },
 ]
 
 const router = createRouter({
