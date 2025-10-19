@@ -88,8 +88,8 @@
 
           <div class="request-actions">
             <template v-if="request.status === 'pending'">
-              <button class="btn small success" @click="updateRequestStatus(request.id, 'approved')">✓ Approve</button>
-              <button class="btn small danger" @click="updateRequestStatus(request.id, 'rejected')">✕ Reject</button>
+              <button class="btn small success" @click="updateRequestStatus(request.relationship_id, 'approved')">✓ Approve</button>
+              <button class="btn small danger" @click="updateRequestStatus(request.relationship_id, 'rejected')">✕ Reject</button>
               <button class="btn small ghost" @click="viewDetails(request)">View Details</button>
             </template>
             <template v-else>
@@ -161,17 +161,18 @@ async function loadRequests() {
   }
 }
 
-async function updateRequestStatus(requestId: string, status: 'approved' | 'rejected') {
+async function updateRequestStatus(relationshipId: number, status: 'approved' | 'rejected') {
   try {
-    const res = await fetch(`http://127.0.0.1:8000/api/member/coach-requests/${requestId}/`, {
+    const res = await fetch(`http://127.0.0.1:8000/api/member/coach-requests/${relationshipId}/`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({ status })
     })
+    
     if (!res.ok) throw new Error('Failed to update status')
-    // Update locally
-    const req = requests.value.find(r => r.id === requestId)
+
+    const req = requests.value.find(r => r.relationship_id === relationshipId)
     if (req) req.status = status
   } catch (err) {
     console.error(err)
