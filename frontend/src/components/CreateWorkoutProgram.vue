@@ -580,26 +580,20 @@ async function submitProgram() {
     level_access: workoutProgram.level_access || "all",
     is_public: workoutProgram.is_public ?? true,
     duration: workoutProgram.duration,
-<<<<<<< HEAD
-    category: workoutProgram.category,
-    visibility: workoutProgram.visibility,
-    dailyWorkouts: { ...workoutProgram.dailyWorkouts }
-  })
-=======
     category: workoutProgram.category || "full_body",
     days
   }
 
 
-  const url = props.existingProgram 
-    ? `http://127.0.0.1:8000/api/workout/programs/${(props.existingProgram as any).id}/` 
+  const url = props.existingProgram
+    ? `http://127.0.0.1:8000/api/workout/programs/${(props.existingProgram as any).id}/`
     : 'http://127.0.0.1:8000/api/workout/programs/'
 
   try {
     const response = await fetch(url, {
       method: props.existingProgram ? 'PUT' : 'POST',
       credentials: 'include',
-      headers: { 
+      headers: {
         'Content-Type': 'application/json',
         'X-CSRFToken': getCsrfToken()
       },
@@ -618,7 +612,7 @@ async function submitProgram() {
     }
     emit('programCreated', body)
     alert('Program saved successfully!')
-    
+
   } catch (error) {
     console.error('Error saving program:', error)
     alert('Failed to save program: ' + error.message)
@@ -628,7 +622,6 @@ async function submitProgram() {
 function getCsrfToken() {
   const match = document.cookie.match(new RegExp('(^| )csrftoken=([^;]+)'))
   return match ? match[2] : ''
->>>>>>> ba32cf8d0da15baf385bc60feaace7a31ec34481
 }
 
 function resetProgram() {
