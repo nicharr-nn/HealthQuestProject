@@ -645,14 +645,9 @@ watch(() => props.existingProgram, (program) => {
     workoutProgram.difficulty_level = program.difficulty_level
     workoutProgram.duration = program.duration
     workoutProgram.category = program.category
-<<<<<<< HEAD
-    workoutProgram.visibility = program.visibility
-    workoutProgram.dailyWorkouts = { ...program.dailyWorkouts }
-=======
     workoutProgram.is_public = (program as any).is_public ?? true
     workoutProgram.level_access = (program as any).level_access ?? 'all'
     workoutProgram.WorkoutDays = { ...program.WorkoutDays }
->>>>>>> ba32cf8d0da15baf385bc60feaace7a31ec34481
   } else {
     resetProgram()
   }
@@ -966,6 +961,12 @@ watch(() => props.existingProgram, (program) => {
 .empty-message {
   font-size: 14px;
   line-height: 1.5;
+}
+
+.visibility-toggle {
+  display: flex;
+  gap: 12px;
+  align-items: center;
 }
 
 @media (max-width: 768px) {
