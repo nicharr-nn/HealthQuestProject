@@ -225,6 +225,7 @@ export default {
         await store.init()
       }
       await loadWeeklyActivity()
+      await loadAnalytics()
     })
 
     const userInitial = computed(() => (store.displayName?.charAt(0) || 'U').toUpperCase())
@@ -232,7 +233,7 @@ export default {
     // --- XP + Level ---
     const xp = computed(() => store.level?.xp || 0)
     const currentLevel = computed(() => store.level?.level || 'Bronze')
-    const streak = computed(() => store.profile?.analytics?.current_streak || 0)
+    const streak = computed(() => analytics.value.current_streak || 0)
 
     const nextRequirement = computed(() => {
       if (store.level?.level_rank === 1) return 1000
@@ -246,8 +247,35 @@ export default {
     })
 
     // --- API-driven fields ---
+    const analyticsRaw = ref(null)
+    const loadingAnalytics = ref(false)
+    const analyticsError = ref(null)
+
+    const analytics = computed(() => analyticsRaw.value ?? { weeklyImprovement: 0, consistency: 0, current_streak: 0 })
     const todayWorkout = computed(() => store.profile?.today_workout || { description: 'No workout assigned', xp: 0 })
-    const analytics = computed(() => store.profile?.analytics || { weeklyImprovement: 0, consistency: 0, current_streak: 0 })
+
+    async function loadAnalytics() {
+      loadingAnalytics.value = true
+      analyticsError.value = null
+      try {
+        const res = await fetch('http://127.0.0.1:8000/api/workout/analytics/', {
+          credentials: 'include'
+        })
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}))
+          analyticsError.value = err.detail || `HTTP ${res.status}`
+          analyticsRaw.value = null
+          return
+        }
+        const data = await res.json()
+        analyticsRaw.value = data.analytics || {}
+      } catch (err) {
+        analyticsError.value = err.message || String(err)
+        analyticsRaw.value = null
+      } finally {
+        loadingAnalytics.value = false
+      }
+    }
 
     // --- Weekly activity chart data ---
     const weekDays = ref([
@@ -304,6 +332,8 @@ export default {
       progressPercentage,
       todayWorkout,
       analytics,
+      loadingAnalytics,
+      analyticsError,
       streak,
       weekDays,
       startWorkout,

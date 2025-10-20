@@ -156,7 +156,7 @@ def user_analytics(request):
             "xp_last_30_days": xp_last_30,
             "completed_this_week": this_week_count,
             "completed_prev_week": prev_week_count,
-            "current_streak": streak,  # 🔥 New field
+            "current_streak": streak,
         },
         "monthlyChallenge": {
             "description": f"Complete {target} workouts this month",

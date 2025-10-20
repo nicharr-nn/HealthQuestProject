@@ -192,15 +192,3 @@ def user_levels(request):
     }
     return Response(payload)
 
-
-# @api_view(['POST'])
-# @permission_classes([IsAuthenticated])
-# def food_post_comment(request, id):
-#     """Add a comment to a food post"""
-#     profile = request.user.userprofile
-#     post = get_object_or_404(FoodPost, pk=id)
-
-#     comment = FoodPostComment.objects.create(
-#         post=post, user_profile=profile, content=request.data.get("content")
-#     )
-#     return Response({"message": "Comment added", "comment_id": comment.id})
