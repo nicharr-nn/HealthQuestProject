@@ -10,7 +10,7 @@
           </p>
         </div>
 
-        <!-- 🟢 Connected Coach -->
+        <!-- Connected Coach -->
         <div v-if="coachStatus === 'accepted'" class="mb-8">
           <h2 class="text-xl font-semibold text-gray-700 mb-4">Your Coach</h2>
 
@@ -36,7 +36,7 @@
           </div>
         </div>
 
-        <!-- 🟡 Pending Coach Request -->
+        <!-- Pending Coach Request -->
         <div v-else-if="coachStatus === 'pending'" class="text-center mb-8">
           <h2 class="text-xl font-semibold text-gray-700 mb-3">Coach Request Pending</h2>
           <p class="text-gray-600 text-sm mb-4">
@@ -47,7 +47,7 @@
           </div>
         </div>
 
-        <!-- ❌ No Coach Yet - Send Request -->
+        <!-- No Coach Yet - Send Request -->
         <div v-else>
           <h2 class="text-xl font-semibold text-gray-700 mb-4">Add New Coach Code</h2>
 

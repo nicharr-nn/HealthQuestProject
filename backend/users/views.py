@@ -3,16 +3,17 @@ from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
+from rest_framework import status
 
-from .models import Achievement, FoodPost, UserAchievement
+from .models import Achievement, UserAchievement
 from .serializers import UserProfileSerializer, UserSerializer
 
 User = get_user_model()
 
 
-@api_view(["GET", "PUT", "PATCH"])
+@api_view(["GET", "PUT", "PATCH", "DELETE"])
 @permission_classes([AllowAny])  # allow GET without auth, require auth for PUT/PATCH
 def user_info(request):
     """
@@ -27,17 +28,26 @@ def user_info(request):
         else:
             return Response({"isAuthenticated": False, "user": None})
 
+    # 3. PUT/PATCH → Update profile
     elif request.method in ["PUT", "PATCH"]:
-        if not user.is_authenticated:
-            return Response({"detail": "Authentication required."}, status=401)
+        profile = request.user.userprofile
+        if not profile:
+            return Response({"error": "Profile not found"}, status=404)
 
-        serializer = UserSerializer(
-            user, data=request.data, partial=(request.method == "PATCH")
-        )
+        serializer = UserProfileSerializer(profile, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response({"isAuthenticated": True, "user": serializer.data})
+            return Response(serializer.data)
         return Response(serializer.errors, status=400)
+    
+    
+    # 4. DELETE → Allow account deletion
+    elif request.method == "DELETE":
+        if not user.is_authenticated:
+            return Response({"detail": "Authentication required."}, status=401)
+        else:
+            user.delete()
+            return Response({"message": "Account deleted permanently"})
 
 
 @api_view(["POST"])
@@ -101,7 +111,7 @@ def upload_photo(request):
 
 
 @api_view(["GET", "PUT", "PATCH", "DELETE"])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAdminUser])
 def user_detail(request, id):
     """Retrieve, update, or deactivate user account"""
     if request.user.id != id:
@@ -156,35 +166,6 @@ def user_achievements(request):
         return Response({"message": "Achievement removed", "achievement_id": ach_id})
 
 
-@api_view(["GET, POST"])
-@permission_classes([IsAuthenticated])
-def food_posts(request):
-    """List or create food posts"""
-    if request.method == "GET":
-        posts = FoodPost.objects.all().select_related("user_profile")
-        data = [
-            {
-                "id": p.id,
-                "title": p.title,
-                "content": p.content,
-                "visibility": p.visibility,
-                "image": p.image.url if p.image else None,
-                "author": p.user_profile.user.username,
-                "created_at": p.created_at,
-            }
-            for p in posts
-        ]
-        return Response(data)
-
-    elif request.method == "POST":
-        profile = request.user.userprofile
-        post = FoodPost.objects.create(
-            user_profile=profile,
-            title=request.data.get("title"),
-            content=request.data.get("content"),
-        )
-        return Response({"message": "Post created", "post_id": post.id})
-
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
@@ -211,33 +192,3 @@ def user_levels(request):
     }
     return Response(payload)
 
-
-# @api_view(['POST'])
-# @permission_classes([IsAuthenticated])
-# def food_post_comment(request, id):
-#     """Add a comment to a food post"""
-#     profile = request.user.userprofile
-#     post = get_object_or_404(FoodPost, pk=id)
-
-#     comment = FoodPostComment.objects.create(
-#         post=post, user_profile=profile, content=request.data.get("content")
-#     )
-#     return Response({"message": "Comment added", "comment_id": comment.id})
-
-
-@api_view(["PUT", "PATCH", "DELETE"])
-@permission_classes([IsAuthenticated])
-def food_post_update(request, id):
-    """update or delete to a food post"""
-    profile = request.user.userprofile
-    post = get_object_or_404(FoodPost, pk=id, user_profile=profile)
-
-    if request.method in ["PUT", "PATCH"]:
-        post.title = request.data.get("title", post.title)
-        post.content = request.data.get("description", post.description)
-        post.save()
-        return Response({"message": "Post updated"})
-
-    elif request.method == "DELETE":
-        post.delete()
-        return Response({"message": "Post deleted"})

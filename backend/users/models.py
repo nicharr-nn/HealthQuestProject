@@ -133,18 +133,3 @@ class UserAchievement(models.Model):
 
     def __str__(self):
         return f"{self.user_profile.user.username} - {self.achievement.title}"
-
-
-class FoodPost(models.Model):
-    user_profile = models.ForeignKey(
-        UserProfile, on_delete=models.CASCADE, related_name="food_posts"
-    )
-    content = models.TextField()
-    title = models.CharField(max_length=255, null=True, blank=True)
-    visibility = models.CharField(max_length=20, default="public")
-    image = models.ImageField(upload_to="food_posts/", null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"Post by {self.user_profile.user.username} at {self.created_at}"

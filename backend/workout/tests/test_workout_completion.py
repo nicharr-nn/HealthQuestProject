@@ -1,139 +1,79 @@
-# from django.contrib.auth import get_user_model
-# from django.urls import reverse
-# from rest_framework.test import APIClient, APITestCase
+from django.contrib.auth import get_user_model
+from django.test import TestCase
+from django.urls import reverse
+from rest_framework.test import APIClient
+from users.models import UserProfile, UserLevel
+from workout.models import WorkoutProgram, WorkoutDay, WorkoutDayCompletion
 
-# # try to import models from the workout app, fallback to users app if needed
-# try:
-#     from workout.models import WorkoutAssignment, WorkoutProgram
-# except Exception:
-#     try:
-#         from users.models import WorkoutAssignment, WorkoutProgram
-#     except Exception:
-#         WorkoutProgram = None
-#         WorkoutAssignment = None
-
-# # helper: try to import UserProfile / UserLevel if present
-# try:
-#     from users.models import UserLevel, UserProfile
-# except Exception:
-#     UserProfile = None
-#     UserLevel = None
-
-# User = get_user_model()
+User = get_user_model()
 
 
-# class WorkoutDayCompletionTest(APITestCase):
-#     def setUp(self):
-#         self.client = APIClient()
-#         self.user = User.objects.create_user(
-#             username="testuser", password="testpass"
-#         )
-#         # ensure profile exists if there is a UserProfile model
-#         if UserProfile:
-#             self.profile = getattr(
-#                 self.user, "userprofile", None
-#             ) or UserProfile.objects.create(user=self.user)
-#             # make a member so they can complete assignments in tests
-#             self.profile.role = "member"
-#             self.profile.save()
-#         else:
-#             self.profile = getattr(self.user, "userprofile", None)
+class WorkoutDayCompletionTest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
 
-#         # create a minimal program (use field names that exist)
-#         prog_kwargs = {}
-#         if WorkoutProgram is None:
-#             self.skipTest("WorkoutProgram model not available")
-#         else:
-#             fields = [f.name for f in WorkoutProgram._meta.get_fields()]
-#             if "title" in fields:
-#                 prog_kwargs["title"] = "Test Program"
+        # Create user and normal profile
+        self.user = User.objects.create_user(
+            username="normal_user", password="pass123", email="normal@example.com"
+        )
+        self.profile = self.user.userprofile
+        self.profile.role = "normal"
+        self.profile.save()
 
-#             # ensure we set the required coach if present
-#             if "coach" in fields:
-#                 prog_kwargs["coach"] = self.profile
-#             elif "owner" in fields:
-#                 prog_kwargs["owner"] = self.profile
-#             elif "created_by" in fields:
-#                 prog_kwargs["created_by"] = self.profile
+        # Create a dummy coach (required for WorkoutProgram)
+        self.coach_user = User.objects.create_user(username="coach", password="coachpass")
+        self.coach_profile = self.coach_user.userprofile
+        self.coach_profile.role = "coach"
+        self.coach_profile.save()
 
-#             # create with any defaults for other fields
-#             self.program = WorkoutProgram.objects.create(**prog_kwargs)
+        # Create WorkoutProgram and WorkoutDay
+        self.program = WorkoutProgram.objects.create(
+            coach=self.coach_profile,
+            title="Test Program",
+            description="Program for testing XP gain",
+            difficulty_level="medium",
+            duration=30,
+            is_public=True,
+        )
+        self.workout_day = WorkoutDay.objects.create(
+            program=self.program,
+            day_number=1,
+            title="Day 1 - Test Workout",
+            duration=45,
+        )
 
-#         # create assignment: try user then profile
-#         if WorkoutAssignment is None:
-#             self.skipTest("WorkoutAssignment model not available")
-#         else:
-#             try:
-#                 self.assignment = WorkoutAssignment.objects.create(
-#                     user=self.user, program=self.program
-#                 )
-#             except Exception:
-#                 # fallback to user_profile or profile field
-#                 try:
-#                     self.assignment = WorkoutAssignment.objects.create(
-#                         user_profile=self.profile, program=self.program
-#                     )
-#                 except Exception:
-#                     # last resort: create without linking fields
-#                     self.assignment = WorkoutAssignment.objects.create(
-#                         program=self.program
-#                     )
+        self.program.days.add(self.workout_day)
+        self.program.save()
+        self.workout_day.save()
 
-#         self.client.force_authenticate(user=self.user)
+        # Log in as normal user
+        self.client.force_login(self.user)
 
-#     def _get_xp(self):
-#         # return integer xp for assertions or None if not found
-#         if self.profile and hasattr(self.profile, "xp"):
-#             return getattr(self.profile, "xp") or 0
-#         if UserLevel:
-#             lvl = UserLevel.objects.filter(user_profile=self.profile).first()
-#             if lvl:
-#                 return getattr(lvl, "xp", 0) or 0
-#         return None
+    def test_complete_workout_day_awards_xp(self):
+        """Ensure that when a normal user completes a workout day, XP increases."""
 
-#     def test_complete_workout_awards_xp(self):
-#         pass
-#         # call the member "complete assignment" endpoint (PATCH)
-#         url = reverse(
-#             "workout-assignment-update", kwargs={"id": self.assignment.id}
-#         )
-#         resp = self.client.patch(url, {}, format="json")
-#         self.assertEqual(resp.status_code, 200)
+        # Get current XP (should exist or create default)
+        before_xp = self.profile.get_current_level().xp
 
-#         # verify XP was awarded
-#         xp_awarded = resp.data.get("xp_awarded", 0)
-#         self.assertGreater(xp_awarded, 0, "Expected XP to be awarded")
+        # Send POST request to complete workout day
+        url = f"/api/workout/day/{self.workout_day.id}/complete/"
+        resp = self.client.post(url, {}, content_type="application/json")
 
-#         # verify assignment completed
-#         status_val = getattr(self.assignment, "status", None)
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
 
-#         def _check_boolean_flags(obj):
-#             completed = getattr(obj, "completed", None)
-#             if completed is None:
-#                 completed = getattr(obj, "is_completed", None)
-#             if not completed:
-#                 completed = bool(
-#                     getattr(obj, "completed_at", None)
-#                     or getattr(obj, "completed_date", None)
-#                 )
-#             return bool(completed)
+        xp_awarded = data.get("xp_awarded", 0)
+        self.assertGreater(xp_awarded, 0, "Expected XP to be awarded")
 
-#         if status_val is not None:
-#             # accept explicit completed-like status values
-#             if status_val in ("completed", "done", "finished"):
-#                 pass
-#             else:
-#                 self.assertTrue(
-#                     _check_boolean_flags(self.assignment),
-#                     msg=f"Assignment status={status_val})",
-#                 )
+        after_xp = self.profile.get_current_level().xp
+        self.assertGreater(after_xp, before_xp, "User XP should increase after completing a workout day")
 
-#         else:
-#             self.assertTrue(
-#                 _check_boolean_flags(self.assignment),
-#                 "Assignment was not marked completed",
-#             )
+        # Assertions
+        self.assertGreater(xp_awarded, 0, "Expected XP to be awarded by the API")
+        self.assertGreater(after_xp, before_xp, "Expected profile XP to increase after workout completion")
+        self.assertTrue(
+            WorkoutDayCompletion.objects.filter(user_profile=self.profile, workout_day=self.workout_day).exists(),
+            "WorkoutDayCompletion record should exist after completion"
+        )
 
-
-# # Run tests with pytest in backend
-# # python manage.py test workout
+# in backend : python manage.py test workout
