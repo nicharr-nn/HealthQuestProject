@@ -1,5 +1,5 @@
 <template>
-  <header class="bg-[#88ACEA] shadow-md">
+  <header class="shadow-md" style="background-color: #88ACEA;">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between h-16 items-center">
         <!-- Left: Brand -->

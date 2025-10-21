@@ -143,8 +143,8 @@ class RecipeTests(TestCase):
         edit_url = f"/api/recipe/{recipe_id}/update/"
         edit_data = {
             "title": "Updated Salmon Salad",
-            "ingredients": "Salmon, Lettuce, Tomato, Cucumber, Avocado",
-            "steps": "Combine all ingredients in a bowl and toss. Add avocado for creaminess.",
+            "ingredients": "Salmon, Lettuce, Tomato, Cucumber",
+            "steps": "Combine all ingredients in a bowl and toss.",
         }
         edit_response = self.client.put(edit_url, edit_data, format="json")
         self.assertEqual(edit_response.status_code, 200)
