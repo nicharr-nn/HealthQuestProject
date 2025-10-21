@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Recipe, RecipeRating
+from .models import Recipe
+
 
 class RecipeSerializer(serializers.ModelSerializer):
     user_profile = serializers.StringRelatedField(read_only=True)
@@ -9,13 +10,21 @@ class RecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = [
-            'id', 'user_profile', 'title', 'ingredients', 'steps',
-            'access_level', 'image', 'pdf_file', 'created_at', 'updated_at'
+            "id",
+            "user_profile",
+            "title",
+            "ingredients",
+            "steps",
+            "access_level",
+            "image",
+            "pdf_file",
+            "created_at",
+            "updated_at",
         ]
-        read_only_fields = ['id', 'user_profile', 'created_at', 'updated_at']
+        read_only_fields = ["id", "user_profile", "created_at", "updated_at"]
 
     def create(self, validated_data):
-        request = self.context['request']
+        request = self.context["request"]
         user_profile = request.user.userprofile
 
         # Fetch current level safely
@@ -23,10 +32,10 @@ class RecipeSerializer(serializers.ModelSerializer):
         role = user_profile.role.lower()
 
         # Access control: only coaches or gold users can create
-        if not (role == 'coach' or current_level == 'gold'):
+        if not (role == "coach" or current_level == "gold"):
             raise serializers.ValidationError(
                 "Only coaches and Gold-level users can create recipes."
             )
 
-        validated_data['user_profile'] = user_profile
+        validated_data["user_profile"] = user_profile
         return super().create(validated_data)

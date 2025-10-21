@@ -1,4 +1,3 @@
-    
 from django.urls import path
 
 from . import views
@@ -13,5 +12,5 @@ urlpatterns = [
         "assignment-update/<int:id>/",
         views.workout_assignment_update,
         name="workout-assignment-update",
-    )
+    ),
 ]

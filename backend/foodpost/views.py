@@ -3,66 +3,71 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from .models import FoodPost
+
 # from coachmember.models import CoachMemberRealtionship
 
-@api_view(["GET", "POST"])
-@permission_classes([IsAuthenticated])
-def food_posts(request):
-    """List or create food posts"""
-    if request.method == "GET":
-        posts = FoodPost.objects.all().select_related("user_profile", "coach")
-        data = [
-            {
-                "id": p.id,
-                "title": p.title,
-                "content": p.content,
-                "image": p.image.url if p.image else None,
-                "author": p.user_profile.user.username,
-                "coach": p.coach.user.username if p.coach else None,
-                "created_at": p.created_at,
-            }
-            for p in posts
-        ]
-        return Response(data)
 
-    elif request.method == "POST":
-        pass
-        profile = request.user.userprofile
+# @api_view(["GET", "POST"])
+# @permission_classes([IsAuthenticated])
+# def food_posts(request):
+#     """List or create food posts"""
+#     if request.method == "GET":
+#         posts = FoodPost.objects.all().select_related("user_profile", "coach")
+#         data = [
+#             {
+#                 "id": p.id,
+#                 "title": p.title,
+#                 "content": p.content,
+#                 "image": p.image.url if p.image else None,
+#                 "author": p.user_profile.user.username,
+#                 "coach": p.coach.user.username if p.coach else None,
+#                 "created_at": p.created_at,
+#             }
+#             for p in posts
+#         ]
+#         return Response(data)
 
-        # Only members can create posts
-        if profile.role != "member":
-            return Response(
-                {"detail": "Only members can create food posts."},
-                status=403,
-            )
+#     elif request.method == "POST":
+#         pass
+#         profile = request.user.userprofile
 
-        # Get active coach-member relationship
-        coach_relation = CoachMemberRealtionship.objects.filter(
-            user=profile,
-            status="active"
-        ).select_related("coach").first()
+#         # Only members can create posts
+#         if profile.role != "member":
+#             return Response(
+#                 {"detail": "Only members can create food posts."},
+#                 status=403,
+#             )
 
-        if not coach_relation:
-            return Response(
-                {"detail": "You are not currently assigned to a coach."},
-                status=400,
-            )
+#         # Get active coach-member relationship
+#         coach_relation = (
+#             CoachMemberRealtionship.objects.filter(user=profile, status="active")
+#             .select_related("coach")
+#             .first()
+#         )
 
-        coach_profile = coach_relation.coach.userprofile
+#         if not coach_relation:
+#             return Response(
+#                 {"detail": "You are not currently assigned to a coach."},
+#                 status=400,
+#             )
 
-        # Create post with coach attached
-        post = FoodPost.objects.create(
-            user_profile=profile,
-            coach=coach_profile,
-            title=request.data.get("title"),
-            content=request.data.get("content"),
-        )
+#         coach_profile = coach_relation.coach.userprofile
 
-        return Response({
-            "message": "Post created successfully.",
-            "post_id": post.id,
-            "coach": coach_profile.user.username
-        })
+#         # Create post with coach attached
+#         post = FoodPost.objects.create(
+#             user_profile=profile,
+#             coach=coach_profile,
+#             title=request.data.get("title"),
+#             content=request.data.get("content"),
+#         )
+
+#         return Response(
+#             {
+#                 "message": "Post created successfully.",
+#                 "post_id": post.id,
+#                 "coach": coach_profile.user.username,
+#             }
+#         )
 
 
 @api_view(["PUT", "PATCH"])
@@ -77,6 +82,7 @@ def food_post_update(request, id):
         post.content = request.data.get("content", post.content)
         post.save()
         return Response({"message": "Post updated"})
+
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
@@ -97,6 +103,7 @@ def upload_food_post_image(request, id):
         },
         status=200,
     )
+
 
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])

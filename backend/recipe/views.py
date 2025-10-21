@@ -4,8 +4,6 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from django.http import FileResponse, Http404
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
 
 
 from .models import Recipe
@@ -26,7 +24,10 @@ def recipe_list(request):
         user_profile = request.user.userprofile
 
         # Only coaches or gold users can create recipes
-        if user_profile.role != "coach" and user_profile.get_current_level().level != "Gold":
+        if (
+            user_profile.role != "coach"
+            and user_profile.get_current_level().level != "Gold"
+        ):
             return Response(
                 {"detail": "Only coaches and gold users can create recipes."},
                 status=status.HTTP_403_FORBIDDEN,
@@ -48,7 +49,6 @@ def recipe_detail(request, pk):
     return Response(serializer.data)
 
 
-
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def download_recipe_pdf(request, id):
@@ -64,7 +64,8 @@ def download_recipe_pdf(request, id):
     # Optional access restriction
     user_profile = request.user.userprofile
     if recipe.access_level == "gold" and (
-        user_profile.role not in ["coach"] and user_profile.get_current_level().level != "Gold"
+        user_profile.role not in ["coach"]
+        and user_profile.get_current_level().level != "Gold"
     ):
         return Response({"detail": "Access denied. Gold level required."}, status=403)
 
@@ -77,8 +78,9 @@ def download_recipe_pdf(request, id):
         recipe.pdf_file.open("rb"),
         as_attachment=True,
         filename=f"{recipe.title}.pdf",
-        content_type="application/pdf"
+        content_type="application/pdf",
     )
+
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
@@ -94,10 +96,15 @@ def upload_recipe_image(request, id):
 
     user_profile = getattr(request.user, "userprofile", None)
     if user_profile is None:
-        return Response({"detail": "Profile not found."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"detail": "Profile not found."}, status=status.HTTP_400_BAD_REQUEST
+        )
 
     if recipe.user_profile != user_profile:
-        if user_profile.role != "coach" and user_profile.get_current_level().level != "Gold":
+        if (
+            user_profile.role != "coach"
+            and user_profile.get_current_level().level != "Gold"
+        ):
             return Response(
                 {"detail": "Permission denied. You can only edit your own recipes."},
                 status=status.HTTP_403_FORBIDDEN,
@@ -105,10 +112,13 @@ def upload_recipe_image(request, id):
 
     image_file = request.FILES.get("image")
     if not image_file:
-        return Response({"detail": "No image file provided."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"detail": "No image file provided."}, status=status.HTTP_400_BAD_REQUEST
+        )
 
     # safe filename
     from django.utils.text import slugify
+
     safe_name = f"{slugify(recipe.title) or 'recipe'}-{image_file.name}"
     recipe.image.save(safe_name, image_file, save=True)  # saves file and model
 
@@ -133,14 +143,20 @@ def delete_recipe(request, id):
     user_profile = request.user.userprofile
 
     if recipe.user_profile != user_profile:
-        if user_profile.role != "coach" and user_profile.get_current_level().level != "Gold":
+        if (
+            user_profile.role != "coach"
+            and user_profile.get_current_level().level != "Gold"
+        ):
             return Response(
                 {"detail": "Permission denied. You can only delete your own recipes."},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
     recipe.delete()
-    return Response({"detail": "Recipe deleted successfully."}, status=status.HTTP_200_OK)
+    return Response(
+        {"detail": "Recipe deleted successfully."}, status=status.HTTP_200_OK
+    )
+
 
 @api_view(["PUT", "PATCH"])
 @permission_classes([IsAuthenticated])
@@ -150,7 +166,10 @@ def update_recipe(request, id):
     user_profile = request.user.userprofile
 
     if recipe.user_profile != user_profile:
-        if user_profile.role != "coach" and user_profile.get_current_level().level != "Gold":
+        if (
+            user_profile.role != "coach"
+            and user_profile.get_current_level().level != "Gold"
+        ):
             return Response(
                 {"detail": "Permission denied. You can only update your own recipes."},
                 status=status.HTTP_403_FORBIDDEN,

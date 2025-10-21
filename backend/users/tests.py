@@ -30,7 +30,7 @@ class UserDeletionTests(TestCase):
     def test_user_deletion_via_api(self):
         """User DELETE request should delete the user account permanently"""
         self.client.force_authenticate(user=self.user)
-        response = self.client.delete(f"/api/user-info/")
+        response = self.client.delete("/api/user-info/")
 
         self.assertEqual(response.status_code, 200, response.data)
         self.assertEqual(response.data["message"], "Account deleted permanently")

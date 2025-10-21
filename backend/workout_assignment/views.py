@@ -10,7 +10,7 @@ from users.models import UserProfile
 from workout.models import WorkoutProgram, WorkoutDayCompletion
 from .models import WorkoutAssignment
 from .serializers import WorkoutAssignmentSerializer
-from workout.xp_rules import calculate_xp, COMPLETION_BONUS
+from workout.xp_rules import calculate_xp
 
 
 @api_view(["POST"])
@@ -26,11 +26,16 @@ def assign_program_to_member(request, id):
 
     member = get_object_or_404(UserProfile, pk=id)
     if member.role != "member":
-        return Response({"error": "Target user is not a member."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"error": "Target user is not a member."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     program_id = request.data.get("program_id")
     if not program_id:
-        return Response({"error": "Program ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"error": "Program ID is required."}, status=status.HTTP_400_BAD_REQUEST
+        )
 
     program = get_object_or_404(WorkoutProgram, pk=program_id)
 
@@ -40,8 +45,10 @@ def assign_program_to_member(request, id):
     )
 
     serializer = WorkoutAssignmentSerializer(assignment)
-    return Response({"message": "Program assigned successfully.", "assignment": serializer.data},
-                    status=status.HTTP_201_CREATED)
+    return Response(
+        {"message": "Program assigned successfully.", "assignment": serializer.data},
+        status=status.HTTP_201_CREATED,
+    )
 
 
 @api_view(["PATCH", "DELETE"])
@@ -83,12 +90,16 @@ def workout_assignment_update(request, id):
 
         return Response(
             {"message": "Assignment completed successfully.", "xp_awarded": xp},
-            status=status.HTTP_200_OK
+            status=status.HTTP_200_OK,
         )
 
     elif request.method == "DELETE":
         assignment.delete()
-        return Response({"message": "Assignment deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            {"message": "Assignment deleted successfully."},
+            status=status.HTTP_204_NO_CONTENT,
+        )
+
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])

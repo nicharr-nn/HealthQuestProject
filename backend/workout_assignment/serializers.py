@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import WorkoutAssignment
 
+
 class WorkoutAssignmentSerializer(serializers.ModelSerializer):
     program_title = serializers.CharField(source="program.title", read_only=True)
     member_name = serializers.CharField(source="user.username", read_only=True)

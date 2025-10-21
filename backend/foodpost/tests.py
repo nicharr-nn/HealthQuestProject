@@ -9,7 +9,7 @@
 # User = get_user_model()
 
 # class FoodPostTests(TestCase):
-#     def setUp(self): 
+#     def setUp(self):
 
 #         self.client = APIClient()
 #         # Create dummy member for testing foodpost creation
@@ -67,7 +67,7 @@
 #         response = self.client.post(url, data, format='json')
 #         self.assertEqual(response.status_code, 403)    # Forbidden since normal user is not a coach or member
 #         self.assertEqual(FoodPost.objects.count(), 1)  # Only the initial post exists
-    
+
 #     def test_food_post_update(self):
 #         """Test updating a food post"""
 #         url = f"/api/foodpost/{self.foodpost.id}/update/"
@@ -80,5 +80,3 @@
 #         self.foodpost.refresh_from_db()
 #         self.assertEqual(self.foodpost.title, "Updated Test Post")
 #         self.assertEqual(self.foodpost.content, "This is an updated test food post.")
- 
-       
