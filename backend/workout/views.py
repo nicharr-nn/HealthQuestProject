@@ -17,7 +17,7 @@ from .models import (
     WorkoutDayCompletion,
     WorkoutProgram,
 )
-from member.models import WorkoutAssignment
+from workout_assignment.models import WorkoutAssignment
 from .serializers import WorkoutProgramSerializer
 from .xp_rules import calculate_xp, COMPLETION_BONUS
 
