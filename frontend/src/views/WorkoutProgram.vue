@@ -8,7 +8,7 @@
       <!-- Program Title -->
       <h1 class="text-4xl font-bold text-center mb-8">{{ program.title }}</h1>
 
-      <!-- 🧭 Day Selector -->
+      <!-- Day Selector -->
       <div class="relative max-w-6xl mx-auto mb-8 rounded-full bg-[#E3CFD8]">
         <button
           @click="scrollLeft"
@@ -338,7 +338,7 @@ function extractYouTubeId(url) {
   if (!url) return null
   if (/^[a-zA-Z0-9_-]{11}$/.test(url)) return url
   const match = url.match(
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\?\/]+)/,
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?/]+)/,
   )
   return match ? match[1] : null
 }
