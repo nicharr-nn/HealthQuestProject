@@ -94,7 +94,6 @@
             </template>
             <template v-else>
               <button class="btn small ghost" @click="viewDetails(request)">View Details</button>
-              <button v-if="request.status === 'approved'" class="btn small ghost" @click="contactMember(request)">Contact Member</button>
             </template>
           </div>
         </div>
@@ -169,7 +168,7 @@ async function updateRequestStatus(relationshipId: number, status: 'approved' | 
       credentials: 'include',
       body: JSON.stringify({ status })
     })
-    
+
     if (!res.ok) throw new Error('Failed to update status')
 
     const req = requests.value.find(r => r.relationship_id === relationshipId)
@@ -182,10 +181,6 @@ async function updateRequestStatus(relationshipId: number, status: 'approved' | 
 
 function viewDetails(request: MemberRequest) {
   alert(`View details for ${request.memberName}`)
-}
-
-function contactMember(request: MemberRequest) {
-  alert(`Contact ${request.memberName} at ${request.email}`)
 }
 
 onMounted(() => {
