@@ -57,7 +57,6 @@
 
           <div class="member-actions">
             <button class="btn small ghost" @click="viewProgress(member)">📊 View Progress</button>
-            <button class="btn small ghost" @click="messageMember(member)">💬 Message</button>
             <button class="btn small danger" @click="removeMember(member)">Remove</button>
           </div>
         </div>
@@ -112,10 +111,6 @@ async function loadMembers() {
 
 function viewProgress(member: Member) {
   router.push(`/member/${member.memberId}/progress`)
-}
-
-function messageMember(member: Member) {
-  alert(`Messaging ${member.name}...`)
 }
 
 async function removeMember(member: Member) {
