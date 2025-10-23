@@ -80,13 +80,13 @@
             <input
               v-model="recipeTitle"
               type="text"
-              maxlength="100"
+              maxlength="30"
               placeholder="e.g., Avocado Toast Deluxe"
               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-pink-400 focus:outline-none"
               required
             />
             <p class="text-xs text-gray-400 mt-1">
-              {{ recipeTitle.length }}/100 characters
+              {{ recipeTitle.length }}/30 characters
             </p>
           </div>
 
