@@ -327,7 +327,11 @@ async function deleteProgram(programId: number) {
     } else {
       const text = await res.text()
       let body: any = text
-      try { body = JSON.parse(text) } catch {}
+      try { 
+        body = JSON.parse(text) 
+      } catch (err) {
+        console.warn('Failed to parse response as JSON:', err)
+      }
       console.error('Delete program failed:', res.status, body)
       const message = body?.detail || body?.error || body || `HTTP ${res.status}`
       alert('Failed to delete program: ' + JSON.stringify(message))
@@ -338,7 +342,7 @@ async function deleteProgram(programId: number) {
   }
 }
 
-async function handleProgramCreated(apiProgram: any) {
+async function handleProgramCreated() {
   // refresh list after create/update
   await loadPrograms()
   closeCreateProgram()
