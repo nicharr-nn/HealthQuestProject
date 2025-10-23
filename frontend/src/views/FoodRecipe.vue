@@ -14,6 +14,7 @@
         <div class="text-lg font-semibold">Choose Recipes to Display:</div>
         <div class="flex gap-4 flex-wrap">
           <button
+            v-if="userStore.level.level.toLowerCase() === 'gold' || userStore.role.toLowerCase() === 'coach'"
             @click="showMyRecipes"
             :class="[
               'px-6 py-2 rounded-lg font-semibold shadow-md transition',
@@ -207,6 +208,9 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useUserStore } from '@/stores/user'
+
+const userStore = useUserStore()
 
 const showModal = ref(false)
 const recipeTitle = ref('')
