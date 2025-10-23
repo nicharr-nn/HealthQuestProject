@@ -82,6 +82,7 @@
           <h2 class="section-title">Your Workout Programs</h2>
         </div>
 
+        <!-- Empty state -->
         <div v-if="filteredPrograms.length === 0" class="empty-state">
           <div class="empty-icon">🏋️‍♂️</div>
           <div class="empty-title">No programs yet</div>
@@ -93,13 +94,36 @@
           </button>
         </div>
 
+        <!-- Programs grid -->
         <div v-else class="programs-grid">
           <div v-for="program in filteredPrograms" :key="program.id" class="program-card">
             <div class="program-header">
               <div class="program-title">{{ program.title }}</div>
-              <div class="program-level" :class="program.difficulty_level">{{ program.difficulty_level }}</div>
+              <div class="program-level" :class="program.difficulty_level">
+                {{ program.difficulty_level }}
+              </div>
             </div>
-            <div class="program-description">{{ program.description || 'No description provided' }}</div>
+
+            <div class="program-description">
+              {{ program.description || 'No description provided' }}
+            </div>
+
+            <!-- Actions for each program -->
+            <div class="program-actions">
+              <button 
+                class="btn small primary"
+                @click="router.push(`/workout-program/${program.id}`)"
+              >
+                Edit
+              </button>
+
+              <button 
+                class="btn small danger"
+                @click="deleteProgram(program.id)"
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -120,10 +144,15 @@ const programs = ref<any[]>([])
 const coachID = ref<string>('')
 const pendingRequestCount = ref(0)
 const memberCount = ref(0)
+const editingProgram = ref<any>(null)
 
 const isApproved = computed(() => approvalStatus.value === 'approved')
-const totalSessions = computed(() => programs.value.reduce((sum, p) => sum + (p.days?.length || 0), 0))
-const programsWithVideos = computed(() => programs.value.filter(p => p.days?.some(d => d.video_links?.length > 0)).length)
+const totalSessions = computed(() =>
+  programs.value.reduce((sum, p) => sum + (p.days?.length || 0), 0)
+)
+const programsWithVideos = computed(() =>
+  programs.value.filter(p => p.days?.some(d => d.video_links?.length > 0)).length
+)
 const filteredPrograms = computed(() => programs.value)
 
 function copyCoachID() {
@@ -133,9 +162,12 @@ function copyCoachID() {
   }
 }
 
+
 async function loadCoachStatus() {
   try {
-    const res = await fetch('http://127.0.0.1:8000/api/coach/status/', { credentials: 'include' })
+    const res = await fetch('http://127.0.0.1:8000/api/coach/status/', {
+      credentials: 'include'
+    })
     if (!res.ok) {
       approvalStatus.value = 'pending'
       coachID.value = ''
@@ -179,13 +211,52 @@ async function loadPendingRequests() {
   }
 }
 
+async function deleteProgram(programId: number) {
+  try {
+    const res = await fetch(`/api/workout/programs/${programId}/`, {
+      method: 'DELETE',
+      credentials: 'include',
+    })
+
+    if (res.ok) {
+      // refresh list
+      await loadPrograms()
+      // close modal if editing the deleted program
+      if (editingProgram.value && editingProgram.value.id === programId) {
+        editingProgram.value = null
+        showCreateProgram.value = false
+      }
+      alert('Program deleted successfully!')
+    } else {
+      const text = await res.text()
+      let body: any = text
+      try { 
+        body = JSON.parse(text) 
+      } catch (err) {
+        console.warn('Failed to parse response as JSON:', err)
+      }
+      console.error('Delete program failed:', res.status, body)
+      const message = body?.detail || body?.error || body || `HTTP ${res.status}`
+      alert('Failed to delete program: ' + JSON.stringify(message))
+    }
+  } catch (err) {
+    console.error('Error deleting program:', err)
+    alert('Failed to delete program')
+  }
+}
+
+async function handleProgramCreated() {
+  await loadPrograms()
+  showCreateProgram.value = false
+}
+
 onMounted(async () => {
   await loadCoachStatus()
 
-  if (isApproved.value) {
+ if (isApproved.value) {
     await Promise.all([loadPrograms(), loadPendingRequests()])
   }
-
+  
   loading.value = false
 })
 </script>

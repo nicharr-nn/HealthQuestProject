@@ -123,11 +123,6 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
-const router = useRouter()
-
-interface CoachForm {
-  bio: string
-}
 
 const coachForm = reactive({ bio: '' })
 const selectedFile = ref<File | null>(null)
