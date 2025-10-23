@@ -141,8 +141,6 @@ interface Props {
   memberName: string
 }
 
-const props = defineProps<Props>()
-
 const emit = defineEmits<{
   (e: 'back-to-members'): void
 }>()

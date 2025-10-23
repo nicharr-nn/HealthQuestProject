@@ -245,11 +245,6 @@ async function deleteProgram(programId: number) {
   }
 }
 
-async function handleProgramCreated() {
-  await loadPrograms()
-  showCreateProgram.value = false
-}
-
 onMounted(async () => {
   await loadCoachStatus()
 
