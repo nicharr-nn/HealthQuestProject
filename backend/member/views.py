@@ -12,18 +12,20 @@ def coach_member_requests(request, pk=None):
 
     if not coach_profile:
         return Response(
-            {'error': 'You are not a coach'}, 
-            status=status.HTTP_403_FORBIDDEN)
+            {'error': 'You are not a coach'},
+            status=status.HTTP_403_FORBIDDEN
+        )
 
     if pk:
         try:
             relationship = CoachMemberRelationship.objects.get(
                 pk=pk, coach=coach_profile
-                )
+            )
         except CoachMemberRelationship.DoesNotExist:
             return Response(
-                {'error': 'Request not found'}, 
-                status=status.HTTP_404_NOT_FOUND)
+                {'error': 'Request not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
         if request.method == 'PATCH':
             new_status = request.data.get('status')
@@ -49,13 +51,14 @@ def accepted_members(request):
 
     if not coach_profile:
         return Response(
-            {'error': 'You are not a coach'}, 
-            status=status.HTTP_403_FORBIDDEN)
+            {'error': 'You are not a coach'},
+            status=status.HTTP_403_FORBIDDEN
+        )
 
     relationships = CoachMemberRelationship.objects.filter(
-        coach=coach_profile, 
+        coach=coach_profile,
         status='approved'
-        )
+    )
 
     # convert to frontend format
     members_data = [

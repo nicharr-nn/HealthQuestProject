@@ -25,9 +25,10 @@ class Member(models.Model):
     status = models.CharField(
         max_length=10,
         choices=[
-            ('pending','Pending'), 
-            ('approved','Approved'), 
-            ('rejected','Rejected')],
+            ('pending', 'Pending'),
+            ('approved', 'Approved'),
+            ('rejected', 'Rejected'),
+        ],
         default='pending',
     )
 
@@ -37,17 +38,18 @@ class Member(models.Model):
 
 class CoachMemberRelationship(models.Model):
     STATUS_CHOICES = [
-        ('pending', 'Pending'), 
-        ('accepted', 'Accepted'), 
+        ('pending', 'Pending'),
+        ('accepted', 'Accepted'),
         ('rejected', 'Rejected'),
-    ],
+    ]
 
     relationship_id = models.AutoField(primary_key=True)
-
-    coach = models.ForeignKey('coach.Coach', on_delete=models.CASCADE, related_name='relationships')
-
-    member = models.OneToOneField('Member', on_delete=models.CASCADE, related_name='relationship')
-
+    coach = models.ForeignKey(
+        'coach.Coach', on_delete=models.CASCADE, related_name='relationships'
+    )
+    member = models.OneToOneField(
+        'Member', on_delete=models.CASCADE, related_name='relationship'
+    )
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)

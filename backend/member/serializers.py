@@ -14,6 +14,8 @@ class CoachMemberRelationshipSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CoachMemberRelationship
-        fields = ['relationship_id', 'memberName', 'memberId', 
-                  'email', 'programName', 'experienceLevel', 
-                  'goals', 'message', 'status', 'start_date']
+        fields = [
+            'relationship_id', 'memberName', 'memberId',
+            'email', 'programName', 'experienceLevel',
+            'goals', 'message', 'status', 'start_date'
+        ]
