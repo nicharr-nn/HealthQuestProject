@@ -166,3 +166,15 @@ def update_recipe(request, id):
         )
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def my_recipes(request):
+    """
+    GET /api/recipe/my-recipes/
+    Returns only the recipes created by the authenticated user.
+    """
+    user_profile = request.user.userprofile
+    recipes = Recipe.objects.filter(user_profile=user_profile).order_by('-id')
+    serializer = RecipeSerializer(recipes, many=True, context={"request": request})
+    return Response(serializer.data, status=status.HTTP_200_OK)

@@ -1,11 +1,38 @@
 <template>
   <div class="min-h-screen py-8 px-4 font-subtitle">
-    <!-- Header -->
+    <!-- Header with Quote -->
     <div class="bg-pink-300 p-6 my-6 rounded-lg max-w-5xl mx-auto">
       <p class="text-2xl md:text-3xl font-bold leading-snug">
         "To eat is a necessity, but to eat intelligently is an art."
       </p>
       <p class="text-sm text-right mt-2 italic">– Michael Pollan -</p>
+    </div>
+
+    <!-- Filter Buttons -->
+    <div class="bg-blue-100 p-4 rounded-lg max-w-5xl mx-auto mb-6">
+      <div class="flex items-center justify-center gap-8">
+        <div class="text-lg font-semibold">Choose Recipes to Display:</div>
+        <div class="flex gap-4 flex-wrap">
+          <button
+            @click="showMyRecipes"
+            :class="[
+              'px-6 py-2 rounded-lg font-semibold shadow-md transition',
+              showMine ? 'bg-[#F9B4FF]' : 'bg-gray-200 hover:bg-gray-300'
+            ]"
+          >
+            My Recipes
+          </button>
+          <button
+            @click="showAllRecipes"
+            :class="[
+              'px-6 py-2 rounded-lg font-semibold shadow-md transition',
+              !showMine ? 'bg-[#F9B4FF]' : 'bg-gray-200 hover:bg-gray-300'
+            ]"
+          >
+            All Recipes
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Share Banner -->
@@ -17,6 +44,7 @@
       </p>
 
       <button
+        v-if="showMine"
         @click="openModal"
         class="bg-pink-400 hover:bg-pink-500 text-white font-semibold px-6 py-3 rounded-lg shadow-md transition whitespace-nowrap"
       >
@@ -146,6 +174,7 @@
           </p>
         </div>
 
+        <!-- Buttons -->
         <div class="mt-4 flex flex-wrap justify-end gap-3 flex-shrink-0">
           <a
             :href="`http://127.0.0.1:8000/api/recipe/${menu.id}/download-pdf/`"
@@ -155,19 +184,21 @@
             Download PDF
           </a>
 
-          <button
-            @click="openEditModal(menu)"
-            class="bg-yellow-400 hover:bg-yellow-500 text-white px-5 py-2 rounded-lg font-semibold shadow-md"
-          >
-            Edit
-          </button>
+          <template v-if="showMine">
+            <button
+              @click="openEditModal(menu)"
+              class="bg-yellow-400 hover:bg-yellow-500 text-white px-5 py-2 rounded-lg font-semibold shadow-md"
+            >
+              Edit
+            </button>
 
-          <button
-            @click="deleteRecipe(menu.id)"
-            class="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-lg font-semibold shadow-lg"
-          >
-            Delete
-          </button>
+            <button
+              @click="deleteRecipe(menu.id)"
+              class="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-lg font-semibold shadow-lg"
+            >
+              Delete
+            </button>
+          </template>
         </div>
       </div>
     </div>
@@ -188,6 +219,7 @@ const token = localStorage.getItem('access_token') || ''
 
 const editMode = ref(false)
 const editingId = ref(null)
+const showMine = ref(false)
 
 const openModal = () => {
   showModal.value = true
@@ -260,9 +292,7 @@ const submitRecipe = async () => {
     uploading.value = true
     const response = await fetch(url, {
       method,
-      headers: {
-        Authorization: token ? `Bearer ${token}` : '',
-      },
+      headers: { Authorization: token ? `Bearer ${token}` : '' },
       body: formData,
       credentials: 'include',
     })
@@ -270,7 +300,7 @@ const submitRecipe = async () => {
     if (response.ok) {
       alert(editMode.value ? 'Recipe updated successfully!' : 'Recipe uploaded successfully!')
       closeModal()
-      fetchMenus()
+      fetchMenus(showMine.value)
     } else {
       const errText = await response.text()
       alert((editMode.value ? 'Update' : 'Upload') + ' failed:\n' + errText)
@@ -282,9 +312,17 @@ const submitRecipe = async () => {
   }
 }
 
-async function fetchMenus() {
+async function fetchMenus(onlyMine = false) {
   try {
-    const response = await fetch('http://127.0.0.1:8000/api/recipe', { credentials: 'include' })
+    const url = onlyMine
+      ? 'http://127.0.0.1:8000/api/recipe/my-recipes/'
+      : 'http://127.0.0.1:8000/api/recipe'
+
+    const response = await fetch(url, {
+      headers: { Authorization: token ? `Bearer ${token}` : '' },
+      credentials: 'include',
+    })
+
     if (!response.ok) throw new Error(`Failed to fetch: ${response.status}`)
     menus.value = await response.json()
   } catch (err) {
@@ -292,6 +330,16 @@ async function fetchMenus() {
   } finally {
     loading.value = false
   }
+}
+
+const showMyRecipes = async () => {
+  showMine.value = true
+  await fetchMenus(true)
+}
+
+const showAllRecipes = async () => {
+  showMine.value = false
+  await fetchMenus(false)
 }
 
 function getCsrfToken() {
@@ -313,7 +361,7 @@ const deleteRecipe = async (id) => {
 
     if (response.ok) {
       alert('Recipe deleted successfully!')
-      fetchMenus()
+      fetchMenus(showMine.value)
     } else {
       const errText = await response.text()
       alert('Delete failed:\n' + errText)
