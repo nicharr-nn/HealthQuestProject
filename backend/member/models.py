@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
+
 class Member(models.Model):
     EXPERIENCE_LEVEL_CHOICES = [
         ('beginner', 'Beginner'),
@@ -23,8 +24,11 @@ class Member(models.Model):
     submitted_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(
         max_length=10,
-        choices=[('pending','Pending'),('approved','Approved'),('rejected','Rejected')],
-        default='pending'
+        choices=[
+            ('pending','Pending'), 
+            ('approved','Approved'), 
+            ('rejected','Rejected')],
+        default='pending',
     )
 
     def __str__(self):
@@ -33,10 +37,10 @@ class Member(models.Model):
 
 class CoachMemberRelationship(models.Model):
     STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('accepted', 'Accepted'),
+        ('pending', 'Pending'), 
+        ('accepted', 'Accepted'), 
         ('rejected', 'Rejected'),
-    ]
+    ],
 
     relationship_id = models.AutoField(primary_key=True)
 
