@@ -75,6 +75,13 @@ export const useUserStore = defineStore('user', {
                 this.profile.coach_profile = this.coach_profile
                 this.profile.status_approval = status
                 this.profile.approved = this.approved
+
+                console.log('Coach status fetched:', {
+                  role: this.role,
+                  approved: this.approved,
+                  profile_complete: this.profile_complete
+                })
+                
               } else {
                 // if coach status endpoint not available, keep approved = false
                 this.coach_profile = null
