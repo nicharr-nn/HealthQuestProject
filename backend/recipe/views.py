@@ -77,6 +77,7 @@ def download_recipe_pdf(request, id):
         content_type="application/pdf"
     )
 
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def upload_recipe_image(request, id):
@@ -139,6 +140,7 @@ def delete_recipe(request, id):
     recipe.delete()
     return Response({"detail": "Recipe deleted successfully."}, status=status.HTTP_200_OK)
 
+
 @api_view(["PUT", "PATCH"])
 @permission_classes([IsAuthenticated])
 def update_recipe(request, id):
@@ -164,6 +166,7 @@ def update_recipe(request, id):
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def my_recipes(request):
@@ -175,3 +178,4 @@ def my_recipes(request):
     recipes = Recipe.objects.filter(user_profile=user_profile).order_by('-id')
     serializer = RecipeSerializer(recipes, many=True, context={"request": request})
     return Response(serializer.data, status=status.HTTP_200_OK)
+

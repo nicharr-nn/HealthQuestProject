@@ -1,6 +1,7 @@
 from django.db import models
 from users.models import UserProfile
 
+
 class FoodPost(models.Model):
     user_profile = models.ForeignKey(
         UserProfile,
@@ -23,5 +24,4 @@ class FoodPost(models.Model):
 
     class Meta:
         ordering = ['-created_at']
-
 
