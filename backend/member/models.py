@@ -12,7 +12,7 @@ class Member(models.Model):
         ('advanced', 'Advanced'),
     ]
 
-    user = models.OneToOneField(UserProfile, on_delete=models.CASCADE)
+    user = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name="member_profile")
     member_id = models.CharField(max_length=20, unique=True)
     experience_level = models.CharField(
         max_length=12,
@@ -33,7 +33,7 @@ class Member(models.Model):
     )
 
     def __str__(self):
-        return f"{self.user.username} ({self.member_id})"
+        return f"{self.user.user.username} ({self.member_id} - {self.status})"
 
 
 class CoachMemberRelationship(models.Model):

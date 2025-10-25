@@ -14,9 +14,9 @@
           <span class="stat-number">{{ pendingRequests.length }}</span>
           <span class="stat-label">Pending</span>
         </div>
-        <div class="stat-badge approved">
-          <span class="stat-number">{{ approvedRequests.length }}</span>
-          <span class="stat-label">Approved</span>
+        <div class="stat-badge accepted">
+          <span class="stat-number">{{ acceptedRequests.length }}</span>
+          <span class="stat-label">Accepted</span>
         </div>
       </div>
     </div>
@@ -29,8 +29,8 @@
       <button class="tab-btn" :class="{ active: activeTab === 'pending' }" @click="activeTab = 'pending'">
         Pending ({{ pendingRequests.length }})
       </button>
-      <button class="tab-btn" :class="{ active: activeTab === 'approved' }" @click="activeTab = 'approved'">
-        Approved ({{ approvedRequests.length }})
+      <button class="tab-btn" :class="{ active: activeTab === 'accepted' }" @click="activeTab = 'accepted'">
+        Accepted ({{ acceptedRequests.length }})
       </button>
       <button class="tab-btn" :class="{ active: activeTab === 'rejected' }" @click="activeTab = 'rejected'">
         Rejected ({{ rejectedRequests.length }})
@@ -61,7 +61,6 @@
               <div class="member-details">
                 <div class="member-name">{{ request.memberName }}</div>
                 <div class="member-id">ID: {{ request.memberId }}</div>
-                <div class="member-email">{{ request.email }}</div>
               </div>
             </div>
             <div class="request-status" :class="request.status">{{ request.status }}</div>
@@ -88,7 +87,7 @@
 
           <div class="request-actions">
             <template v-if="request.status === 'pending'">
-              <button class="btn small success" @click="updateRequestStatus(request.relationship_id, 'approved')">✓ Approve</button>
+              <button class="btn small success" @click="updateRequestStatus(request.relationship_id, 'accepted')">✓ Accept</button>
               <button class="btn small danger" @click="updateRequestStatus(request.relationship_id, 'rejected')">✕ Reject</button>
               <button class="btn small ghost" @click="viewDetails(request)">View Details</button>
             </template>
@@ -110,22 +109,22 @@ interface MemberRequest {
   id: string
   memberId: string
   memberName: string
-  email: string
   programName?: string
   experienceLevel: string
   message?: string
   goals?: string[]
-  status: 'pending' | 'approved' | 'rejected'
+  status: 'pending' | 'accepted' | 'rejected'
   submittedAt: string
+  relationship_id: number
 }
 
 const router = useRouter()
 const requests = ref<MemberRequest[]>([])
-const activeTab = ref<'all' | 'pending' | 'approved' | 'rejected'>('all')
+const activeTab = ref<'all' | 'pending' | 'accepted' | 'rejected'>('all')
 const loading = ref(true)
 
 const pendingRequests = computed(() => requests.value.filter(r => r.status === 'pending'))
-const approvedRequests = computed(() => requests.value.filter(r => r.status === 'approved'))
+const acceptedRequests = computed(() => requests.value.filter(r => r.status === 'accepted'))
 const rejectedRequests = computed(() => requests.value.filter(r => r.status === 'rejected'))
 const filteredRequests = computed(() => activeTab.value === 'all' ? requests.value : requests.value.filter(r => r.status === activeTab.value))
 
@@ -160,7 +159,7 @@ async function loadRequests() {
   }
 }
 
-async function updateRequestStatus(relationshipId: number, status: 'approved' | 'rejected') {
+async function updateRequestStatus(relationshipId: number, status: 'accepted' | 'rejected') {
   try {
     const res = await fetch(`http://127.0.0.1:8000/api/member/coach-requests/${relationshipId}/`, {
       method: 'PATCH',
@@ -261,7 +260,7 @@ onMounted(() => {
   border: 1px solid #f59e0b;
 }
 
-.stat-badge.approved {
+.stat-badge.accepted {
   background: #d1fae5;
   border: 1px solid #10b981;
 }
@@ -425,7 +424,7 @@ onMounted(() => {
   color: #92400e;
 }
 
-.request-status.approved {
+.request-status.accepted {
   background: #d1fae5;
   color: #065f46;
 }

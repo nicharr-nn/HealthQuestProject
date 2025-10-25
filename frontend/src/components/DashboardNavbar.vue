@@ -107,14 +107,14 @@
               Dashboard
             </RouterLink>
           </li>
-          <li>
+          <li v-if="userStore.role === 'member'">
             <RouterLink
-              to="/workout-program"
+              to="/coach"
               @click="closeMobileMenu"
               class="block font-body text-white hover:text-[#c7d2fe] transition-colors py-2"
               active-class="text-[#c7d2fe]"
             >
-              Workout Program
+              Coach
             </RouterLink>
           </li>
           <li>

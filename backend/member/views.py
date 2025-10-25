@@ -35,8 +35,21 @@ def coach_member_requests(request, pk=None):
             if new_status:
                 relationship.status = new_status
                 relationship.save()
-            serializer = CoachMemberRelationshipSerializer(relationship)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+
+                # When coach accepts, also activate the member
+                member = relationship.member
+                if new_status in ['accepted', 'approved']:
+                    # Update member status to approve
+                    if hasattr(member, 'status'):
+                        member.status = 'approved'
+                    member.save()
+
+                elif new_status == 'rejected':
+                    # Optionally reset member to pending or inactive
+                    if hasattr(member, 'status'):
+                        member.status = 'pending'
+                        member.save()
+
 
         serializer = CoachMemberRelationshipSerializer(relationship)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -61,21 +74,17 @@ def accepted_members(request):
 
     relationships = CoachMemberRelationship.objects.filter(
         coach=coach_profile,
-        status='approved'
+        status__in=['accepted', 'approved']
     )
 
     # convert to frontend format
     members_data = [
         {
             "memberId": r.member.member_id,
-            "name": r.member.user.username,
+            "name": r.member.user.user.username,
             "programName": r.member.program_name,
-            "joinedAt": r.start_date,
-            "lastActivity": (
-                r.member.lastActivity.strftime("%Y-%m-%d")
-                if hasattr(r.member, "lastActivity")
-                else r.start_date
-            ),
+            "joinedAt": r.member.submitted_at,
+            "experienceLevel": r.member.experience_level,
         }
         for r in relationships
     ]
@@ -87,7 +96,7 @@ def accepted_members(request):
 def apply_as_member(request):
     """
     Create or update a Member profile for the authenticated user.
-    Ensures user.role = 'member' and assigns the selected coach if provided.
+    Members can use public_id (like C_A1B2C3D4) to request coaches.
     """
     profile = request.user.userprofile
 
@@ -100,9 +109,8 @@ def apply_as_member(request):
     member, created = Member.objects.get_or_create(
         user=profile,
         defaults={
-            "member_id": f"M-{profile.user.id:05d}",
             "experience_level": request.data.get("experience_level", "beginner"),
-            "program_name": None,  # Coach will assign later
+            "program_name": None,
             "message": request.data.get("message", ""),
         },
     )
@@ -118,18 +126,79 @@ def apply_as_member(request):
     coach_code = request.data.get("coach_code")
     if coach_code:
         try:
-            coach = Coach.objects.get(public_id=coach_code)
-            CoachMemberRelationship.objects.get_or_create(
-                coach=coach, member=member, defaults={"status": "pending"}
+            # Try to find coach by public_id first
+            if coach_code.startswith('C-'):
+                coach = Coach.objects.get(public_id=coach_code)
+            else:
+                # Fallback: try primary key or username
+                try:
+                    # Try as primary key
+                    coach = Coach.objects.get(pk=int(coach_code))
+                except (ValueError, Coach.DoesNotExist):
+                    # Try as username
+                    coach = Coach.objects.get(user__user__username=coach_code)
+            
+            # Check if relationship already exists
+            existing_relationship = CoachMemberRelationship.objects.filter(
+                member=member
+            ).first()
+            
+            if existing_relationship:
+                current_coach_name = existing_relationship.coach.user.user.username
+                return Response(
+                    {
+                        "error": f"You already have a {existing_relationship.status} relationship with coach {current_coach_name}. Please cancel it first to request a new coach."
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            
+            # Create new relationship
+            relationship = CoachMemberRelationship.objects.create(
+                coach=coach, 
+                member=member, 
+                status="pending"
             )
-        except Coach.DoesNotExist:
+            
+            # Return success response with coach info
             return Response(
-                {"error": "Invalid coach code."},
+                {
+                    "message": f"Request sent successfully to coach {coach.user.user.username}!",
+                    "member": MemberSerializer(member).data,
+                    "coach": {
+                        "name": coach.user.user.username,
+                        "public_id": coach.public_id,
+                    },
+                    "status": "pending"
+                },
+                status=status.HTTP_201_CREATED if created else status.HTTP_200_OK,
+            )
+            
+        except Coach.DoesNotExist:
+            # Provide helpful error message with available coaches
+            available_coaches = Coach.objects.filter(status_approval='approved')[:5]
+            coach_list = [
+                {
+                    'public_id': coach.public_id,
+                    'name': coach.user.user.username,
+                }
+                for coach in available_coaches
+            ]
+            
+            return Response(
+                {
+                    "error": f"Coach with code '{coach_code}' not found.",
+                    "available_coaches": coach_list,
+                    "hint": "Try one of these available coach codes"
+                },
                 status=status.HTTP_404_NOT_FOUND,
             )
+        except Exception as e:
+            return Response(
+                {"error": f"Failed to create relationship: {str(e)}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-
-        return Response(
+    return Response(
         MemberSerializer(member).data,
         status=status.HTTP_201_CREATED if created else status.HTTP_200_OK,
     )
@@ -198,33 +267,33 @@ def manage_member_request(request):
             status=status.HTTP_204_NO_CONTENT,
         )
 
-# @api_view(["PATCH"])
-# @permission_classes([IsAuthenticated])
-# def assign_program_to_member(request, member_id):
-#     """
-#     Coach assigns a workout program to an accepted member.
-#     """
-#     user_profile = getattr(request.user, "userprofile", None)
-#     coach_profile = getattr(user_profile, "coach_profile", None)
+@api_view(["PATCH"])
+@permission_classes([IsAuthenticated])
+def assign_program_to_member(request, member_id):
+    """
+    Coach assigns a workout program to an accepted member.
+    """
+    user_profile = getattr(request.user, "userprofile", None)
+    coach_profile = getattr(user_profile, "coach_profile", None)
 
-#     if not coach_profile:
-#         return Response({"error": "You are not a coach."}, status=403)
+    if not coach_profile:
+        return Response({"error": "You are not a coach."}, status=403)
 
-#     try:
-#         relationship = CoachMemberRelationship.objects.get(
-#             coach=coach_profile, member__member_id=member_id, status="accepted"
-#         )
-#     except CoachMemberRelationship.DoesNotExist:
-#         return Response({"error": "No such accepted member."}, status=404)
+    try:
+        relationship = CoachMemberRelationship.objects.get(
+            coach=coach_profile, member__member_id=member_id, status="accepted"
+        )
+    except CoachMemberRelationship.DoesNotExist:
+        return Response({"error": "No such accepted member."}, status=404)
 
-#     program_name = request.data.get("program_name")
-#     if not program_name:
-#         return Response({"error": "Program name required."}, status=400)
+    program_name = request.data.get("program_name")
+    if not program_name:
+        return Response({"error": "Program name required."}, status=400)
 
-#     relationship.member.program_name = program_name
-#     relationship.member.save()
+    relationship.member.program_name = program_name
+    relationship.member.save()
 
-#     return Response(
-#         {"message": f"Program '{program_name}' assigned to member."},
-#         status=200,
-#     )
+    return Response(
+        {"message": f"Program '{program_name}' assigned to member."},
+        status=200,
+    )

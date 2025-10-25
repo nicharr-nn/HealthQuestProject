@@ -42,17 +42,15 @@
               <div class="member-details">
                 <div class="member-name">{{ member.name }}</div>
                 <div class="member-id">ID: {{ member.memberId }}</div>
-                <div class="member-email">{{ member.email }}</div>
               </div>
             </div>
             <div class="member-status">ACTIVE</div>
           </div>
 
           <div class="member-info-body">
-            <div class="info-row"><span class="info-label">Program:</span><span class="info-value">{{ member.programName }}</span></div>
-            <div class="info-row"><span class="info-label">Level:</span><span class="info-value">{{ member.level }}</span></div>
+            <div class="info-row"><span class="info-label">Program:</span><span class="info-value">{{ member.programName || 'Not specified'}}</span></div>
+            <div class="info-row"><span class="info-label">Level:</span><span class="info-value">{{ member.experienceLevel || 'Not specified' }}</span></div>
             <div class="info-row"><span class="info-label">Joined:</span><span class="info-value">{{ formatDate(member.joinedAt) }}</span></div>
-            <div class="info-row"><span class="info-label">Last Activity:</span><span class="info-value">{{ formatDate(member.lastActivity) }}</span></div>
           </div>
 
           <div class="member-actions">
@@ -72,11 +70,10 @@ import { useRouter } from 'vue-router'
 interface Member {
   memberId: string
   name: string
-  email: string
   programName: string
-  level: string
+  experienceLevel: string
   joinedAt: string
-  lastActivity: string
+//  lastActivity: string
 }
 
 const router = useRouter()
