@@ -265,7 +265,6 @@ const closeModal = () => {
 
 const menus = ref([])
 const loading = ref(true)
-const error = ref(null)
 
 onMounted(() => {
   fetchMenus()
