@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from users.models import UserProfile
 
 User = get_user_model()
 
@@ -11,7 +12,7 @@ class Member(models.Model):
         ('advanced', 'Advanced'),
     ]
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(UserProfile, on_delete=models.CASCADE)
     member_id = models.CharField(max_length=20, unique=True)
     experience_level = models.CharField(
         max_length=12,
@@ -19,7 +20,6 @@ class Member(models.Model):
         default='beginner'
     )
     program_name = models.CharField(max_length=255, blank=True, null=True)
-    goals = models.JSONField(blank=True, null=True)
     message = models.TextField(blank=True, null=True)
     submitted_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(
@@ -56,3 +56,24 @@ class CoachMemberRelationship(models.Model):
 
     def __str__(self):
         return f"{self.coach} → {self.member} ({self.status})"
+
+
+
+# class FoodPost(models.Model):
+#     user_profile = models.ForeignKey(
+#         UserProfile, on_delete=models.CASCADE, related_name="food_posts"
+#     )
+#     coach = models.ForeignKey(
+#         UserProfile, on_delete=models.CASCADE, related_name="coach_food_posts"
+#     )
+#     title = models.CharField(max_length=255, null=True, blank=True)
+#     content = models.TextField()
+#     image = models.ImageField(upload_to="food_posts/", null=True, blank=True)
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     updated_at = models.DateTimeField(auto_now=True)
+
+#     def __str__(self):
+#         return f"{self.user_profile.user.username} - {self.title or 'Food Post'}"
+
+#     class Meta:
+#         ordering = ["-created_at"]

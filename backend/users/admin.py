@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import UserProfile, UserLevel
+from .models import UserProfile, UserLevel, FitnessGoal
 
 
 @admin.register(UserProfile)
@@ -12,3 +12,4 @@ class UserProfileAdmin(admin.ModelAdmin):
 
 
 admin.site.register(UserLevel)
+admin.site.register(FitnessGoal)

@@ -51,7 +51,6 @@ INSTALLED_APPS = [
     "corsheaders",
     "rest_framework",
     "users",
-    "fitness",
     "workout",
     "coach",
     "member",

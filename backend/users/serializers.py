@@ -2,15 +2,23 @@ from django.apps import apps
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from fitness.serializers import FitnessGoalSerializer
-
-
 def get_user_profile_model():
     return apps.get_model("users", "UserProfile")
 
 
 def get_user_level_model():
     return apps.get_model("users", "UserLevel")
+
+
+def get_fitness_goal_model():
+    return apps.get_model("users", "FitnessGoal")
+
+
+class FitnessGoalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = get_fitness_goal_model()
+        fields = ["id", "goal_type", "start_date", "end_date"]
+        read_only_fields = ["id", "start_date"]
 
 
 class UserLevelSerializer(serializers.ModelSerializer):
@@ -43,7 +51,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     def get_current_goal(self, obj):
         """Return the most recent fitness goal type for normal users."""
-        if obj.role == "normal":
+        if obj.role == "normal" or obj.role == "member":
             latest_goal = obj.fitness_goals.order_by("-start_date").first()
             if latest_goal:
                 return latest_goal.goal_type

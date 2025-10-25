@@ -35,16 +35,6 @@
 
         <!-- Desktop Navigation Links -->
         <ul class="hidden md:flex items-center space-x-8">
-           <li v-if="userStore.role === 'member'">
-            <RouterLink
-              to="/coach"
-              class="font-body text-white hover:text-[#c7d2fe] transition-colors"
-              active-class="text-[#c7d2fe]"
-            >
-              Coach
-            </RouterLink>
-          </li>
-
           <li>
             <RouterLink
               to="/dashboard"
@@ -52,6 +42,15 @@
               active-class="text-[#c7d2fe]"
             >
               Dashboard
+            </RouterLink>
+          </li>
+          <li v-if="userStore.role === 'member'">
+            <RouterLink
+              to="/coach"
+              class="font-body text-white hover:text-[#c7d2fe] transition-colors"
+              active-class="text-[#c7d2fe]"
+            >
+              Coach
             </RouterLink>
           </li>
           <li>
@@ -105,7 +104,6 @@
               class="block font-body text-white hover:text-[#c7d2fe] transition-colors py-2"
               active-class="text-[#c7d2fe]"
             >
-              Dashboard
               Dashboard
             </RouterLink>
           </li>
