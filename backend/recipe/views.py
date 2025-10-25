@@ -4,8 +4,6 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from django.http import FileResponse, Http404
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
 
 
 from .models import Recipe
@@ -46,7 +44,6 @@ def recipe_detail(request, pk):
     recipe = get_object_or_404(Recipe, pk=pk)
     serializer = RecipeSerializer(recipe, context={"request": request})
     return Response(serializer.data)
-
 
 
 @api_view(["GET"])

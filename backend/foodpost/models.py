@@ -1,5 +1,4 @@
 from django.db import models
-from django.conf import settings
 from users.models import UserProfile
 
 class FoodPost(models.Model):
@@ -24,4 +23,5 @@ class FoodPost(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+
 

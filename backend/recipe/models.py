@@ -116,3 +116,4 @@ class RecipeRating(models.Model):
 
     def __str__(self):
         return f"{self.user_profile.user.username} → {self.recipe.title}: {self.rating}"
+    
