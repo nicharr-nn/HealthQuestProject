@@ -18,8 +18,8 @@ def recipe_list(request):
     if request.method == "GET":
         recipes = Recipe.objects.all()
         serializer = RecipeSerializer(
-            recipes, 
-            many=True, 
+            recipes,
+            many=True,
             context={"request": request}
         )
         return Response(serializer.data)
@@ -28,7 +28,7 @@ def recipe_list(request):
         user_profile = request.user.userprofile
 
         # Only coaches or gold users can create recipes
-        if (user_profile.role != "coach" and 
+        if (user_profile.role != "coach" and
             user_profile.get_current_level().level != "Gold"):
             return Response(
                 {"detail": "Only coaches and gold users can create recipes."},
@@ -36,7 +36,7 @@ def recipe_list(request):
             )
 
         serializer = RecipeSerializer(
-            data=request.data, 
+            data=request.data,
             context={"request": request}
         )
         if serializer.is_valid():
@@ -65,8 +65,8 @@ def download_recipe_pdf(request, id):
 
     # Optional access restriction
     user_profile = request.user.userprofile
-    if (recipe.access_level == "gold" and 
-        user_profile.role not in ["coach"] and 
+    if (recipe.access_level == "gold" and
+        user_profile.role not in ["coach"] and
         user_profile.get_current_level().level != "Gold"):
         return Response(
             {"detail": "Access denied. Gold level required."}, 
@@ -97,12 +97,12 @@ def upload_recipe_image(request, id):
     user_profile = getattr(request.user, "userprofile", None)
     if user_profile is None:
         return Response(
-            {"detail": "Profile not found."}, 
+            {"detail": "Profile not found."},
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    if (recipe.user_profile != user_profile and 
-        user_profile.role != "coach" and 
+    if (recipe.user_profile != user_profile and
+        user_profile.role != "coach" and
         user_profile.get_current_level().level != "Gold"):
         return Response(
             {"detail": "Permission denied. You can only edit your own recipes."},
@@ -112,7 +112,7 @@ def upload_recipe_image(request, id):
     image_file = request.FILES.get("image")
     if not image_file:
         return Response(
-            {"detail": "No image file provided."}, 
+            {"detail": "No image file provided."},
             status=status.HTTP_400_BAD_REQUEST
         )
 
@@ -140,7 +140,7 @@ def delete_recipe(request, id):
     user_profile = request.user.userprofile
 
     if (recipe.user_profile != user_profile and
-        user_profile.role != "coach" and 
+        user_profile.role != "coach" and
         user_profile.get_current_level().level != "Gold"):
         return Response(
             {"detail": "Permission denied. You can only delete your own recipes."},
@@ -149,7 +149,7 @@ def delete_recipe(request, id):
 
     recipe.delete()
     return Response(
-        {"detail": "Recipe deleted successfully."}, 
+        {"detail": "Recipe deleted successfully."},
         status=status.HTTP_200_OK
     )
 
@@ -162,7 +162,7 @@ def update_recipe(request, id):
     user_profile = request.user.userprofile
 
     if (recipe.user_profile != user_profile and
-        user_profile.role != "coach" and 
+        user_profile.role != "coach" and
         user_profile.get_current_level().level != "Gold"):
         return Response(
             {"detail": "Permission denied. You can only update your own recipes."},
@@ -189,9 +189,8 @@ def my_recipes(request):
     user_profile = request.user.userprofile
     recipes = Recipe.objects.filter(user_profile=user_profile).order_by('-id')
     serializer = RecipeSerializer(
-        recipes, 
-        many=True, 
+        recipes,
+        many=True,
         context={"request": request}
     )
     return Response(serializer.data, status=status.HTTP_200_OK)
-

@@ -24,4 +24,3 @@ class FoodPost(models.Model):
 
     class Meta:
         ordering = ['-created_at']
-
