@@ -341,8 +341,6 @@ async function fetchMenus(onlyMine = false) {
 
     if (!response.ok) throw new Error(`Failed to fetch: ${response.status}`)
     menus.value = await response.json()
-  } catch (err) {
-    error.value = 'Could not load recipes.'
   } finally {
     loading.value = false
   }
