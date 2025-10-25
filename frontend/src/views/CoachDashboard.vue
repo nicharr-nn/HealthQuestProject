@@ -148,8 +148,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import MemberRequests from '../components/MemberRequests.vue'
-import MemberManagement from '../components/MemberManagement.vue'
+import MemberRequests from './MemberRequests.vue'
+import MemberManagement from './MemberManagement.vue'
 
 const router = useRouter()
 const currentView = ref<'dashboard' | 'requests' | 'members'>('dashboard')
