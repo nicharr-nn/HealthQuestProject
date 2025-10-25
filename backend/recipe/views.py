@@ -29,7 +29,7 @@ def recipe_list(request):
 
         # Only coaches or gold users can create recipes
         if (user_profile.role != "coach" and
-            user_profile.get_current_level().level != "Gold"):
+                user_profile.get_current_level().level != "Gold"):
             return Response(
                 {"detail": "Only coaches and gold users can create recipes."},
                 status=status.HTTP_403_FORBIDDEN,
@@ -66,10 +66,10 @@ def download_recipe_pdf(request, id):
     # Optional access restriction
     user_profile = request.user.userprofile
     if (recipe.access_level == "gold" and
-        user_profile.role not in ["coach"] and
-        user_profile.get_current_level().level != "Gold"):
+            user_profile.role not in ["coach"] and
+            user_profile.get_current_level().level != "Gold"):
         return Response(
-            {"detail": "Access denied. Gold level required."}, 
+            {"detail": "Access denied. Gold level required."},
             status=403
         )
 
@@ -102,8 +102,8 @@ def upload_recipe_image(request, id):
         )
 
     if (recipe.user_profile != user_profile and
-        user_profile.role != "coach" and
-        user_profile.get_current_level().level != "Gold"):
+            user_profile.role != "coach" and
+            user_profile.get_current_level().level != "Gold"):
         return Response(
             {"detail": "Permission denied. You can only edit your own recipes."},
             status=status.HTTP_403_FORBIDDEN,
@@ -140,8 +140,8 @@ def delete_recipe(request, id):
     user_profile = request.user.userprofile
 
     if (recipe.user_profile != user_profile and
-        user_profile.role != "coach" and
-        user_profile.get_current_level().level != "Gold"):
+            user_profile.role != "coach" and
+            user_profile.get_current_level().level != "Gold"):
         return Response(
             {"detail": "Permission denied. You can only delete your own recipes."},
             status=status.HTTP_403_FORBIDDEN,
@@ -162,8 +162,8 @@ def update_recipe(request, id):
     user_profile = request.user.userprofile
 
     if (recipe.user_profile != user_profile and
-        user_profile.role != "coach" and
-        user_profile.get_current_level().level != "Gold"):
+            user_profile.role != "coach" and
+            user_profile.get_current_level().level != "Gold"):
         return Response(
             {"detail": "Permission denied. You can only update your own recipes."},
             status=status.HTTP_403_FORBIDDEN,
