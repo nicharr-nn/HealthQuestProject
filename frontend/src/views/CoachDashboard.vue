@@ -63,6 +63,7 @@
           <div class="stat-number">{{ programsWithVideos }}</div>
           <div class="stat-label">Programs with Videos</div>
         </div>
+
         <div class="stat-card clickable" @click="router.push('/view-member')">
           <div class="stat-number">{{ memberCount }}</div>
           <div class="stat-label">My Members</div>

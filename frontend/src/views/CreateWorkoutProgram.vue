@@ -613,7 +613,6 @@ async function submitProgram() {
     emit('programCreated', body)
     alert('Program saved successfully!')
 
-
   } catch (error) {
     console.error('Error saving program:', error)
     alert('Failed to save program: ' + error.message)
