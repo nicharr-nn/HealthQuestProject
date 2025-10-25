@@ -613,6 +613,7 @@ async function submitProgram() {
     emit('programCreated', body)
     alert('Program saved successfully!')
 
+
   } catch (error) {
     console.error('Error saving program:', error)
     alert('Failed to save program: ' + error.message)
@@ -961,12 +962,6 @@ watch(() => props.existingProgram, (program) => {
 .empty-message {
   font-size: 14px;
   line-height: 1.5;
-}
-
-.visibility-toggle {
-  display: flex;
-  gap: 12px;
-  align-items: center;
 }
 
 @media (max-width: 768px) {

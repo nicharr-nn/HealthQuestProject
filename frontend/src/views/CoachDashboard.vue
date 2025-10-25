@@ -1,19 +1,5 @@
 <template>
   <div class="coach-dashboard">
-    <!-- Show MemberRequests Component -->
-    <MemberRequests
-      v-if="currentView === 'requests'"
-      @back-to-dashboard="currentView = 'dashboard'"
-    />
-
-    <!-- Show MemberManagement Component -->
-    <MemberManagement
-      v-else-if="currentView === 'members'"
-      @back-to-dashboard="currentView = 'dashboard'"
-    />
-
-    <!-- Default Dashboard View -->
-    <div v-else>
     <div class="dashboard-header">
       <div class="header-content">
         <h1 class="dashboard-title">Coach Dashboard</h1>
@@ -141,18 +127,15 @@
         </div>
       </div>
     </div>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import MemberRequests from './MemberRequests.vue'
-import MemberManagement from './MemberManagement.vue'
 
 const router = useRouter()
-const currentView = ref<'dashboard' | 'requests' | 'members'>('dashboard')
+
 const loading = ref(true)
 const showCreateProgram = ref(false)
 const approvalStatus = ref<'pending'|'approved'|'rejected'>('pending')
