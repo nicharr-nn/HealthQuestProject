@@ -21,7 +21,6 @@ import { ref, onMounted } from "vue";
 const user = ref(null);
 const loading = ref(true);
 
-
 async function fetchUserInfo() {
   loading.value = true;
   try {
