@@ -1,5 +1,19 @@
 <template>
   <div class="coach-dashboard">
+    <!-- Show MemberRequests Component -->
+    <MemberRequests
+      v-if="currentView === 'requests'"
+      @back-to-dashboard="currentView = 'dashboard'"
+    />
+
+    <!-- Show MemberManagement Component -->
+    <MemberManagement
+      v-else-if="currentView === 'members'"
+      @back-to-dashboard="currentView = 'dashboard'"
+    />
+
+    <!-- Default Dashboard View -->
+    <div v-else>
     <div class="dashboard-header">
       <div class="header-content">
         <h1 class="dashboard-title">Coach Dashboard</h1>
@@ -65,12 +79,12 @@
           <div class="stat-number">{{ programsWithVideos }}</div>
           <div class="stat-label">Programs with Videos</div>
         </div>
-        <div class="stat-card clickable" @click="emit('view-members')">
+        <div class="stat-card clickable" @click="currentView = 'members'">
           <div class="stat-number">5</div>
           <div class="stat-label">My Members</div>
           <div class="stat-action">View All →</div>
         </div>
-        <div class="stat-card clickable" @click="emit('view-requests')">
+        <div class="stat-card clickable" @click="currentView = 'requests'">
           <div class="stat-number pending-highlight">3</div>
           <div class="stat-label">Pending Requests</div>
           <div class="stat-action">View All →</div>
@@ -174,26 +188,21 @@
         </div>
       </div>
     </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import CreateWorkoutProgram from '../components/CreateWorkoutProgram.vue'
+import MemberRequests from '../components/MemberRequests.vue'
+import MemberManagement from '../components/MemberManagement.vue'
 
-<<<<<<< HEAD:frontend/src/components/CoachDashboard.vue
-const emit = defineEmits<{
-  (e: 'view-requests'): void
-  (e: 'view-members'): void
-}>()
+const currentView = ref<'dashboard' | 'requests' | 'members'>('dashboard')
 
-interface WorkoutSession {
-  name: string
-=======
 interface WorkoutDay {
   day_number: number
   title: string
->>>>>>> ba32cf8d0da15baf385bc60feaace7a31ec34481:frontend/src/views/CoachDashboard.vue
   duration: number
   video_links: string[]
 }
@@ -209,12 +218,8 @@ interface WorkoutProgram {
   days: WorkoutDay[]
 }
 
-<<<<<<< HEAD:frontend/src/components/CoachDashboard.vue
-const coachID = ref('COACH_' + Math.random().toString(36).substr(2, 9).toUpperCase()) // In real app, this comes from backend
-const approvalStatus = ref('pending') // 'pending', 'approved', 'rejected'
-=======
+const coachID = ref('COACH_' + Math.random().toString(36).substring(2, 11).toUpperCase()) // In real app, this comes from backend
 const approvalStatus = ref<'pending'|'approved'|'rejected'>('pending')
->>>>>>> ba32cf8d0da15baf385bc60feaace7a31ec34481:frontend/src/views/CoachDashboard.vue
 const showCreateProgram = ref(false)
 const editingProgram = ref<WorkoutProgram | null>(null)
 const filterLevel = ref('')
@@ -329,7 +334,27 @@ async function editProgram(program: WorkoutProgram) {
       return
     }
     const data = await res.json()
-    editingProgram.value = mapApiProgram(data)
+    const apiProgram = mapApiProgram(data)
+
+    // Convert days array to WorkoutDays Record format expected by CreateWorkoutProgram
+    const WorkoutDays: Record<number, any[]> = {}
+    apiProgram.days.forEach(day => {
+      WorkoutDays[day.day_number] = [{
+        title: day.title,
+        duration: day.duration,
+        type: '', // API doesn't have type, set to empty
+        video_link: day.video_links[0] || '' // Take first video link
+      }]
+    })
+
+    editingProgram.value = {
+      title: apiProgram.title,
+      description: apiProgram.description,
+      difficulty_level: apiProgram.difficulty_level,
+      duration: apiProgram.duration_days,
+      category: apiProgram.category,
+      WorkoutDays
+    } as any
     showCreateProgram.value = true
   } catch (err) {
     console.error('Error fetching program', err)
