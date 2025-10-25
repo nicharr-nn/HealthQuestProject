@@ -14,7 +14,8 @@
         <div class="text-lg font-semibold">Choose Recipes to Display:</div>
         <div class="flex gap-4 flex-wrap">
           <button
-            v-if="userStore.level.level.toLowerCase() === 'gold' || userStore.role.toLowerCase() === 'coach'"
+            v-if="userStore.level.level.toLowerCase() === 'gold' 
+            || userStore.role.toLowerCase() === 'coach'"
             @click="showMyRecipes"
             :class="[
               'px-6 py-2 rounded-lg font-semibold shadow-md transition',
@@ -38,7 +39,8 @@
 
     <!-- Share Banner -->
     <div
-      class="bg-white rounded-xl p-8 w-full max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 my-6 shadow-md"
+      class="bg-white rounded-xl p-8 w-full max-w-5xl mx-auto flex 
+      flex-col md:flex-row items-center justify-between gap-4 my-6 shadow-md"
     >
       <p class="text-2xl md:text-3xl text-center md:text-left">
         Let’s share our favorite recipes and discover healthy meals from others!
@@ -47,7 +49,8 @@
       <button
         v-if="showMine"
         @click="openModal"
-        class="bg-pink-400 hover:bg-pink-500 text-white font-semibold px-6 py-3 rounded-lg shadow-md transition whitespace-nowrap"
+        class="bg-pink-400 hover:bg-pink-500 text-white 
+        font-semibold px-6 py-3 rounded-lg shadow-md transition whitespace-nowrap"
       >
         Upload Recipe
       </button>
@@ -59,7 +62,8 @@
       class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4"
     >
       <div
-        class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 relative max-h-[90vh] overflow-y-auto"
+        class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 
+        relative max-h-[90vh] overflow-y-auto"
       >
         <!-- Close -->
         <button
@@ -82,7 +86,8 @@
               type="text"
               maxlength="30"
               placeholder="e.g., Avocado Toast Deluxe"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-pink-400 focus:outline-none"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 
+              focus:ring-2 focus:ring-pink-400 focus:outline-none"
               required
             />
             <p class="text-xs text-gray-400 mt-1">
@@ -97,7 +102,8 @@
               v-model="recipeIngredients"
               placeholder="e.g., 2 eggs, 1 avocado, salt ..."
               rows="3"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-pink-400 focus:outline-none"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 
+              focus:ring-2 focus:ring-pink-400 focus:outline-none"
             ></textarea>
           </div>
 
@@ -108,7 +114,8 @@
               v-model="recipeSteps"
               placeholder="Write each step here ..."
               rows="3"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-pink-400 focus:outline-none"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 
+              focus:ring-2 focus:ring-pink-400 focus:outline-none"
             ></textarea>
           </div>
 
@@ -119,7 +126,8 @@
               type="file"
               accept="image/*"
               @change="handleImageUpload"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-50 cursor-pointer"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2
+               bg-gray-50 cursor-pointer"
             />
             <p v-if="imageName" class="text-sm text-gray-500 mt-1">
               Selected: {{ imageName }}
@@ -130,7 +138,8 @@
             <button
               type="submit"
               :disabled="uploading"
-              class="w-full bg-pink-400 hover:bg-pink-500 text-white font-semibold py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+              class="w-full bg-pink-400 hover:bg-pink-500 text-white 
+              font-semibold py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {{ uploading ? 'Uploading…' : (editMode ? 'Update Recipe' : 'Submit Recipe') }}
             </button>
@@ -179,7 +188,8 @@
         <div class="mt-4 flex flex-wrap justify-end gap-3 flex-shrink-0">
           <a
             :href="`http://127.0.0.1:8000/api/recipe/${menu.id}/download-pdf/`"
-            class="bg-blue-400 text-white font-semibold px-5 py-2 rounded-lg shadow hover:bg-blue-500 transition"
+            class="bg-blue-400 text-white font-semibold px-5 py-2 
+            rounded-lg shadow hover:bg-blue-500 transition"
             download
           >
             Download PDF
@@ -188,14 +198,16 @@
           <template v-if="showMine">
             <button
               @click="openEditModal(menu)"
-              class="bg-yellow-400 hover:bg-yellow-500 text-white px-5 py-2 rounded-lg font-semibold shadow-md"
+              class="bg-yellow-400 hover:bg-yellow-500 text-white 
+              px-5 py-2 rounded-lg font-semibold shadow-md"
             >
               Edit
             </button>
 
             <button
               @click="deleteRecipe(menu.id)"
-              class="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-lg font-semibold shadow-lg"
+              class="bg-red-500 hover:bg-red-600 text-white px-5 py-2 
+              rounded-lg font-semibold shadow-lg"
             >
               Delete
             </button>
