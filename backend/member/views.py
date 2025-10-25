@@ -2,8 +2,9 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Member, CoachMemberRelationship
-from .serializers import CoachMemberRelationshipSerializer, MemberSerializer
+from .models import Member, CoachMemberRelationship, FoodPost
+from django.shortcuts import get_object_or_404
+from .serializers import CoachMemberRelationshipSerializer, MemberSerializer, FoodPostSerializer
 from coach.models import Coach
 
 
@@ -297,3 +298,66 @@ def assign_program_to_member(request, member_id):
         {"message": f"Program '{program_name}' assigned to member."},
         status=200,
     )
+
+@api_view(["GET", "POST"])
+@permission_classes([IsAuthenticated])
+def food_posts(request):
+    """List or create food posts"""
+    profile = request.user.userprofile
+
+    if request.method == "GET":
+        if profile.role == "member":
+            posts = FoodPost.objects.filter(user_profile=profile)
+        elif profile.role == "coach":
+            posts = FoodPost.objects.filter(coach=profile)
+        else:
+            posts = FoodPost.objects.none()
+
+        serializer = FoodPostSerializer(posts, many=True)
+        return Response(serializer.data)
+
+    elif request.method == "POST":
+        serializer = FoodPostSerializer(data=request.data, context={"request": request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["PUT", "PATCH"])
+@permission_classes([IsAuthenticated])
+def food_post_update(request, id):
+    """Update a food post"""
+    profile = request.user.userprofile
+    post = get_object_or_404(FoodPost, pk=id, user_profile=profile)
+
+    serializer = FoodPostSerializer(post, data=request.data, partial=True, context={"request": request})
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def food_post_delete(request, id):
+    """Delete a food post"""
+    profile = request.user.userprofile
+    post = get_object_or_404(FoodPost, pk=id, user_profile=profile)
+    post.delete()
+    return Response({"message": "Post deleted"}, status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def upload_food_post_image(request, id):
+    """Upload image to a post"""
+    profile = request.user.userprofile
+    post = get_object_or_404(FoodPost, pk=id, user_profile=profile)
+
+    if "image" not in request.FILES:
+        return Response({"error": "No image provided"}, status=status.HTTP_400_BAD_REQUEST)
+
+    post.image = request.FILES["image"]
+    post.save()
+    return Response({"message": "Image uploaded", "image_url": post.image.url}, status=status.HTTP_200_OK)

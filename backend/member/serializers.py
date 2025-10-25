@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from member.models import CoachMemberRelationship, Member
+from member.models import CoachMemberRelationship, Member, FoodPost
 from users.models import FitnessGoal
 from users.serializers import FitnessGoalSerializer
 from coach.serializers import CoachSerializer
@@ -41,31 +41,46 @@ class CoachMemberRelationshipSerializer(serializers.ModelSerializer):
             'goals',
         ]
 
+class FoodPostSerializer(serializers.ModelSerializer):
+    author_name = serializers.SerializerMethodField()
+    coach_name = serializers.SerializerMethodField()
 
-# class FoodPostSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = FoodPost
-#         fields = ["id", "title", "content", "image", "created_at", "updated_at"]
-#         read_only_fields = ["id", "created_at", "updated_at"]
+    class Meta:
+        model = FoodPost
+        fields = [
+            "id",
+            "title",
+            "content",
+            "image",
+            "created_at",
+            "updated_at",
+            "author_name",
+            "coach_name",
+        ]
+        read_only_fields = ["id", "created_at", "updated_at"]
 
-#     def create(self, validated_data):
-#         user = self.context["request"].user
-#         user_profile = user.userprofile
+    def get_author_name(self, obj):
+        return obj.user_profile.user.username
 
-#         if user_profile.role != "member":
-#             raise serializers.ValidationError("Only members can create food posts.")
+    def get_coach_name(self, obj):
+        return obj.coach.user.username if obj.coach else None
 
-#         # Find active coach relationship
-#         rel = CoachMemberRelationship.objects.filter(
-#             member=user_profile, status="accepted"
-#         ).first()
+    def create(self, validated_data):
+        user = self.context["request"].user
+        user_profile = user.userprofile
 
-#         if not rel:
-#             raise serializers.ValidationError(
-#                 "You don't have an active coach assigned."
-#             )
+        if user_profile.role != "member":
+            raise serializers.ValidationError("Only members can create food posts.")
 
-#         validated_data["user_profile"] = user_profile
-#         validated_data["coach"] = rel.coach
+        # Find the active coach-member relationship
+        relationship = CoachMemberRelationship.objects.filter(
+            member__user=user_profile, status="accepted"
+        ).select_related("coach__user").first()
 
-#         return super().create(validated_data)
+        if not relationship:
+            raise serializers.ValidationError("You don't have an active coach assigned.")
+
+        validated_data["user_profile"] = user_profile
+        validated_data["coach"] = relationship.coach.user
+
+        return super().create(validated_data)
