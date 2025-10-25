@@ -81,6 +81,7 @@ def save_user_profile(sender, instance, **kwargs):
 post_save.connect(create_user_profile, sender=User)
 post_save.connect(save_user_profile, sender=User)
 
+
 class FitnessGoal(models.Model):
     GOAL_CHOICES = [
         ("lose_weight", "Lose Weight"),

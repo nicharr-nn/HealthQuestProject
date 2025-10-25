@@ -4,20 +4,23 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Member, CoachMemberRelationship, FoodPost
 from django.shortcuts import get_object_or_404
-from .serializers import CoachMemberRelationshipSerializer, MemberSerializer, FoodPostSerializer
+from .serializers import (
+    CoachMemberRelationshipSerializer,
+    MemberSerializer,
+    FoodPostSerializer,
+)
 from coach.models import Coach
 
 
-@api_view(['GET', 'PATCH'])
+@api_view(["GET", "PATCH"])
 @permission_classes([IsAuthenticated])
 def coach_member_requests(request, pk=None):
-    user_profile = getattr(request.user, 'userprofile', None)
-    coach_profile = getattr(user_profile, 'coach_profile', None)
+    user_profile = getattr(request.user, "userprofile", None)
+    coach_profile = getattr(user_profile, "coach_profile", None)
 
     if not coach_profile:
         return Response(
-            {'error': 'You are not a coach'},
-            status=status.HTTP_403_FORBIDDEN
+            {"error": "You are not a coach"}, status=status.HTTP_403_FORBIDDEN
         )
 
     if pk:
@@ -27,30 +30,28 @@ def coach_member_requests(request, pk=None):
             )
         except CoachMemberRelationship.DoesNotExist:
             return Response(
-                {'error': 'Request not found'},
-                status=status.HTTP_404_NOT_FOUND
+                {"error": "Request not found"}, status=status.HTTP_404_NOT_FOUND
             )
 
-        if request.method == 'PATCH':
-            new_status = request.data.get('status')
+        if request.method == "PATCH":
+            new_status = request.data.get("status")
             if new_status:
                 relationship.status = new_status
                 relationship.save()
 
                 # When coach accepts, also activate the member
                 member = relationship.member
-                if new_status in ['accepted', 'approved']:
+                if new_status in ["accepted", "approved"]:
                     # Update member status to approve
-                    if hasattr(member, 'status'):
-                        member.status = 'approved'
+                    if hasattr(member, "status"):
+                        member.status = "approved"
                     member.save()
 
-                elif new_status == 'rejected':
+                elif new_status == "rejected":
                     # Optionally reset member to pending or inactive
-                    if hasattr(member, 'status'):
-                        member.status = 'pending'
+                    if hasattr(member, "status"):
+                        member.status = "pending"
                         member.save()
-
 
         serializer = CoachMemberRelationshipSerializer(relationship)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -61,21 +62,19 @@ def coach_member_requests(request, pk=None):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-@api_view(['GET'])
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def accepted_members(request):
-    user_profile = getattr(request.user, 'userprofile', None)
-    coach_profile = getattr(user_profile, 'coach_profile', None)
+    user_profile = getattr(request.user, "userprofile", None)
+    coach_profile = getattr(user_profile, "coach_profile", None)
 
     if not coach_profile:
         return Response(
-            {'error': 'You are not a coach'},
-            status=status.HTTP_403_FORBIDDEN
+            {"error": "You are not a coach"}, status=status.HTTP_403_FORBIDDEN
         )
 
     relationships = CoachMemberRelationship.objects.filter(
-        coach=coach_profile,
-        status__in=['accepted', 'approved']
+        coach=coach_profile, status__in=["accepted", "approved"]
     )
 
     # convert to frontend format
@@ -91,6 +90,7 @@ def accepted_members(request):
     ]
 
     return Response(members_data, status=status.HTTP_200_OK)
+
 
 @api_view(["POST", "PATCH"])
 @permission_classes([IsAuthenticated])
@@ -123,12 +123,12 @@ def apply_as_member(request):
         )
         member.message = request.data.get("message", member.message)
         member.save()
-    
+
     coach_code = request.data.get("coach_code")
     if coach_code:
         try:
             # Try to find coach by public_id first
-            if coach_code.startswith('C-'):
+            if coach_code.startswith("C-"):
                 coach = Coach.objects.get(public_id=coach_code)
             else:
                 # Fallback: try primary key or username
@@ -138,58 +138,58 @@ def apply_as_member(request):
                 except (ValueError, Coach.DoesNotExist):
                     # Try as username
                     coach = Coach.objects.get(user__user__username=coach_code)
-            
+
             # Check if relationship already exists
             existing_relationship = CoachMemberRelationship.objects.filter(
                 member=member
             ).first()
-            
+
             if existing_relationship:
                 current_coach_name = existing_relationship.coach.user.user.username
                 return Response(
                     {
-                        "error": f"You already have a {existing_relationship.status} relationship with coach {current_coach_name}. Please cancel it first to request a new coach."
+                        "error": f"You already have a {existing_relationship.status} "
+                        f"relationship with coach {current_coach_name}. "
+                        f"Please cancel it first to request a new coach."
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            
+
             # Create new relationship
             relationship = CoachMemberRelationship.objects.create(
-                coach=coach, 
-                member=member, 
-                status="pending"
+                coach=coach, member=member, status="pending"
             )
-            
+
             # Return success response with coach info
             return Response(
                 {
-                    "message": f"Request sent successfully to coach {coach.user.user.username}!",
+                    "message": f"Request sent to {coach.user.user.username}!",
                     "member": MemberSerializer(member).data,
                     "coach": {
                         "name": coach.user.user.username,
                         "public_id": coach.public_id,
                     },
-                    "status": "pending"
+                    "status": "pending",
                 },
                 status=status.HTTP_201_CREATED if created else status.HTTP_200_OK,
             )
-            
+
         except Coach.DoesNotExist:
             # Provide helpful error message with available coaches
-            available_coaches = Coach.objects.filter(status_approval='approved')[:5]
+            available_coaches = Coach.objects.filter(status_approval="approved")[:5]
             coach_list = [
                 {
-                    'public_id': coach.public_id,
-                    'name': coach.user.user.username,
+                    "public_id": coach.public_id,
+                    "name": coach.user.user.username,
                 }
                 for coach in available_coaches
             ]
-            
+
             return Response(
                 {
                     "error": f"Coach with code '{coach_code}' not found.",
                     "available_coaches": coach_list,
-                    "hint": "Try one of these available coach codes"
+                    "hint": "Try one of these available coach codes",
                 },
                 status=status.HTTP_404_NOT_FOUND,
             )
@@ -203,6 +203,7 @@ def apply_as_member(request):
         MemberSerializer(member).data,
         status=status.HTTP_201_CREATED if created else status.HTTP_200_OK,
     )
+
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
@@ -221,7 +222,8 @@ def get_member_profile(request):
             {"error": "Member profile not found."},
             status=status.HTTP_404_NOT_FOUND,
         )
-    
+
+
 @api_view(["GET", "PATCH", "DELETE"])
 @permission_classes([IsAuthenticated])
 def manage_member_request(request):
@@ -236,12 +238,16 @@ def manage_member_request(request):
     try:
         member = Member.objects.get(user=profile)
     except Member.DoesNotExist:
-        return Response({"error": "You are not a member."}, status=status.HTTP_404_NOT_FOUND)
+        return Response(
+            {"error": "You are not a member."}, status=status.HTTP_404_NOT_FOUND
+        )
 
     try:
         relationship = CoachMemberRelationship.objects.get(member=member)
     except CoachMemberRelationship.DoesNotExist:
-        return Response({"message": "No coach request found."}, status=status.HTTP_200_OK)
+        return Response(
+            {"message": "No coach request found."}, status=status.HTTP_200_OK
+        )
 
     if request.method == "GET":
         serializer = CoachMemberRelationshipSerializer(relationship)
@@ -267,6 +273,7 @@ def manage_member_request(request):
             {"message": "Your coach request has been cancelled."},
             status=status.HTTP_204_NO_CONTENT,
         )
+
 
 @api_view(["PATCH"])
 @permission_classes([IsAuthenticated])
@@ -298,6 +305,7 @@ def assign_program_to_member(request, member_id):
         {"message": f"Program '{program_name}' assigned to member."},
         status=200,
     )
+
 
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
@@ -331,7 +339,9 @@ def food_post_update(request, id):
     profile = request.user.userprofile
     post = get_object_or_404(FoodPost, pk=id, user_profile=profile)
 
-    serializer = FoodPostSerializer(post, data=request.data, partial=True, context={"request": request})
+    serializer = FoodPostSerializer(
+        post, data=request.data, partial=True, context={"request": request}
+    )
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data)
@@ -356,8 +366,13 @@ def upload_food_post_image(request, id):
     post = get_object_or_404(FoodPost, pk=id, user_profile=profile)
 
     if "image" not in request.FILES:
-        return Response({"error": "No image provided"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"error": "No image provided"}, status=status.HTTP_400_BAD_REQUEST
+        )
 
     post.image = request.FILES["image"]
     post.save()
-    return Response({"message": "Image uploaded", "image_url": post.image.url}, status=status.HTTP_200_OK)
+    return Response(
+        {"message": "Image uploaded", "image_url": post.image.url},
+        status=status.HTTP_200_OK,
+    )

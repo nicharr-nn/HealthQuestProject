@@ -84,4 +84,3 @@
 #         self.foodpost.refresh_from_db()
 #         self.assertEqual(self.foodpost.title, "Updated Test Post")
 #         self.assertEqual(self.foodpost.content, "This is an updated test food post.")
-

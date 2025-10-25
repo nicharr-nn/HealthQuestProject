@@ -175,7 +175,6 @@ def set_goal(request):
         return Response({"status": "error", "message": str(e)}, status=400)
 
 
-
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def achievements(request):

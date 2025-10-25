@@ -2,6 +2,7 @@ from django.apps import apps
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
+
 def get_user_profile_model():
     return apps.get_model("users", "UserProfile")
 

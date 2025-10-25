@@ -1,25 +1,37 @@
 from rest_framework import serializers
 from member.models import CoachMemberRelationship, Member, FoodPost
 from users.models import FitnessGoal
-from users.serializers import FitnessGoalSerializer
 from coach.serializers import CoachSerializer
+
 
 class MemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = Member
         fields = [
-            'member_id', 'user', 'experience_level', 'program_name',
-            'message', 'submitted_at', 'status'
+            "member_id",
+            "user",
+            "experience_level",
+            "program_name",
+            "message",
+            "submitted_at",
+            "status",
         ]
+
 
 class CoachMemberRelationshipSerializer(serializers.ModelSerializer):
     coach = CoachSerializer(read_only=True)
-    memberName = serializers.CharField(source='member.user.user.username', read_only=True)
-    memberId = serializers.CharField(source='member.member_id', read_only=True)
-    experienceLevel = serializers.CharField(source='member.experience_level', read_only=True)
-    message = serializers.CharField(source='member.message', read_only=True)
-    programName = serializers.CharField(source='member.program_name', read_only=True)
-    submittedAt = serializers.DateTimeField(source='member.submitted_at', read_only=True)
+    memberName = serializers.CharField(
+        source="member.user.user.username", read_only=True
+    )
+    memberId = serializers.CharField(source="member.member_id", read_only=True)
+    experienceLevel = serializers.CharField(
+        source="member.experience_level", read_only=True
+    )
+    message = serializers.CharField(source="member.message", read_only=True)
+    programName = serializers.CharField(source="member.program_name", read_only=True)
+    submittedAt = serializers.DateTimeField(
+        source="member.submitted_at", read_only=True
+    )
     goals = serializers.SerializerMethodField()
 
     def get_goals(self, obj):
@@ -29,17 +41,18 @@ class CoachMemberRelationshipSerializer(serializers.ModelSerializer):
     class Meta:
         model = CoachMemberRelationship
         fields = [
-            'relationship_id',
-            'coach',
-            'status',
-            'memberName',
-            'memberId',
-            'experienceLevel',
-            'message',
-            'programName',
-            'submittedAt',
-            'goals',
+            "relationship_id",
+            "coach",
+            "status",
+            "memberName",
+            "memberId",
+            "experienceLevel",
+            "message",
+            "programName",
+            "submittedAt",
+            "goals",
         ]
+
 
 class FoodPostSerializer(serializers.ModelSerializer):
     author_name = serializers.SerializerMethodField()
@@ -73,12 +86,18 @@ class FoodPostSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Only members can create food posts.")
 
         # Find the active coach-member relationship
-        relationship = CoachMemberRelationship.objects.filter(
-            member__user=user_profile, status="accepted"
-        ).select_related("coach__user").first()
+        relationship = (
+            CoachMemberRelationship.objects.filter(
+                member__user=user_profile, status="accepted"
+            )
+            .select_related("coach__user")
+            .first()
+        )
 
         if not relationship:
-            raise serializers.ValidationError("You don't have an active coach assigned.")
+            raise serializers.ValidationError(
+                "You don't have an active coach assigned."
+            )
 
         validated_data["user_profile"] = user_profile
         validated_data["coach"] = relationship.coach.user

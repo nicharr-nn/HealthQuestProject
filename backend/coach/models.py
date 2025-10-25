@@ -33,4 +33,5 @@ class Coach(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"Coach: {self.user.user.username} ({self.public_id}) - Status: {self.status_approval}"
+        return (f"Coach: {self.user.user.username} ({self.public_id}) "
+                f"- Status: {self.status_approval}")

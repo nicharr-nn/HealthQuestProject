@@ -43,10 +43,10 @@ class CoachMemberRelationship(models.Model):
 
     relationship_id = models.AutoField(primary_key=True)
     coach = models.ForeignKey(
-        'coach.Coach', on_delete=models.CASCADE, related_name='relationships'
+        "coach.Coach", on_delete=models.CASCADE, related_name="relationships"
     )
     member = models.OneToOneField(
-        'Member', on_delete=models.CASCADE, related_name='relationship'
+        "Member", on_delete=models.CASCADE, related_name="relationship"
     )
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pending")
     start_date = models.DateField(null=True, blank=True)
