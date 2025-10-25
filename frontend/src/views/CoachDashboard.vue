@@ -18,18 +18,18 @@
       <div class="header-content">
         <h1 class="dashboard-title">Coach Dashboard</h1>
         <p class="dashboard-subtitle">Manage your workout programs and track your coaching progress</p>
+
         <div class="coach-id-display">
           <span class="coach-id-label">Your Coach ID:</span>
           <span class="coach-id-value">{{ coachID }}</span>
-          <button class="btn-copy" @click="copyCoachID" title="Copy Coach ID">
-            📋 Copy
-          </button>
+          <button class="btn-copy" @click="copyCoachID" title="Copy Coach ID">📋 Copy</button>
         </div>
       </div>
+
       <div class="header-actions">
-        <button
-          class="btn primary"
-          @click="showCreateProgram = true"
+        <button 
+          class="btn primary" 
+          @click="router.push('/create-workout-program')" 
           :disabled="!isApproved"
         >
           + Create New Program
@@ -37,7 +37,12 @@
       </div>
     </div>
 
-    <!-- Approval Status (if not approved) -->
+    <!-- Loading -->
+    <div v-if="loading" class="loading-message">
+      Loading dashboard...
+    </div>
+
+    <!-- Approval Status (only if not approved) -->
     <div v-if="!isApproved" class="status-card">
       <div class="status-indicator" :class="approvalStatus">
         <div class="status-icon">
@@ -49,23 +54,16 @@
             {{ approvalStatus === 'pending' ? 'Application Under Review' : 'Application Rejected' }}
           </div>
           <div class="status-message">
-            {{ approvalStatus === 'pending' ?
-                'Your application is being reviewed by our admin team. You\'ll be able to create programs once approved.' :
-                'Please contact support or resubmit your application.' }}
+            {{ approvalStatus === 'pending'
+              ? "Your application is being reviewed. You can create programs once approved."
+              : "Please contact support or resubmit your application." }}
           </div>
         </div>
       </div>
-      <!-- Demo Approval Button (for testing) -->
-      <div class="demo-section">
-        <button class="btn primary small" @click="simulateApproval">
-          Simulate Admin Approval (Demo)
-        </button>
-      </div>
     </div>
 
-    <!-- Dashboard Content (only visible when approved) -->
-    <div v-if="isApproved && !showCreateProgram" class="dashboard-content">
-      <!-- Stats Overview -->
+    <!-- Dashboard Content -->
+    <div v-else class="dashboard-content">
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-number">{{ programs.length }}</div>
@@ -79,112 +77,67 @@
           <div class="stat-number">{{ programsWithVideos }}</div>
           <div class="stat-label">Programs with Videos</div>
         </div>
-        <div class="stat-card clickable" @click="currentView = 'members'">
-          <div class="stat-number">5</div>
+        <div class="stat-card clickable" @click="router.push('/view-member')">
+          <div class="stat-number">{{ memberCount }}</div>
           <div class="stat-label">My Members</div>
           <div class="stat-action">View All →</div>
         </div>
-        <div class="stat-card clickable" @click="currentView = 'requests'">
-          <div class="stat-number pending-highlight">3</div>
+
+        <div class="stat-card clickable" @click="router.push('/view-request')">
+          <div class="stat-number">{{ pendingRequestCount }}</div>
           <div class="stat-label">Pending Requests</div>
           <div class="stat-action">View All →</div>
         </div>
       </div>
 
-      <!-- Programs List -->
       <div class="programs-section">
         <div class="section-header">
           <h2 class="section-title">Your Workout Programs</h2>
-          <!-- <div class="section-actions">
-            <select v-model="filterLevel" class="filter-select">
-              <option value="">All Levels</option>
-              <option value="easy">Beginner</option>
-              <option value="medium">Intermediate</option>
-              <option value="hard">Advanced</option>
-            </select> -->
-
-          <!-- </div> -->
         </div>
 
+        <!-- Empty state -->
         <div v-if="filteredPrograms.length === 0" class="empty-state">
           <div class="empty-icon">🏋️‍♂️</div>
           <div class="empty-title">No programs yet</div>
           <div class="empty-message">
-            Start creating your first workout program to help your clients achieve their fitness goals!
+            Start creating your first workout program to help your clients achieve their goals!
           </div>
-          <button class="btn primary" @click="showCreateProgram = true">
+          <button class="btn primary" @click="router.push('/create-workout-program')">
             Create Your First Program
           </button>
         </div>
 
+        <!-- Programs grid -->
         <div v-else class="programs-grid">
-          <div
-            v-for="program in filteredPrograms"
-            :key="program.id"
-            class="program-card"
-          >
+          <div v-for="program in filteredPrograms" :key="program.id" class="program-card">
             <div class="program-header">
               <div class="program-title">{{ program.title }}</div>
               <div class="program-level" :class="program.difficulty_level">
                 {{ program.difficulty_level }}
               </div>
-
             </div>
 
             <div class="program-description">
               {{ program.description || 'No description provided' }}
             </div>
 
-            <div class="program-meta">
-              <div class="meta-item">
-                <span class="meta-label">Duration:</span>
-                <span class="meta-value">{{ program.duration_days }} Days </span>
-              </div>
-              <div class="meta-item">
-                <span class="meta-label">Sessions:</span>
-                <span class="meta-value">{{ program.days?.length || 0 }}</span>
-              </div>
-              <div class="meta-item">
-                <span class="meta-label">Category:</span>
-                <span class="meta-value">{{ program.category || 'General' }}</span>
-              </div>
-            </div>
-
-            <div v-if="program.days?.some(d => d.video_links.length > 0)" class="program-features">
-              <span class="feature-badge">📹 Video Included</span>
-            </div>
-
+            <!-- Actions for each program -->
             <div class="program-actions">
-              <button class="btn small ghost" @click="editProgram(program)">
+              <button 
+                class="btn small primary"
+                @click="router.push(`/workout-program/${program.id}`)"
+              >
                 Edit
               </button>
-              <button class="btn small" @click="viewProgram(program)">
-                View Details
-              </button>
-              <button class="btn small danger" @click="deleteProgram(program.id)">
+
+              <button 
+                class="btn small danger"
+                @click="deleteProgram(program.id)"
+              >
                 Delete
               </button>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Create/Edit Program Modal -->
-    <div v-if="showCreateProgram" class="modal-overlay" @click="closeCreateProgram">
-      <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <h2 class="modal-title">
-            {{ editingProgram ? 'Edit Program' : 'Create New Program' }}
-          </h2>
-          <button class="modal-close" @click="closeCreateProgram">×</button>
-        </div>
-        <div class="modal-body">
-          <CreateWorkoutProgram
-            :existing-program="editingProgram"
-            @program-created="handleProgramCreated"
-            @cancel="closeCreateProgram"
-          />
         </div>
       </div>
     </div>
@@ -194,185 +147,89 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import CreateWorkoutProgram from '../components/CreateWorkoutProgram.vue'
+import { useRouter } from 'vue-router'
 import MemberRequests from '../components/MemberRequests.vue'
 import MemberManagement from '../components/MemberManagement.vue'
 
+const router = useRouter()
 const currentView = ref<'dashboard' | 'requests' | 'members'>('dashboard')
-
-interface WorkoutDay {
-  day_number: number
-  title: string
-  duration: number
-  video_links: string[]
-}
-
-interface WorkoutProgram {
-  id: number
-  title: string
-  description: string
-  difficulty_level: string
-  duration_days: number
-  category: string
-  is_public: boolean
-  days: WorkoutDay[]
-}
-
-const coachID = ref('COACH_' + Math.random().toString(36).substring(2, 11).toUpperCase()) // In real app, this comes from backend
-const approvalStatus = ref<'pending'|'approved'|'rejected'>('pending')
+const loading = ref(true)
 const showCreateProgram = ref(false)
-const editingProgram = ref<WorkoutProgram | null>(null)
-const filterLevel = ref('')
-
-const programs = ref<WorkoutProgram[]>([])
-
-function copyCoachID() {
-  navigator.clipboard.writeText(coachID.value)
-  alert('Coach ID copied to clipboard! Share this with your members so they can find you.')
-}
+const approvalStatus = ref<'pending'|'approved'|'rejected'>('pending')
+const programs = ref<any[]>([])
+const coachID = ref<string>('')
+const pendingRequestCount = ref(0)
+const memberCount = ref(0)
+const editingProgram = ref<any>(null)
 
 const isApproved = computed(() => approvalStatus.value === 'approved')
+const totalSessions = computed(() =>
+  programs.value.reduce((sum, p) => sum + (p.days?.length || 0), 0)
+)
+const programsWithVideos = computed(() =>
+  programs.value.filter(p => p.days?.some(d => d.video_links?.length > 0)).length
+)
+const filteredPrograms = computed(() => programs.value)
 
-const API_BASE = 'http://127.0.0.1:8000/api/workout/programs/'
+function copyCoachID() {
+  if (coachID.value) {
+    navigator.clipboard.writeText(coachID.value)
+    alert('Coach ID copied to clipboard!')
+  }
+}
 
-function mapApiProgram(p: any): WorkoutProgram {
-  return {
-    id: p.id,
-    title: p.title,
-    description: p.description,
-    difficulty_level: p.difficulty_level ?? '',
-    duration_days: p.duration ?? p.duration_days ?? 0,
-    category: p.category ?? 'general',
-    is_public: p.is_public ?? true,
-    days: (p.days || []).map((d: any) => ({
-      day_number: d.day_number,
-      title: d.title,
-      duration: d.duration ?? d.duration_minutes ?? 0,
-      video_links: d.video_links || []
-    }))
+
+async function loadCoachStatus() {
+  try {
+    const res = await fetch('http://127.0.0.1:8000/api/coach/status/', {
+      credentials: 'include'
+    })
+    if (!res.ok) {
+      approvalStatus.value = 'pending'
+      coachID.value = ''
+      return
+    }
+
+    const data = await res.json()
+    const status = data?.coach?.status_approval ?? data?.status_approval ?? null
+    approvalStatus.value = status === 'approved' ? 'approved' : status === 'rejected' ? 'rejected' : 'pending'
+
+    coachID.value = data?.coach?.coach_id ?? ''
+  } catch (err) {
+    console.error('Error loading coach status', err)
+    approvalStatus.value = 'pending'
+    coachID.value = ''
   }
 }
 
 async function loadPrograms() {
   try {
-    const res = await fetch(API_BASE, { credentials: 'include' })
-    if (!res.ok) {
-      console.error('Failed loading programs', res.status)
-      programs.value = []
-      return
-    }
+    const res = await fetch('/api/workout/programs', { credentials: 'include' })
     const data = await res.json()
-    // assume list returned
-    programs.value = (Array.isArray(data) ? data : data.results || []).map(mapApiProgram)
-  } catch (err) {
-    console.error('Error loading programs', err)
+    programs.value = data.results || []
+  } catch {
     programs.value = []
   }
 }
 
-async function loadApprovalStatus() {
+async function loadPendingRequests() {
   try {
-    const res = await fetch('http://127.0.0.1:8000/api/coach/status/', { credentials: 'include' })
-    if (!res.ok) {
-      approvalStatus.value = 'pending'
-      return
-    }
+    const res = await fetch('http://127.0.0.1:8000/api/member/coach-requests/', { credentials: 'include' })
+    if (!res.ok) throw new Error('Failed to fetch requests')
     const data = await res.json()
-    const status = data?.coach?.status_approval ?? data?.status_approval ?? null
-    if (status === 'approved') approvalStatus.value = 'approved'
-    else if (status === 'rejected') approvalStatus.value = 'rejected'
-    else approvalStatus.value = 'pending'
+
+    pendingRequestCount.value = data.filter((r: any) => r.status === 'pending').length
+    memberCount.value = data.filter((r: any) => r.status === 'approved').length
   } catch (err) {
-    console.error('Error loading coach status', err)
-    approvalStatus.value = 'pending'
+    console.error('Failed to load pending requests', err)
+    pendingRequestCount.value = 0
+    memberCount.value = 0
   }
-}
-
-onMounted(async () => {
-  await loadApprovalStatus()
-  if (isApproved.value) {
-    await loadPrograms()
-  }
-})
-
-// total sessions = all days across all programs
-const totalSessions = computed(() => {
-  return programs.value.reduce((total, program) => total + (program.days?.length || 0), 0)
-})
-
-// programs with at least one video link
-const programsWithVideos = computed(() => {
-  return programs.value.filter(program =>
-    program.days?.some(day => (day.video_links || []).length > 0)
-  ).length
-})
-
-// filter by difficulty
-const filteredPrograms = computed(() => {
-  if (!filterLevel.value) return programs.value
-  return programs.value.filter(p => p.difficulty_level === filterLevel.value)
-})
-
-function simulateApproval() {
-  approvalStatus.value = 'approved'
-  loadPrograms()
-  alert('Coach application approved! You can now create and manage workout programs.')
-}
-
-function closeCreateProgram() {
-  showCreateProgram.value = false
-  editingProgram.value = null
-}
-
-async function editProgram(program: WorkoutProgram) {
-  // fetch latest program from API before editing
-  try {
-    const res = await fetch(`${API_BASE}${program.id}/`, { credentials: 'include' })
-    if (!res.ok) {
-      console.error('Failed to fetch program for edit', res.status)
-      alert('Failed to load program for editing')
-      return
-    }
-    const data = await res.json()
-    const apiProgram = mapApiProgram(data)
-
-    // Convert days array to WorkoutDays Record format expected by CreateWorkoutProgram
-    const WorkoutDays: Record<number, any[]> = {}
-    apiProgram.days.forEach(day => {
-      WorkoutDays[day.day_number] = [{
-        title: day.title,
-        duration: day.duration,
-        type: '', // API doesn't have type, set to empty
-        video_link: day.video_links[0] || '' // Take first video link
-      }]
-    })
-
-    editingProgram.value = {
-      title: apiProgram.title,
-      description: apiProgram.description,
-      difficulty_level: apiProgram.difficulty_level,
-      duration: apiProgram.duration_days,
-      category: apiProgram.category,
-      WorkoutDays
-    } as any
-    showCreateProgram.value = true
-  } catch (err) {
-    console.error('Error fetching program', err)
-    alert('Failed to load program for editing')
-  }
-}
-
-function viewProgram(program: WorkoutProgram) {
-  alert(`Viewing program: ${program.title}\n\nDuration: ${program.duration_days} days\nSessions: ${program.days?.length || 0}\nDescription: ${program.description || 'N/A'}\nStatus: ${program.is_public ? 'Public' : 'Private'}`)
 }
 
 async function deleteProgram(programId: number) {
-  if (!confirm('Are you sure you want to delete this program? This action cannot be undone.')) {
-    return
-  }
-
   try {
-    const res = await fetch(`${API_BASE}${programId}/`, {
+    const res = await fetch(`/api/workout/programs/${programId}/`, {
       method: 'DELETE',
       credentials: 'include',
     })
@@ -389,7 +246,11 @@ async function deleteProgram(programId: number) {
     } else {
       const text = await res.text()
       let body: any = text
-      try { body = JSON.parse(text) } catch {}
+      try { 
+        body = JSON.parse(text) 
+      } catch (err) {
+        console.warn('Failed to parse response as JSON:', err)
+      }
       console.error('Delete program failed:', res.status, body)
       const message = body?.detail || body?.error || body || `HTTP ${res.status}`
       alert('Failed to delete program: ' + JSON.stringify(message))
@@ -400,11 +261,15 @@ async function deleteProgram(programId: number) {
   }
 }
 
-async function handleProgramCreated(apiProgram: any) {
-  // refresh list after create/update
-  await loadPrograms()
-  closeCreateProgram()
-}
+onMounted(async () => {
+  await loadCoachStatus()
+
+ if (isApproved.value) {
+    await Promise.all([loadPrograms(), loadPendingRequests()])
+  }
+  
+  loading.value = false
+})
 </script>
 
 

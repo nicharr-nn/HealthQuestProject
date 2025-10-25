@@ -26,4 +26,4 @@ jobs:
 
       - name: Run flake8
         run: |
-          flake8 backend --statistics --count --max-line-length=88 --filename=*.py
+          flake8 backend --statistics --count --max-line-length=88 --filename=*.py --exclude=**/migrations/**

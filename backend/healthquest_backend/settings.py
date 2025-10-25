@@ -54,6 +54,10 @@ INSTALLED_APPS = [
     "fitness",
     "workout",
     "coach",
+    "member",
+    "recipe",
+    "foodpost",
+    "workout_assignment",
 ]
 
 MIDDLEWARE = [

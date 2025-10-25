@@ -136,13 +136,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 
-interface Props {
-  memberId: string
-  memberName: string
-}
-
-const props = defineProps<Props>()
-
 const emit = defineEmits<{
   (e: 'back-to-members'): void
 }>()
