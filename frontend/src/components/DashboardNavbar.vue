@@ -62,7 +62,7 @@
               Workout
             </RouterLink>
           </li>
-          <li>
+          <li v-if="userStore.level.level.toLowerCase() === 'gold' || userStore.level.level.toLowerCase() === 'silver' || userStore.role.toLowerCase() === 'coach'">
             <RouterLink
               to="/food-recipe"
               class="font-body text-white hover:text-[#c7d2fe] transition-colors"
