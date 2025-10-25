@@ -1,8 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
-from django.urls import reverse
 from rest_framework.test import APIClient
-from users.models import UserProfile, UserLevel
 from workout.models import WorkoutProgram, WorkoutDay, WorkoutDayCompletion
 
 User = get_user_model()
@@ -21,7 +19,9 @@ class WorkoutDayCompletionTest(TestCase):
         self.profile.save()
 
         # Create a dummy coach (required for WorkoutProgram)
-        self.coach_user = User.objects.create_user(username="coach", password="coachpass")
+        self.coach_user = User.objects.create_user(
+            username="coach", password="coachpass"
+        )
         self.coach_profile = self.coach_user.userprofile
         self.coach_profile.role = "coach"
         self.coach_profile.save()
@@ -66,14 +66,25 @@ class WorkoutDayCompletionTest(TestCase):
         self.assertGreater(xp_awarded, 0, "Expected XP to be awarded")
 
         after_xp = self.profile.get_current_level().xp
-        self.assertGreater(after_xp, before_xp, "User XP should increase after completing a workout day")
+        self.assertGreater(
+            after_xp,
+            before_xp,
+            "User XP should increase after completing a workout day",
+        )
 
         # Assertions
         self.assertGreater(xp_awarded, 0, "Expected XP to be awarded by the API")
-        self.assertGreater(after_xp, before_xp, "Expected profile XP to increase after workout completion")
-        self.assertTrue(
-            WorkoutDayCompletion.objects.filter(user_profile=self.profile, workout_day=self.workout_day).exists(),
-            "WorkoutDayCompletion record should exist after completion"
+        self.assertGreater(
+            after_xp,
+            before_xp,
+            "Expected profile XP to increase after workout completion",
         )
+        self.assertTrue(
+            WorkoutDayCompletion.objects.filter(
+                user_profile=self.profile, workout_day=self.workout_day
+            ).exists(),
+            "WorkoutDayCompletion record should exist after completion",
+        )
+
 
 # in backend : python manage.py test workout

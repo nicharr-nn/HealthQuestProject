@@ -1,42 +1,58 @@
 from django.db import models
-from django.utils import timezone
-from users.models import UserProfile
-from workout.models import WorkoutProgram
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
-class WorkoutAssignment(models.Model):
-    user_profile = models.ForeignKey(
-        UserProfile,
-        on_delete=models.CASCADE,
-        related_name="assignments",
-        db_column="user_profile_id",
+class Member(models.Model):
+    EXPERIENCE_LEVEL_CHOICES = [
+        ('beginner', 'Beginner'),
+        ('intermediate', 'Intermediate'),
+        ('advanced', 'Advanced'),
+    ]
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    member_id = models.CharField(max_length=20, unique=True)
+    experience_level = models.CharField(
+        max_length=12,
+        choices=EXPERIENCE_LEVEL_CHOICES,
+        default='beginner'
     )
-    program = models.ForeignKey(
-        WorkoutProgram,
-        on_delete=models.CASCADE,
-        db_column="program_id",
+    program_name = models.CharField(max_length=255, blank=True, null=True)
+    goals = models.JSONField(blank=True, null=True)
+    message = models.TextField(blank=True, null=True)
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(
+        max_length=10,
+        choices=[
+            ('pending', 'Pending'),
+            ('approved', 'Approved'),
+            ('rejected', 'Rejected'),
+        ],
+        default='pending',
     )
-    assigned_date = models.DateField(auto_now_add=True)
-    due_date = models.DateField(null=True, blank=True)
-    status = models.CharField(max_length=20, default="pending")
-    completed_date = models.DateField(null=True, blank=True)
-
-    def check_completion(self):
-        """Check if all days in the program are completed by this user."""
-        total_days = self.program.days.count()
-        completed_days = self.user_profile.completed_days.filter(
-            program=self.program
-        ).count()
-
-        if completed_days >= total_days and total_days > 0:
-            self.status = "completed"
-            self.completed_date = timezone.now().date()
-            self.save(update_fields=["status", "completed_date"])
-            return True
-        return False
-
-    class Meta:
-        ordering = ["-assigned_date"]
 
     def __str__(self):
-        return f"{self.user_profile.user.username} → {self.program.title}"
+        return f"{self.user.username} ({self.member_id})"
+
+
+class CoachMemberRelationship(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('accepted', 'Accepted'),
+        ('rejected', 'Rejected'),
+    ]
+
+    relationship_id = models.AutoField(primary_key=True)
+    coach = models.ForeignKey(
+        'coach.Coach', on_delete=models.CASCADE, related_name='relationships'
+    )
+    member = models.OneToOneField(
+        'Member', on_delete=models.CASCADE, related_name='relationship'
+    )
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.coach} → {self.member} ({self.status})"

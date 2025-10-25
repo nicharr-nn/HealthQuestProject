@@ -13,9 +13,7 @@ class Recipe(models.Model):
     LEVEL_CHOICES = [("silver", "Silver"), ("gold", "Gold")]
 
     user_profile = models.ForeignKey(
-        UserProfile,
-        on_delete=models.CASCADE,
-        related_name='recipes'
+        UserProfile, on_delete=models.CASCADE, related_name="recipes"
     )
     title = models.CharField(max_length=255)
     ingredients = models.TextField()
@@ -23,8 +21,8 @@ class Recipe(models.Model):
     access_level = models.CharField(
         max_length=50, choices=LEVEL_CHOICES, default="silver"
     )
-    image = models.ImageField(upload_to='recipes/images/', null=True, blank=True)
-    pdf_file = models.FileField(upload_to='recipes/pdfs/', null=True, blank=True)
+    image = models.ImageField(upload_to="recipes/images/", null=True, blank=True)
+    pdf_file = models.FileField(upload_to="recipes/pdfs/", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -36,7 +34,6 @@ class Recipe(models.Model):
         Generate a simple PDF containing title, author, ingredients, and steps.
         Saves the PDF to self.pdf_file.
         """
-        from reportlab.lib.units import inch
 
         buffer = BytesIO()
         p = canvas.Canvas(buffer, pagesize=A4)
@@ -52,7 +49,9 @@ class Recipe(models.Model):
         p.setFont("Helvetica", 12)
         author_name = self.user_profile.user.username
         p.drawString(x_margin, y_margin - 25, f"Author: {author_name}")
-        p.drawString(x_margin, y_margin - 40, f"Access Level: {self.access_level.capitalize()}")
+        p.drawString(
+            x_margin, y_margin - 40, f"Access Level: {self.access_level.capitalize()}"
+        )
 
         # --- Ingredients ---
         p.setFont("Helvetica-Bold", 14)
@@ -100,18 +99,20 @@ class Recipe(models.Model):
         return self.ratings.aggregate(Avg("rating"))["rating__avg"] or 0
 
     class Meta:
-        ordering = ['-created_at']
+        ordering = ["-created_at"]
 
 
 class RecipeRating(models.Model):
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name="ratings")
     user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
-    rating = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])  # expected 1–5
+    rating = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )  # expected 1–5
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('recipe', 'user_profile')
-        ordering = ['-created_at']
+        unique_together = ("recipe", "user_profile")
+        ordering = ["-created_at"]
 
     def __str__(self):
         return f"{self.user_profile.user.username} → {self.recipe.title}: {self.rating}"

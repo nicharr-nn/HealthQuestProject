@@ -130,7 +130,7 @@
 
         <!-- Today's Workout Card -->
         <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-lg">
-          <div class="flex flex-col sm:flex-row items-start justify-between mb-4 gap-2">
+          <div v-if="store.profile?.role === 'member'" class="flex flex-col sm:flex-row items-start justify-between mb-4 gap-2">
             <div class="font-body w-full">
               <h3 class="font-subtitle text-xl sm:text-2xl text-gray-800">Today's Workout</h3>
               <div class="flex flex-wrap items-center gap-2 mt-2">
@@ -142,11 +142,11 @@
                 </span>
               </div>
             </div>
+            
+            <p class="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">
+              {{ todayWorkout.description || 'No workout assigned today' }}
+            </p>
           </div>
-          
-          <p class="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">
-            {{ todayWorkout.description || 'No workout assigned today' }}
-          </p>
           
           <button 
             @click="startWorkout"
@@ -180,7 +180,7 @@
         </div>
 
         <!-- Recipe Library Card -->
-        <div class="bg-gradient-to-br from-[#f4e285] to-[#f4e285] rounded-3xl p-5 sm:p-6 shadow-lg">
+        <div v-if="currentLevel !== 'Bronze'" class="bg-gradient-to-br from-[#f4e285] to-[#f4e285] rounded-3xl p-5 sm:p-6 shadow-lg">
           <div class="flex items-start justify-between mb-3 sm:mb-4">
             <h3 class="font-subtitle text-base sm:text-lg text-gray-800">Recipe Library</h3>
             <div class="font-body bg-emerald-500 text-white px-2.5 py-1 rounded-lg text-[10px] font-extrabold">
@@ -225,6 +225,7 @@ export default {
         await store.init()
       }
       await loadWeeklyActivity()
+      await loadAnalytics()
     })
 
     const userInitial = computed(() => (store.displayName?.charAt(0) || 'U').toUpperCase())
@@ -232,7 +233,7 @@ export default {
     // --- XP + Level ---
     const xp = computed(() => store.level?.xp || 0)
     const currentLevel = computed(() => store.level?.level || 'Bronze')
-    const streak = computed(() => store.profile?.analytics?.current_streak || 0)
+    const streak = computed(() => analytics.value.current_streak || 0)
 
     const nextRequirement = computed(() => {
       if (store.level?.level_rank === 1) return 1000
@@ -246,8 +247,35 @@ export default {
     })
 
     // --- API-driven fields ---
+    const analyticsRaw = ref(null)
+    const loadingAnalytics = ref(false)
+    const analyticsError = ref(null)
+
+    const analytics = computed(() => analyticsRaw.value ?? { weeklyImprovement: 0, consistency: 0, current_streak: 0 })
     const todayWorkout = computed(() => store.profile?.today_workout || { description: 'No workout assigned', xp: 0 })
-    const analytics = computed(() => store.profile?.analytics || { weeklyImprovement: 0, consistency: 0, current_streak: 0 })
+
+    async function loadAnalytics() {
+      loadingAnalytics.value = true
+      analyticsError.value = null
+      try {
+        const res = await fetch('http://127.0.0.1:8000/api/workout/analytics/', {
+          credentials: 'include'
+        })
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}))
+          analyticsError.value = err.detail || `HTTP ${res.status}`
+          analyticsRaw.value = null
+          return
+        }
+        const data = await res.json()
+        analyticsRaw.value = data.analytics || {}
+      } catch (err) {
+        analyticsError.value = err.message || String(err)
+        analyticsRaw.value = null
+      } finally {
+        loadingAnalytics.value = false
+      }
+    }
 
     // --- Weekly activity chart data ---
     const weekDays = ref([
@@ -304,6 +332,8 @@ export default {
       progressPercentage,
       todayWorkout,
       analytics,
+      loadingAnalytics,
+      analyticsError,
       streak,
       weekDays,
       startWorkout,

@@ -6,7 +6,7 @@ from .models import Recipe
 
 class RecipeTests(TestCase):
     def setUp(self):
-        
+
         self.client = APIClient()
         self.coach = User.objects.create_user(
             username="coachuser", password="coachpass", email="testcoach@example.com"
@@ -30,7 +30,7 @@ class RecipeTests(TestCase):
             title="Test Recipe",
             ingredients="Ingredient1, Ingredient2",
             steps="Step1, Step2",
-            user_profile=self.coach_profile
+            user_profile=self.coach_profile,
         )
 
     def test_recipe_coach_access(self):
@@ -90,7 +90,7 @@ class RecipeTests(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)  # Success
         self.client.logout()
-    
+
     def test_coach_create_recipe(self):
         """Test that a coach can create a recipe"""
         url = "/api/recipe/"
@@ -101,10 +101,10 @@ class RecipeTests(TestCase):
             "ingredients": "Lettuce, Tomato, Cucumber",
             "steps": "Mix all ingredients.",
         }
-        response = self.client.post(url, data, format='json')
+        response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, 201)
         self.client.logout()
-    
+
     def test_gold_create_recipe(self):
         """Test that a gold user can create a recipe"""
         url = "/api/recipe/"
@@ -120,10 +120,10 @@ class RecipeTests(TestCase):
             "ingredients": "Oats, Milk, Yogurt, Chia Seeds",
             "steps": "Combine all ingredients in a jar and refrigerate overnight.",
         }
-        response = self.client.post(url, data, format='json')
+        response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, 201)
         self.client.logout()
-    
+
     def test_edit_recipe(self):
         """Test that a user can edit their own recipe"""
 
@@ -135,7 +135,7 @@ class RecipeTests(TestCase):
             "ingredients": "Salmon, Lettuce, Tomato, Cucumber",
             "steps": "Combine all ingredients in a bowl and toss.",
         }
-        response = self.client.post(url, data, format='json')
+        response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, 201)
         recipe_id = response.data.get("id")
 
@@ -143,12 +143,13 @@ class RecipeTests(TestCase):
         edit_url = f"/api/recipe/{recipe_id}/update/"
         edit_data = {
             "title": "Updated Salmon Salad",
-            "ingredients": "Salmon, Lettuce, Tomato, Cucumber, Avocado",
-            "steps": "Combine all ingredients in a bowl and toss. Add avocado for creaminess.",
+            "ingredients": "Salmon, Lettuce, Tomato, Cucumber",
+            "steps": "Combine all ingredients in a bowl and toss.",
         }
-        edit_response = self.client.put(edit_url, edit_data, format='json')
+        edit_response = self.client.put(edit_url, edit_data, format="json")
         self.assertEqual(edit_response.status_code, 200)
-        self.assertEqual(edit_response.data['success'], True)
+        self.assertEqual(edit_response.data["success"], True)
         self.client.logout()
+
 
 # run the tests in backend with: python manage.py test recipe

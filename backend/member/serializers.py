@@ -1,22 +1,21 @@
 from rest_framework import serializers
-from .models import WorkoutAssignment
+from member.models import CoachMemberRelationship
 
-class WorkoutAssignmentSerializer(serializers.ModelSerializer):
-    program_title = serializers.CharField(source="program.title", read_only=True)
-    member_name = serializers.CharField(source="user.username", read_only=True)
-    member_id = serializers.IntegerField(source="user.id", read_only=True)
+
+class CoachMemberRelationshipSerializer(serializers.ModelSerializer):
+    memberName = serializers.CharField(source='member.user.username')
+    memberId = serializers.CharField(source='member.member_id')
+    email = serializers.CharField(source='member.user.email')
+    programName = serializers.CharField(source='member.program_name', default='')
+    experienceLevel = serializers.CharField(source='member.experience_level')
+    goals = serializers.ListField(source='member.goals', required=False)
+    message = serializers.CharField(source='member.message', required=False)
+    status = serializers.CharField()
 
     class Meta:
-        model = WorkoutAssignment
+        model = CoachMemberRelationship
         fields = [
-            "id",
-            "member_name",
-            "member_id",
-            "program_title",
-            "status",
-            "assigned_date",
-            "due_date",
-            "completed_date",
+            'relationship_id', 'memberName', 'memberId',
+            'email', 'programName', 'experienceLevel',
+            'goals', 'message', 'status', 'start_date'
         ]
-        read_only_fields = fields
-        ordering = ["-assigned_date"]

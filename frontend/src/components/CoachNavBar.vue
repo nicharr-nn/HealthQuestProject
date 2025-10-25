@@ -54,8 +54,9 @@
             </RouterLink>
           </li>
           <li>
+            <!-- Updated link to Member Management -->
             <RouterLink
-              to="/member"
+              to="/view-member"
               class="font-body text-white hover:text-[#c7d2fe] transition-colors"
               active-class="text-[#c7d2fe]"
             >
@@ -118,8 +119,9 @@
             </RouterLink>
           </li>
           <li>
+            <!-- Updated link to Member Management -->
             <RouterLink
-              to="/member"
+              to="/view-member"
               @click="closeMobileMenu"
               class="block font-body text-white hover:text-[#c7d2fe] transition-colors py-2"
               active-class="text-[#c7d2fe]"

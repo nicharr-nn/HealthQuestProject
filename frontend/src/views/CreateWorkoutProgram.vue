@@ -540,7 +540,7 @@ function resetCurrentWorkout() {
 // Update your submitProgram function
 async function submitProgram() {
   if (!canSubmitProgram.value) {
-    alert('Please fill in all required fields and add at least one daily workout')
+    alert('Please fill in all required fields (including visibility) and add at least one daily workout')
     return
   }
 
@@ -682,6 +682,13 @@ watch(() => props.existingProgram, (program) => {
 .form-input:focus {
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+}
+
+.form-hint {
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 6px;
+  line-height: 1.4;
 }
 
 .form-section-title {

@@ -6,6 +6,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def _generate_pdf(instance: Recipe):
     try:
         instance.create_pdf()

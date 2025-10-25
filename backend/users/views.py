@@ -39,8 +39,7 @@ def user_info(request):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
-    
-    
+
     # 4. DELETE → Allow account deletion
     elif request.method == "DELETE":
         if not user.is_authenticated:
@@ -166,7 +165,6 @@ def user_achievements(request):
         return Response({"message": "Achievement removed", "achievement_id": ach_id})
 
 
-
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def user_levels(request):
@@ -191,4 +189,3 @@ def user_levels(request):
         "next_xp": next_xp,
     }
     return Response(payload)
-

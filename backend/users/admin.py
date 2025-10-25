@@ -10,4 +10,5 @@ class UserProfileAdmin(admin.ModelAdmin):
     search_fields = ["user__username", "user__email", "location"]
     ordering = ["-created_at"]
 
+
 admin.site.register(UserLevel)

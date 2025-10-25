@@ -1,17 +1,12 @@
-    
 from django.urls import path
-
-from . import views
+from .views import coach_member_requests, accepted_members
 
 urlpatterns = [
+    path('coach-requests/', coach_member_requests, name='coach-member-requests'),
     path(
-        "assign/<int:id>/",
-        views.assign_program_to_member,
-        name="assign_program_to_member",
+        'coach-requests/<int:pk>/',
+        coach_member_requests,
+        name='coach-member-requests-detail'
     ),
-    path(
-        "assignment-update/<int:id>/",
-        views.workout_assignment_update,
-        name="workout-assignment-update",
-    )
+    path('accepted/', accepted_members, name='accepted-members')
 ]

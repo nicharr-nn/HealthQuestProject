@@ -1,119 +1,81 @@
-from django.utils import timezone
-from django.shortcuts import get_object_or_404
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.exceptions import PermissionDenied
-
-from users.models import UserProfile
-from workout.models import WorkoutProgram, WorkoutDayCompletion
-from .models import WorkoutAssignment
-from .serializers import WorkoutAssignmentSerializer
-from workout.xp_rules import calculate_xp, COMPLETION_BONUS
+from member.models import CoachMemberRelationship
+from member.serializers import CoachMemberRelationshipSerializer
 
 
-@api_view(["POST"])
-@permission_classes([IsAuthenticated])
-def assign_program_to_member(request, id):
-    """
-    Assign a workout program to a member (coaches only).
-    Endpoint: POST /api/member/assign/<member_id>/
-    """
-    coach_profile = request.user.userprofile
-    if coach_profile.role != "coach":
-        raise PermissionDenied("Only coaches can assign programs.")
+@api_view(['GET', 'PATCH'])
+def coach_member_requests(request, pk=None):
+    user_profile = getattr(request.user, 'userprofile', None)
+    coach_profile = getattr(user_profile, 'coach_profile', None)
 
-    member = get_object_or_404(UserProfile, pk=id)
-    if member.role != "member":
-        return Response({"error": "Target user is not a member."}, status=status.HTTP_400_BAD_REQUEST)
-
-    program_id = request.data.get("program_id")
-    if not program_id:
-        return Response({"error": "Program ID is required."}, status=status.HTTP_400_BAD_REQUEST)
-
-    program = get_object_or_404(WorkoutProgram, pk=program_id)
-
-    assignment = WorkoutAssignment.objects.create(
-        user_profile=member,
-        program=program,
-    )
-
-    serializer = WorkoutAssignmentSerializer(assignment)
-    return Response({"message": "Program assigned successfully.", "assignment": serializer.data},
-                    status=status.HTTP_201_CREATED)
-
-
-@api_view(["PATCH", "DELETE"])
-@permission_classes([IsAuthenticated])
-def workout_assignment_update(request, id):
-    """
-    PATCH: Mark assignment completed (member only).
-    DELETE: Delete assignment (member only).
-    Endpoint: /api/member/assignments/<id>/
-    """
-    profile = request.user.userprofile
-    assignment = get_object_or_404(WorkoutAssignment, pk=id, user_profile=profile)
-
-    if profile.role != "member":
-        raise PermissionDenied("Only members can modify their assignments.")
-
-    if request.method == "PATCH":
-        difficulty = assignment.program.difficulty_level
-        duration = assignment.program.duration
-        xp = calculate_xp(duration=duration, difficulty_level=difficulty)
-
-        # Mark assignment complete
-        assignment.status = "completed"
-        assignment.completed_date = timezone.now().date()
-        assignment.save(update_fields=["status", "completed_date"])
-
-        # Ensure last workout day is marked complete
-        last_day = assignment.program.days.order_by("-day_number").first()
-        if last_day:
-            WorkoutDayCompletion.objects.get_or_create(
-                user_profile=profile,
-                workout_day=last_day,
-                defaults={"xp_earned": xp},
-            )
-
-        # Award XP
-        ul = profile.get_current_level()
-        ul.add_xp(xp)
-
+    if not coach_profile:
         return Response(
-            {"message": "Assignment completed successfully.", "xp_awarded": xp},
-            status=status.HTTP_200_OK
+            {'error': 'You are not a coach'},
+            status=status.HTTP_403_FORBIDDEN
         )
 
-    elif request.method == "DELETE":
-        assignment.delete()
-        return Response({"message": "Assignment deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+    if pk:
+        try:
+            relationship = CoachMemberRelationship.objects.get(
+                pk=pk, coach=coach_profile
+            )
+        except CoachMemberRelationship.DoesNotExist:
+            return Response(
+                {'error': 'Request not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
-@api_view(["GET"])
-@permission_classes([IsAuthenticated])
-def todays_workout(request):
-    profile = request.user.userprofile
-    # choose the next active assignment for the user
-    assignment = (
-        WorkoutAssignment.objects.filter(user_profile=profile, status="assigned")
-        .order_by("created_at")
-        .first()
+        if request.method == 'PATCH':
+            new_status = request.data.get('status')
+            if new_status:
+                relationship.status = new_status
+                relationship.save()
+            serializer = CoachMemberRelationshipSerializer(relationship)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        serializer = CoachMemberRelationshipSerializer(relationship)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    else:
+        relationships = CoachMemberRelationship.objects.filter(coach=coach_profile)
+        serializer = CoachMemberRelationshipSerializer(relationships, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def accepted_members(request):
+    user_profile = getattr(request.user, 'userprofile', None)
+    coach_profile = getattr(user_profile, 'coach_profile', None)
+
+    if not coach_profile:
+        return Response(
+            {'error': 'You are not a coach'},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    relationships = CoachMemberRelationship.objects.filter(
+        coach=coach_profile,
+        status='approved'
     )
-    if not assignment:
-        return Response({"message": "No active assignment"}, status=200)
-    program = assignment.program
-    # return basic program + assignment id
-    return Response(
+
+    # convert to frontend format
+    members_data = [
         {
-            "assignment_id": assignment.id,
-            "program": {
-                "id": program.id,
-                "name": program.name,
-                "description": program.description,
-                "duration": program.duration,
-                "difficulty_level": program.difficulty_level,
-                "xp": program.xp if hasattr(program, "xp") else None,
-            },
+            "memberId": r.member.member_id,
+            "name": r.member.user.username,
+            "email": r.member.user.email,
+            "programName": r.member.program_name,
+            "level": r.member.experience_level,
+            "joinedAt": r.start_date,
+            "lastActivity": (
+                r.member.lastActivity.strftime("%Y-%m-%d")
+                if hasattr(r.member, "lastActivity")
+                else r.start_date
+            ),
         }
-    )
+        for r in relationships
+    ]
+
+    return Response(members_data, status=status.HTTP_200_OK)
