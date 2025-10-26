@@ -7,7 +7,7 @@
       <h2 class="text-2xl md:text-3xl font-bold">Share Your Meal with Your Coach</h2>
       <button
         @click="openModal"
-        class="bg-[#F9B4FF] hover:bg-pink-400 px-8 py-3 rounded-lg shadow-md"
+        class="bg-[#F9B4FF] hover:bg-pink-400 px-8 py-3 rounded-lg shadow-md cursor-pointer"
       >
         Upload Meal
       </button>
@@ -20,10 +20,11 @@
       class="max-w-5xl mx-auto bg-purple-200 shadow-lg rounded-2xl my-8 grid lg:grid-cols-[1.5fr_1fr] overflow-hidden"
     >
       <!-- Left side (image, name, content) -->
-      <div class="flex flex-col items-center text-center">
-        <div class="relative h-[300px]">
-          <h3 class="text-3xl font-bold drop-shadow-md">{{ post.title }}</h3>
-          <div class="w-48 h-48 rounded-lg overflow-hidden shadow-md flex-shrink-0 justify-center">
+      <div class="flex flex-col">
+        <!-- Image Section -->
+        <div class="flex flex-col items-center text-center p-6">
+          <h3 class="text-3xl font-bold drop-shadow-md mb-4">{{ post.title }}</h3>
+          <div class="w-48 h-48 rounded-lg overflow-hidden shadow-md mx-auto">
             <img
               :src="getImageUrl(post.image)"
               :alt="post.title"
@@ -32,21 +33,24 @@
           </div>
         </div>
 
-        <div class="p-6 flex flex-col justify-between">
-          <p class="text-gray-700 whitespace-pre-line mb-4">
-            {{ post.content }}
-          </p>
+        <!-- Content Section -->
+        <div class="flex-1 p-6 flex flex-col justify-between">
+          <div class="text-center mb-6">
+            <p class="text-gray-700 whitespace-pre-line">
+              {{ post.content }}
+            </p>
+          </div>
 
-          <div class="flex justify-end gap-3 mt-4">
+          <div class="flex justify-center gap-3">
             <button
               @click="openEditModal(post)"
-              class="bg-yellow-400 hover:bg-yellow-500 text-white px-5 py-2 rounded-lg font-semibold shadow-md"
+              class="cursor-pointer bg-yellow-400 hover:bg-yellow-500 text-white px-5 py-2 rounded-lg font-semibold shadow-md"
             >
               Edit
             </button>
             <button
               @click="deletePost(post.id)"
-              class="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-lg font-semibold shadow-md"
+              class="cursor-pointer bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-lg font-semibold shadow-md"
             >
               Delete
             </button>
@@ -83,7 +87,7 @@
           />
           <button
             @click="addComment(post.id)"
-            class="w-full bg-[#9CCC65] hover:bg-[#7CB342] text-white font-semibold py-2 rounded-lg transition"
+            class="cursor-pointer w-full bg-[#9CCC65] hover:bg-[#7CB342] text-white font-semibold py-2 rounded-lg transition"
           >
             Add Comment
           </button>
@@ -131,13 +135,17 @@
           <div>
             <label class="block text-gray-600 font-medium mb-1">Description</label>
             <textarea
-              v-model="foodDescription"
-              placeholder="Describe your meal..."
-              rows="3"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-pink-400 focus:outline-none"
-              required
+                v-model="foodDescription"
+                placeholder="Describe your meal..."
+                maxlength="80"
+                rows="3"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-pink-400 focus:outline-none"
+                required
             ></textarea>
-          </div>
+            <p class="text-xs text-gray-400 mt-1">
+                {{ foodDescription.length }}/80 characters
+            </p>
+            </div>
 
           <!-- Image Upload -->
           <div>
@@ -159,7 +167,7 @@
               <img 
                 :src="getImageUrl(currentImageUrl)" 
                 alt="Current meal image"
-                class="w-32 h-32 object-cover rounded-lg border"
+                class="w-32 h-32 object-cover rounded-lg border mx-auto"
               />
             </div>
           </div>
