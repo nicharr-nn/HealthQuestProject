@@ -226,7 +226,7 @@ async function loadPendingRequests() {
     const data = await res.json()
 
     pendingRequestCount.value = data.filter((r: any) => r.status === 'pending').length
-    memberCount.value = data.filter((r: any) => r.status === 'approved').length
+    memberCount.value = data.filter((r: any) => r.status === 'accepted').length
   } catch (err) {
     console.error('Failed to load pending requests', err)
     pendingRequestCount.value = 0

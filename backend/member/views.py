@@ -45,7 +45,8 @@ def coach_member_requests(request, pk=None):
                     # Update member status to approve
                     if hasattr(member, "status"):
                         member.status = "approved"
-                    member.save()
+                        member.member_id = f"M-{member.id:05d}"
+                        member.save()
 
                 elif new_status == "rejected":
                     # Optionally reset member to pending or inactive
