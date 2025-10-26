@@ -18,6 +18,7 @@ const MemberRequests = () => import('../views/MemberRequests.vue')
 const CreateWorkoutProgram = () => import('../views/CreateWorkoutProgram.vue')
 const MemberConnect = () => import('../views/MemberConnect.vue')
 const FoodRecipe = () => import('../views/FoodRecipe.vue')
+const FoodPost = () => import('../views/FoodPost.vue')
 
 const routes = [
   { path: '/', name: 'LandingPage', component: LandingPage },
@@ -36,6 +37,7 @@ const routes = [
   { path: '/create-workout-program', name: 'CreateWorkoutProgram', component: CreateWorkoutProgram, meta: { requiresCoach: true } },
   { path: '/coach', name: 'MemberConnect', component: MemberConnect, props: true, },
   { path: '/food-recipe', name: 'FoodRecipe', component: FoodRecipe, props: true, },
+  { path: '/food-post', name: 'FoodPost', component: FoodPost, props: true, },
 ]
 
 const router = createRouter({
