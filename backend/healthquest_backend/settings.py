@@ -51,12 +51,10 @@ INSTALLED_APPS = [
     "corsheaders",
     "rest_framework",
     "users",
-    "fitness",
     "workout",
     "coach",
     "member",
     "recipe",
-    "foodpost",
     "workout_assignment",
 ]
 

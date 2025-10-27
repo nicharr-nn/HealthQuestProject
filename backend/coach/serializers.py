@@ -17,7 +17,9 @@ class CoachSerializer(serializers.ModelSerializer):
     class Meta:
         model = Coach
         fields = [
+            "user",
             "coach_id",
+            "public_id",
             "name",
             "certification_doc",
             "status_approval",
