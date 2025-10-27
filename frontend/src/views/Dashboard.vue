@@ -150,7 +150,7 @@
           
           <button 
             @click="startWorkout"
-            class="w-full bg-gradient-to-br from-emerald-500 to-emerald-500 hover:from-[#225560] hover:to-[#225560] text-white font-semibold px-6 py-3 sm:py-4 rounded-2xl transition-all duration-200 shadow-lg hover:shadow-xl text-sm sm:text-base"
+            class="cursor-pointer w-full bg-gradient-to-br from-emerald-500 to-emerald-500 hover:from-[#225560] hover:to-[#225560] text-white font-semibold px-6 py-3 sm:py-4 rounded-2xl transition-all duration-200 shadow-lg hover:shadow-xl text-sm sm:text-base"
           >
             Start Workout
           </button>
@@ -192,7 +192,7 @@
           
           <button 
             @click="goToRecipes"
-            class="w-full bg-white hover:bg-gray-50 text-gray-800 font-semibold px-4 py-2 sm:py-3 rounded-xl transition-colors shadow-sm text-sm sm:text-base"
+            class="cursor-pointer w-full bg-white hover:bg-gray-50 text-gray-800 font-semibold px-4 py-2 sm:py-3 rounded-xl transition-colors shadow-sm text-sm sm:text-base"
           >
             View Recipes
           </button>

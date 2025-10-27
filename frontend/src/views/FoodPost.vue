@@ -20,10 +20,10 @@
       class="max-w-5xl mx-auto bg-purple-200 shadow-lg rounded-2xl my-8 grid lg:grid-cols-[1.5fr_1fr] overflow-hidden"
     >
       <!-- Left side (image, name, content) -->
-      <div class="flex flex-col">
+      <div class="flex flex-col font-body">
         <!-- Image Section -->
-        <div class="flex flex-col items-center text-center p-6">
-          <h3 class="text-3xl font-bold drop-shadow-md mb-4">{{ post.title }}</h3>
+        <div class="flex flex-col items-center text-center p-6 text-[#846757]">
+          <h3 class="text-3xl mb-4">{{ post.title }}</h3>
           <div class="w-48 h-48 rounded-lg overflow-hidden shadow-md mx-auto">
             <img
               :src="getImageUrl(post.image)"
@@ -36,7 +36,7 @@
         <!-- Content Section -->
         <div class="flex-1 p-6 flex flex-col justify-between">
           <div class="text-center mb-6">
-            <p class="text-gray-700 whitespace-pre-line">
+            <p class="text-[#846757] whitespace-pre-line">
               {{ post.content }}
             </p>
           </div>
@@ -59,7 +59,7 @@
       </div>
 
       <!-- Right side (Comments) -->
-      <div class="bg-[#E6F3E6] p-6 flex flex-col justify-between">
+      <div class="bg-[#E6F3E6] p-6 flex flex-col justify-between font-body">
         <h4 class="text-xl font-semibold mb-3">Comments</h4>
 
         <div class="flex-1 overflow-y-auto space-y-2 mb-4">
