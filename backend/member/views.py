@@ -171,6 +171,7 @@ def apply_as_member(request):
                         "public_id": coach.public_id,
                     },
                     "status": "pending",
+                    "relationship_id": relationship.relationship_id,
                 },
                 status=status.HTTP_201_CREATED if created else status.HTTP_200_OK,
             )
