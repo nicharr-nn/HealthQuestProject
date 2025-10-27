@@ -24,7 +24,7 @@
       <div class="flex flex-col font-body">
         <!-- Image Section -->
         <div class="flex flex-col items-center text-center p-6 text-[#846757]">
-          <h3 class="text-3xl mb-4">{{ post.title }}</h3>
+          <h3 class="text-3xl font-semibold mb-4">{{ post.title }}</h3>
           <div class="w-48 h-48 rounded-lg overflow-hidden shadow-md mx-auto cursor-pointer">
             <img
               :src="getImageUrl(post.image)"
