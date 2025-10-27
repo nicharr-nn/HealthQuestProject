@@ -7,7 +7,7 @@
       </button>
 
       <div class="member-info">
-        <h1 class="member-name">{{ memberName }}'s Food Posts</h1>
+        <h1 class="member-name">{{ memberDisplayName }}'s Food Posts</h1>
         <p class="member-subtitle">Review meals and provide coaching feedback</p>
         <span class="member-badge">Member ID: {{ memberId }}</span>
       </div>
@@ -44,7 +44,7 @@
       <div class="empty-icon">🍽️</div>
       <h3 class="empty-title">No Food Posts Yet</h3>
       <p class="empty-message">
-        {{ memberName }} hasn't posted any meals for {{ formattedDate }}.
+        {{ memberDisplayName }} hasn't posted any meals for {{ formattedDate }}.
       </p>
     </div>
 
@@ -119,7 +119,7 @@
           <div class="add-comment-form">
             <textarea
               v-model="commentTexts[post.id]"
-              :placeholder="`Add feedback for ${memberName}...`"
+              :placeholder="`Add feedback for ${memberDisplayName}...`"
               class="comment-input"
               rows="3"
               maxlength="500"
@@ -179,7 +179,7 @@ const props = defineProps({
   },
   memberName: {
     type: String,
-    required: true
+    default: 'Member'
   }
 })
 
@@ -194,6 +194,7 @@ const submittingComment = ref({}) // { postId: boolean }
 const loading = ref(false)
 const selectedDate = ref(new Date())
 const viewingAll = ref(false)
+const memberDisplayName = ref(props.memberName || 'Member')
 
 // Edit Modal State
 const showEditModal = ref(false)
