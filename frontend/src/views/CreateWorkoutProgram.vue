@@ -2,7 +2,9 @@
   <div class="create-workout-program">
     <div class="page-header">
       <h1 class="page-title">{{ existingProgram ? 'Edit Workout Program' : 'Create Workout Program' }}</h1>
-      <p class="page-subtitle">Design a comprehensive workout program with YouTube video guides</p>
+            <p class="page-subtitle">
+        {{ editingProgramId ? 'Update your existing workout program' : 'Design a comprehensive workout program with YouTube video guides' }}
+      </p>
     </div>
 
     <div class="content-grid">
@@ -314,7 +316,7 @@
       <button
         type="button"
         class="btn ghost large"
-        @click="emit('cancel')"
+        @click="handleCancel"
       >
         Cancel
       </button>
@@ -324,10 +326,36 @@
 
 <script setup lang="ts">
 import { reactive, ref, computed, watch, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+
+const router = useRouter()
+const route = useRoute()
 
 const coachUserProfileId = ref<number | null>(null)
+const editingProgramId = ref<number | null>(null)
+const backupProgramData = ref<WorkoutProgram | null>(null)
 
 onMounted(async () => {
+  // Check if we're in edit mode
+  const editId = route.query.edit as string
+  
+  if (editId) {
+    editingProgramId.value = parseInt(editId)
+    await loadExistingProgram(editingProgramId.value)
+
+    backupProgramData.value = {
+      title: workoutProgram.title,
+      description: workoutProgram.description,
+      difficulty_level: workoutProgram.difficulty_level,
+      duration: workoutProgram.duration,
+      category: workoutProgram.category,
+      is_public: workoutProgram.is_public,
+      level_access: workoutProgram.level_access,
+      WorkoutDays: JSON.parse(JSON.stringify(workoutProgram.WorkoutDays)) // Deep clone
+    }
+  }
+
+  // Load coach profile ID
   try {
     const response = await fetch('http://127.0.0.1:8000/api/coach/status/', {
       credentials: 'include',
@@ -339,16 +367,16 @@ onMounted(async () => {
       
       coachUserProfileId.value = 
         data.user?.id ||           // This is where it actually is!
-        data.coach?.user?.id ||
+        data.coach?.user ||
         null
       
-      if (coachUserProfileId.value) {
-        console.log('Found UserProfile ID for coach:', coachUserProfileId.value)
-      } else {
-        console.error('No UserProfile ID found in coach status response')
-        // Fallback to user-info endpoint
-        await fetchUserProfileId()
-      }
+      // if (coachUserProfileId.value) {
+      //   console.log('Found UserProfile ID for coach:', coachUserProfileId.value)
+      // } else {
+      //   console.error('No UserProfile ID found in coach status response')
+      //   // Fallback to user-info endpoint
+      //   await fetchUserProfileId()
+      // }
     } else {
       console.error('Failed to fetch coach status:', response.status)
       await fetchUserProfileId()
@@ -400,8 +428,10 @@ const emit = defineEmits<{
   cancel: []
 }>()
 
+const backupWorkout = ref<WorkoutDay | null>(null)
 
 interface WorkoutDay {
+  day_number: number
   title: string
   duration: number
   type: string
@@ -432,10 +462,11 @@ const workoutProgram = reactive<WorkoutProgram>({
 })
 
 const currentWorkout = reactive<WorkoutDay>({
+  day_number: 1,
   title: '',
   duration: 45,
-  type: '',
   video_link: '',
+  type: ''
 })
 
 
@@ -478,10 +509,11 @@ function saveDayWorkout() {
   const targetDay = editingDay.value || selectedDay.value as number
 
   const workout: WorkoutDay = {
+    day_number: currentWorkout.day_number,
     title: currentWorkout.title,
     duration: currentWorkout.duration,
-    type: currentWorkout.type,
     video_link: currentWorkout.video_link,
+    type: currentWorkout.type
   }
 
   if (editingDay.value !== null && editingWorkoutIndex.value !== null) {
@@ -508,6 +540,9 @@ function editWorkout(day: number, workoutIndex: number) {
     currentWorkout.duration = workout.duration
     currentWorkout.type = workout.type
     currentWorkout.video_link = workout.video_link
+    currentWorkout.day_number = workout.day_number
+    backupWorkout.value = { ...workout }
+    console.log('Backed up workout data for editing:', backupWorkout.value)
   }
 }
 
@@ -522,22 +557,113 @@ function removeWorkout(day: number, workoutIndex: number) {
   }
 }
 
+function handleCancel() {
+  console.log('Cancel clicked. Editing mode:', editingProgramId.value)
+  
+  if (editingProgramId.value && backupProgramData.value) {
+    // Editing mode: Restore original data and navigate away
+    console.log('Restoring original program data')
+    
+    // Restore all program data from backup
+    workoutProgram.title = backupProgramData.value.title
+    workoutProgram.description = backupProgramData.value.description
+    workoutProgram.difficulty_level = backupProgramData.value.difficulty_level
+    workoutProgram.duration = backupProgramData.value.duration
+    workoutProgram.category = backupProgramData.value.category
+    workoutProgram.is_public = backupProgramData.value.is_public
+    workoutProgram.level_access = backupProgramData.value.level_access
+    workoutProgram.WorkoutDays = JSON.parse(JSON.stringify(backupProgramData.value.WorkoutDays))
+    
+    // Navigate back to coach dashboard
+    console.log('Navigating back to coach dashboard')
+    router.push('/coach-dashboard')
+  } else {
+    // Creating mode: Just clear the form and navigate away
+    console.log('Clearing new program data and navigating away')
+    resetProgram()
+    router.push('/coach-dashboard')
+  }
+}
+
+
 function cancelWorkoutEdit() {
+  console.log('Cancelling workout edit/add')
+
+  if (editingDay.value !== null && editingWorkoutIndex.value !== null && backupWorkout.value) {
+    // Restore previous workout data (discard user's edits)
+    console.log('Restoring original workout data')
+    workoutProgram.WorkoutDays[editingDay.value][editingWorkoutIndex.value] = { ...backupWorkout.value }
+  }
+  // Reset everything to exit the edit/create form
   resetCurrentWorkout()
 }
+
+
 
 function resetCurrentWorkout() {
   selectedDay.value = ''
   editingDay.value = null
   editingWorkoutIndex.value = null
+  backupWorkout.value = null
+
   currentWorkout.title = ''
   currentWorkout.duration = 45
   currentWorkout.type = ''
   currentWorkout.video_link = ''
+  currentWorkout.day_number = 1
   youtubeError.value = ''
 }
 
-// Update your submitProgram function
+
+async function loadExistingProgram(programId: number) {
+  try {
+    const response = await fetch(`http://127.0.0.1:8000/api/workout/programs/${programId}/`, {
+      credentials: 'include',
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to load program: ${response.status}`)
+    }
+
+    const programData = await response.json()
+    console.log('Loaded program data for editing:', programData)
+
+    // Populate the form with existing data
+    workoutProgram.title = programData.title || ''
+    workoutProgram.description = programData.description || ''
+    workoutProgram.difficulty_level = programData.difficulty_level || ''
+    workoutProgram.duration = programData.duration || 30
+    workoutProgram.category = programData.category || ''
+    workoutProgram.is_public = programData.is_public ?? true
+    workoutProgram.level_access = programData.level_access || 'all'
+
+    // Convert days data to WorkoutDays format
+    if (programData.days && Array.isArray(programData.days)) {
+      workoutProgram.WorkoutDays = {}
+      
+      programData.days.forEach((day: any) => {
+        const dayNumber = day.day_number
+        if (dayNumber) {
+          // Create workout entry for this day
+          const workout: WorkoutDay = {
+            title: day.title,
+            type: day.type || '',
+            duration: day.duration_minutes || 45,
+            video_link: day.video_links && day.video_links.length > 0 ? day.video_links[0] : '',
+            day_number: dayNumber
+          }
+          
+          workoutProgram.WorkoutDays[dayNumber] = [workout]
+        }
+      })
+    }
+
+  } catch (error) {
+    console.error('Error loading existing program:', error)
+    alert('Failed to load program data. Please try again.')
+  }
+}
+
 async function submitProgram() {
   if (!canSubmitProgram.value) {
     alert('Please fill in all required fields (including visibility) and add at least one daily workout')
@@ -585,13 +711,13 @@ async function submitProgram() {
   }
 
 
-  const url = props.existingProgram
-    ? `http://127.0.0.1:8000/api/workout/programs/${(props.existingProgram as any).id}/`
+  const url = editingProgramId.value
+    ? `http://127.0.0.1:8000/api/workout/programs/${editingProgramId.value}/`
     : 'http://127.0.0.1:8000/api/workout/programs/'
 
   try {
     const response = await fetch(url, {
-      method: props.existingProgram ? 'PUT' : 'POST',
+      method: editingProgramId.value ? 'PUT' : 'POST',
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
@@ -612,7 +738,7 @@ async function submitProgram() {
     }
     emit('programCreated', body)
     alert('Program saved successfully!')
-
+    router.push('/coach-dashboard')
   } catch (error) {
     console.error('Error saving program:', error)
     alert('Failed to save program: ' + error.message)
@@ -625,6 +751,7 @@ function getCsrfToken() {
 }
 
 function resetProgram() {
+  console.log('Resetting entire program')
   workoutProgram.title = ''
   workoutProgram.description = ''
   workoutProgram.difficulty_level = ''
@@ -633,9 +760,12 @@ function resetProgram() {
   workoutProgram.is_public = true
   workoutProgram.level_access = 'all'
   workoutProgram.WorkoutDays = {}
+  editingProgramId.value = null
+  backupProgramData.value = null
 
   resetCurrentWorkout()
 }
+
 
 // Watch for existing program prop and populate form
 watch(() => props.existingProgram, (program) => {

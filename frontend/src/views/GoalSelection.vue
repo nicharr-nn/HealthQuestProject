@@ -117,7 +117,7 @@ async function saveGoal() {
   
   try {
     const csrfToken = getCsrfToken();
-    const response = await fetch("http://127.0.0.1:8000/api/fitness/select-goal/", {
+    const response = await fetch("http://127.0.0.1:8000/api/select-goal/", {
       method: "POST",
       headers: { 
         "Content-Type": "application/json",
@@ -139,8 +139,8 @@ async function saveGoal() {
       console.error("Error setting goal:", error);
       
       // Handle specific error for non-normal users
-      if (error.user_profile && error.user_profile.includes("normal role")) {
-        alert("Only normal users can set fitness goals. Please contact support if you believe this is an error.");
+      if (error.user_profile && error.user_profile.role !== 'normal' && error.user_profile.role !== 'member') {
+        alert("Only normal and member users can set fitness goals. Please contact support if you believe this is an error.");
         router.push("/about-you");
       } else {
         alert("Failed to set goal: " + (error.detail || JSON.stringify(error)));

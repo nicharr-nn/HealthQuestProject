@@ -105,14 +105,26 @@
             </div>
 
             <div class="program-description">
-              {{ program.description || 'No description provided' }}
+              {{ truncate(program.description, 120) || 'No description provided' }}
+            </div>
+
+            <!-- Program metadata -->
+            <div class="program-meta">
+              <div class="meta-item">
+                <span class="meta-label">Duration:</span>
+                <span class="meta-value">{{ program.duration }} days</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Category:</span>
+                <span class="meta-value">{{ program.category || 'Not specified' }}</span>
+              </div>
             </div>
 
             <!-- Actions for each program -->
             <div class="program-actions">
               <button 
                 class="btn small primary"
-                @click="router.push(`/workout-program/${program.id}`)"
+                @click="editProgram(program.id)"
               >
                 Edit
               </button>
@@ -178,19 +190,30 @@ async function loadCoachStatus() {
     const status = data?.coach?.status_approval ?? data?.status_approval ?? null
     approvalStatus.value = status === 'approved' ? 'approved' : status === 'rejected' ? 'rejected' : 'pending'
 
-    coachID.value = data?.coach?.coach_id ?? ''
+    coachID.value = data?.coach?.public_id ?? ''
   } catch (err) {
     console.error('Error loading coach status', err)
     approvalStatus.value = 'pending'
     coachID.value = ''
   }
 }
+const API_BASE = 'http://127.0.0.1:8000/api/workout/programs/'
 
 async function loadPrograms() {
   try {
-    const res = await fetch('/api/workout/programs', { credentials: 'include' })
+    const res = await fetch(API_BASE, { credentials: 'include' })
     const data = await res.json()
-    programs.value = data.results || []
+    if (Array.isArray(data)) {
+      programs.value = data
+    } else if (data.results && Array.isArray(data.results)) {
+      programs.value = data.results
+    } else if (data.id) {
+      // API returned a single program (not an array)
+      programs.value = [data]
+    } else {
+      programs.value = []
+    }
+
   } catch {
     programs.value = []
   }
@@ -203,7 +226,7 @@ async function loadPendingRequests() {
     const data = await res.json()
 
     pendingRequestCount.value = data.filter((r: any) => r.status === 'pending').length
-    memberCount.value = data.filter((r: any) => r.status === 'approved').length
+    memberCount.value = data.filter((r: any) => r.status === 'accepted').length
   } catch (err) {
     console.error('Failed to load pending requests', err)
     pendingRequestCount.value = 0
@@ -211,9 +234,17 @@ async function loadPendingRequests() {
   }
 }
 
+async function editProgram(programId: number) {
+  // Navigate to create-workout-program with the program ID
+  router.push({
+    path: '/create-workout-program',
+    query: { edit: programId }
+  })
+}
+
 async function deleteProgram(programId: number) {
   try {
-    const res = await fetch(`/api/workout/programs/${programId}/`, {
+    const res = await fetch(`${API_BASE}${programId}/`, {
       method: 'DELETE',
       credentials: 'include',
     })
@@ -243,6 +274,12 @@ async function deleteProgram(programId: number) {
     console.error('Error deleting program:', err)
     alert('Failed to delete program')
   }
+}
+
+function truncate(text: any, max = 120) {
+  if (text === null || text === undefined) return ''
+  const s = String(text).trim()
+  return s.length > max ? s.slice(0, max).trimEnd() + '…' : s
 }
 
 onMounted(async () => {

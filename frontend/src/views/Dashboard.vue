@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-gradient-to-br from-gray-100 via-yellow-50 to-gray-100 p-4 sm:p-6 lg:p-8">
     <!-- Header with Stats -->
     <div class="max-w-7xl mx-auto mb-6 sm:mb-8">
-      <h1 class="font-subtitle text-2xl sm:text-3xl lg:text-4xl font-bold text-[#846757] mb-4 sm:mb-6">
+      <h1 class="font-subtitle text-2xl sm:text-3xl lg:text-4xl text-[#846757] mb-4 sm:mb-6">
         Welcome back, {{ store.displayName }}
       </h1>
       
@@ -90,7 +90,7 @@
         <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-lg">
           <div class="font-body flex flex-col sm:flex-row items-start justify-between mb-4 sm:mb-6 gap-2">
             <div>
-              <h3 class="font-subtitle text-xl sm:text-2xl font-bold text-gray-800">XP Progress</h3>
+              <h3 class="font-subtitle text-xl sm:text-2xl text-gray-800">XP Progress</h3>
               <p class="text-sm sm:text-base text-gray-600 mt-1">
                 Keep going to reach {{ currentLevel === 'Bronze' ? 'Silver' : 'Gold' }}!
               </p>
@@ -100,7 +100,7 @@
           <div class="mb-4 sm:mb-6">
             <div class="flex items-center justify-between mb-2">
               <span class="font-body text-xs sm:text-sm font-medium text-gray-600">Progress to next level</span>
-              <span class="font-body text-xs sm:text-sm font-bold text-gray-800">{{ xp }} / {{ nextRequirement || 'MAX' }} XP</span>
+              <span class="font-body text-xs sm:text-sm text-gray-800">{{ xp }} / {{ nextRequirement || 'MAX' }} XP</span>
             </div>
             <div class="h-2 sm:h-3 bg-gray-200 rounded-full overflow-hidden">
               <div
@@ -132,7 +132,7 @@
         <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-lg">
           <div v-if="store.profile?.role === 'member'" class="flex flex-col sm:flex-row items-start justify-between mb-4 gap-2">
             <div class="font-body w-full">
-              <h3 class="font-subtitle text-xl sm:text-2xl font-bold text-gray-800">Today's Workout</h3>
+              <h3 class="font-subtitle text-xl sm:text-2xl text-gray-800">Today's Workout</h3>
               <div class="flex flex-wrap items-center gap-2 mt-2">
                 <span class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-semibold">
                   {{ todayWorkout.duration || '30 min' }}
@@ -150,7 +150,7 @@
           
           <button 
             @click="startWorkout"
-            class="w-full bg-gradient-to-br from-emerald-500 to-emerald-500 hover:from-[#225560] hover:to-[#225560] text-white font-semibold px-6 py-3 sm:py-4 rounded-2xl transition-all duration-200 shadow-lg hover:shadow-xl text-sm sm:text-base"
+            class="cursor-pointer w-full bg-gradient-to-br from-emerald-500 to-emerald-500 hover:from-[#225560] hover:to-[#225560] text-white font-semibold px-6 py-3 sm:py-4 rounded-2xl transition-all duration-200 shadow-lg hover:shadow-xl text-sm sm:text-base"
           >
             Start Workout
           </button>
@@ -162,7 +162,7 @@
         <!-- Advanced Analytics Card -->
         <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-lg">
           <div class="flex items-start justify-between mb-3 sm:mb-4">
-            <h3 class="font-subtitle text-base sm:text-lg font-bold text-gray-800">Analytics</h3>
+            <h3 class="font-subtitle text-base sm:text-lg text-gray-800">Analytics</h3>
           </div>
           
           <p class="text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6">Detailed insights into your progress</p>
@@ -192,7 +192,7 @@
           
           <button 
             @click="goToRecipes"
-            class="w-full bg-white hover:bg-gray-50 text-gray-800 font-semibold px-4 py-2 sm:py-3 rounded-xl transition-colors shadow-sm text-sm sm:text-base"
+            class="cursor-pointer w-full bg-white hover:bg-gray-50 text-gray-800 font-semibold px-4 py-2 sm:py-3 rounded-xl transition-colors shadow-sm text-sm sm:text-base"
           >
             View Recipes
           </button>

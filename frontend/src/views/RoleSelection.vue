@@ -96,7 +96,7 @@ async function selectRole(role) {
     });
 
     if (response.ok) {
-      if (role === 'normal') {
+      if (role !== "coach") {
         router.push("/select-goal");
       } else {
         router.push("/about-you");
@@ -126,11 +126,18 @@ onMounted(async () => {
         return;
       }
 
+      const nonCoach = profile.role === "member" || profile.role === "normal";
+      if (nonCoach && (!profile.current_goal || profile.current_goal === "")) {
+        router.replace("/select-goal");
+        return;
+      }
+
       if (!profile.height || !profile.weight) {
         router.replace("/about-you");
-      } else if (profile.role === "normal" && (!profile.current_goal || profile.current_goal === "")) {
-        router.replace("/select-goal");
-      } else if (profile.role === "coach") {
+        return;
+      }
+
+      if (profile.role === "coach") {
         router.replace("/coach-portal");
       } else {
         router.replace("/dashboard");

@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-scree my-8">
+  <div class="min-h-screen my-8">
     <div class="max-w-4xl mx-auto">
       <div class="bg-white rounded-2xl shadow-xl p-8">
         <!-- Header -->
@@ -10,8 +10,26 @@
           </p>
         </div>
 
+        <!-- Loading State -->
+        <div v-if="loading" class="text-center py-8">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <p class="text-gray-600 mt-4">Loading your coach information...</p>
+        </div>
+
+        <!-- Error State -->
+        <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-6 text-center mb-8">
+          <div class="text-red-600 text-lg font-semibold mb-2">Error</div>
+          <p class="text-red-700">{{ error }}</p>
+          <button 
+            @click="loadMemberData"
+            class="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
+          >
+            Try Again
+          </button>
+        </div>
+
         <!-- 🟢 Connected Coach -->
-        <div v-if="coachStatus === 'accepted'" class="mb-8">
+        <div v-else-if="coachStatus === 'accepted' || coachStatus === 'approved'" class="mb-8">
           <h2 class="text-xl font-semibold text-gray-700 mb-4">Your Coach</h2>
 
           <div class="bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200 rounded-xl p-6">
@@ -21,95 +39,158 @@
                 <p class="text-lg font-semibold text-gray-800">{{ currentCoach.name }}</p>
               </div>
               <div>
-                <p class="text-sm text-gray-600 mb-1">Email</p>
-                <p class="text-lg font-semibold text-gray-800">{{ currentCoach.email }}</p>
+                <p class="text-sm text-gray-600 mb-1">Coach ID</p>
+                <p class="text-lg font-semibold text-gray-800">{{ currentCoach.coach_id }}</p>
               </div>
               <div>
-                <p class="text-sm text-gray-600 mb-1">Specialization</p>
-                <p class="text-lg font-semibold text-gray-800">{{ currentCoach.specialization }}</p>
-              </div>
-              <div>
-                <p class="text-sm text-gray-600 mb-1">Member Since</p>
-                <p class="text-lg font-semibold text-gray-800">{{ formatDate(currentCoach.joinedDate) }}</p>
+                <p class="text-sm text-gray-600 mb-1">Joined Date</p>
+                <p class="text-lg font-semibold text-gray-800">{{ formatDate(currentCoach.joined_date) }}</p>
               </div>
             </div>
+            
+            <!-- Program Information -->
+            <div v-if="memberProfile?.program_name" class="mt-4 pt-4 border-t border-indigo-100">
+              <p class="text-sm text-gray-600 mb-1">Your Assigned Program</p>
+              <p class="text-lg font-semibold text-indigo-700">{{ memberProfile.program_name }}</p>
+            </div>
+          </div>
+
+          <!-- Cancel Request Button -->
+          <div class="mt-4 text-center">
+            <button
+              @click="cancelCoachRequest"
+              class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
+            >
+              Cancel Coach Connection
+            </button>
           </div>
         </div>
 
-        <!-- 🟡 Pending Coach Request -->
+        <!-- Pending Coach Request -->
         <div v-else-if="coachStatus === 'pending'" class="text-center mb-8">
           <h2 class="text-xl font-semibold text-gray-700 mb-3">Coach Request Pending</h2>
           <p class="text-gray-600 text-sm mb-4">
             Your request to connect with <strong>{{ pendingCoach.name }}</strong> is waiting for their approval.
           </p>
-          <div class="bg-yellow-50 border border-yellow-300 text-yellow-800 p-4 rounded-lg inline-block">
+          <div class="bg-yellow-50 border border-yellow-300 text-yellow-800 p-4 rounded-lg inline-block mb-4">
             ⏳ Pending Acceptance
           </div>
-        </div>
 
-        <!-- ❌ No Coach Yet - Send Request -->
-        <div v-else>
-          <h2 class="text-xl font-semibold text-gray-700 mb-4">Add New Coach Code</h2>
-
-          <div class="space-y-4">
-            <div>
-              <label for="coachCode" class="block text-sm font-medium text-gray-700 mb-2">
-                Enter Coach Code
-              </label>
-              <input
-                id="coachCode"
-                v-model="coachCode"
-                @keyup.enter="!loading && sendRequest()"
-                type="text"
-                placeholder="e.g., COACH123456"
-                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-                :disabled="loading"
-              />
-              <p class="text-sm text-gray-500 mt-2">
-                Enter the unique code provided by your coach to send a request
-              </p>
-            </div>
-
-            <!-- Message Display -->
-            <div
-              v-if="message.text"
-              :class="[
-                'p-4 rounded-lg text-sm font-medium',
-                message.type === 'error'
-                  ? 'bg-red-50 text-red-700 border border-red-200'
-                  : 'bg-green-50 text-green-700 border border-green-200'
-              ]"
-            >
-              {{ message.text }}
-            </div>
-
+          <!-- Cancel Request Button -->
+          <div class="mt-4">
             <button
-              @click="sendRequest"
-              :disabled="loading"
-              :class="[
-                'w-full py-3 px-6 rounded-lg font-semibold text-white transition-all',
-                loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 hover:shadow-lg'
-              ]"
+              @click="cancelCoachRequest"
+              class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
             >
-              <span v-if="loading" class="flex items-center justify-center gap-2">
-                <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" />
-                  <path
-                    class="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
-                Sending Request...
-              </span>
-              <span v-else>Send Request</span>
+              Cancel Request
             </button>
           </div>
         </div>
-      </div>
-    </div>
-    <div v-if="coachStatus === 'accepted'">
 
+        <!-- No Coach Yet - Send Request -->
+        <div v-else>
+          <h2 class="text-xl font-semibold text-gray-700 mb-4">Connect with a Coach</h2>
+
+          <!-- Member Profile Setup -->
+          <div v-if="!memberProfile" class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+            <h3 class="text-lg font-semibold text-blue-800 mb-2">Setup Required</h3>
+            <p class="text-blue-700 mb-4">You need to create your member profile before connecting with a coach.</p>
+            <button
+              @click="setupMemberProfile"
+              class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold"
+            >
+              Setup Member Profile
+            </button>
+          </div>
+
+          <!-- Coach Connection Section -->
+          <div v-else>
+            <!-- Coach Connection Form -->
+            <div class="space-y-6">
+              <div>
+                <label for="coachCode" class="block text-sm font-medium text-gray-700 mb-2">
+                  Coach ID
+                </label>
+                <div class="flex gap-2">
+                  <input
+                    id="coachCode"
+                    v-model="coachCode"
+                    type="text"
+                    placeholder="e.g., C-XXXXX"
+                    class="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                    :disabled="requestLoading"
+                  />
+                </div>
+                <p class="text-sm text-gray-500 mt-2">
+                  Enter the Coach ID (starts with C-) or select from available coaches above
+                </p>
+              </div>
+
+              <!-- Experience Level -->
+              <div>
+                <label for="experienceLevel" class="block text-sm font-medium text-gray-700 mb-2">
+                  Your Experience Level
+                </label>
+                <select
+                  id="experienceLevel"
+                  v-model="experienceLevel"
+                  class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                  :disabled="requestLoading"
+                >
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                </select>
+              </div>
+
+              <!-- Message to Coach -->
+              <div>
+                <label for="message" class="block text-sm font-medium text-gray-700 mb-2">
+                  Message to Coach (Optional)
+                </label>
+                <textarea
+                  id="message"
+                  v-model="message"
+                  rows="3"
+                  placeholder="Tell the coach about your fitness goals and expectations..."
+                  class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                  :disabled="requestLoading"
+                ></textarea>
+              </div>
+
+              <!-- Message Display -->
+              <div
+                v-if="messageDisplay.text"
+                :class="[
+                  'p-4 rounded-lg text-sm font-medium',
+                  messageDisplay.type === 'error'
+                    ? 'bg-red-50 text-red-700 border border-red-200'
+                    : 'bg-green-50 text-green-700 border border-green-200'
+                ]"
+              >
+                {{ messageDisplay.text }}
+              </div>
+
+              <button
+                @click="sendRequest"
+                :disabled="requestLoading || !coachCode.trim()"
+                :class="[
+                  'w-full py-3 px-6 rounded-lg font-semibold text-white transition-all',
+                  requestLoading || !coachCode.trim() 
+                    ? 'bg-gray-400 cursor-not-allowed' 
+                    : 'bg-indigo-600 hover:bg-indigo-700 hover:shadow-lg'
+                ]"
+              >
+                <span v-if="requestLoading" class="flex items-center justify-center gap-2">
+                  <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  Sending Request...
+                </span>
+                <span v-else>Send Connection Request</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -117,54 +198,215 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 
-const coachStatus = ref('') // 'pending' | 'accepted' | ''
+// Reactive data
+const coachStatus = ref('') // 'pending' | 'accepted' | 'rejected' | ''
 const coachCode = ref('')
+const experienceLevel = ref('beginner')
+const message = ref('')
 const loading = ref(false)
-const message = ref({ type: '', text: '' })
+const requestLoading = ref(false)
+const messageDisplay = ref({ type: '', text: '' })
 const currentCoach = ref(null)
 const pendingCoach = ref(null)
+const memberProfile = ref(null)
+const error = ref('')
+
+// API base URL
+const API_BASE = 'http://127.0.0.1:8000/api/member/'
 
 onMounted(() => {
-  // 🧠 Mock: You can switch between these three lines to test different states:
-//   coachStatus.value = '' // No coach yet
-//   coachStatus.value = 'pending' // Pending request
-//   pendingCoach.value = {
-//     name: 'Coach Olivia Chen',
-//     email: 'olivia.chen@example.com'
-//   }
-  coachStatus.value = 'accepted' // Already connected
-  currentCoach.value = {
-    name: 'Coach Emily Carter',
-    email: 'emily.carter@example.com',
-    specialization: 'Yoga & Mindfulness',
-    joinedDate: '2024-05-10'
-  }
- })
+  loadMemberData()
+})
 
-// 📝 Send request (mock)
-function sendRequest() {
+async function loadMemberData() {
+  loading.value = true
+  error.value = ''
+  
+  try {
+    // Load member profile
+    const profileResponse = await fetch(`${API_BASE}member-profile/`, {
+      credentials: 'include',
+    })
+
+    if (profileResponse.ok) {
+      memberProfile.value = await profileResponse.json()
+    } else if (profileResponse.status === 404) {
+      memberProfile.value = null
+    } else {
+      throw new Error('Failed to load member profile')
+    }
+
+    // Load coach relationship
+    const relationshipResponse = await fetch(`${API_BASE}member-request/manage/`, {
+      credentials: 'include',
+    })
+
+    if (relationshipResponse.ok) {
+      const relationshipData = await relationshipResponse.json()
+      console.log('Coach Relationship Data:', relationshipData)
+      
+      if (relationshipData.message === 'No coach request found.') {
+        coachStatus.value = ''
+      } else {
+        coachStatus.value = relationshipData.status
+        if (relationshipData.status === 'approved' || relationshipData.status === 'accepted') {
+          currentCoach.value = {
+            name: relationshipData.coach?.name || 'Coach',
+            coach_id: relationshipData.coach?.public_id || relationshipData.coach?.coach_id,
+            joined_date: relationshipData.submittedAt || '',
+          }
+        } else if (relationshipData.status === 'pending') {
+          pendingCoach.value = {
+            name: relationshipData.coach?.name || 'Coach',
+            coach_id: relationshipData.coach?.public_id || relationshipData.coach?.coach_id
+          }
+        }
+      }
+    } else if (relationshipResponse.status === 404) {
+      coachStatus.value = ''
+    } else {
+      throw new Error('Failed to load coach relationship')
+    }
+
+  } catch (err) {
+    console.error('Error loading member data:', err)
+    error.value = 'Failed to load your data. Please try again.'
+  } finally {
+    loading.value = false
+  }
+}
+
+async function setupMemberProfile() {
+  requestLoading.value = true
+  messageDisplay.value = { type: '', text: '' }
+
+  try {
+    const response = await fetch(`${API_BASE}member-apply/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        experience_level: experienceLevel.value,
+        message: message.value
+      })
+    })
+
+    if (response.ok) {
+      memberProfile.value = await response.json()
+      messageDisplay.value = { 
+        type: 'success', 
+        text: 'Member profile created successfully! You can now connect with a coach.' 
+      }
+
+    } else {
+      const errorData = await response.json()
+      throw new Error(errorData.error || 'Failed to create member profile')
+    }
+  } catch (err) {
+    console.error('Error creating member profile:', err)
+    messageDisplay.value = { type: 'error', text: err.message }
+  } finally {
+    requestLoading.value = false
+  }
+}
+
+async function sendRequest() {
   if (!coachCode.value.trim()) {
-    message.value = { type: 'error', text: 'Please enter a coach code.' }
+    messageDisplay.value = { type: 'error', text: 'Please enter a Coach ID.' }
     return
   }
 
-  loading.value = true
-  message.value = { type: '', text: '' }
+  requestLoading.value = true
+  messageDisplay.value = { type: '', text: '' }
 
-  setTimeout(() => {
-    // Simulate valid code
-    pendingCoach.value = {
-      name: 'Coach Olivia Chen',
-      email: 'olivia.chen@example.com'
+  try {
+    const response = await fetch(`${API_BASE}member-apply/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        coach_code: coachCode.value.trim(),
+        experience_level: experienceLevel.value,
+        message: message.value
+      })
+    })
+
+    if (response.ok) {
+      const data = await response.json()
+      memberProfile.value = data.member || data
+      messageDisplay.value = { 
+        type: 'success', 
+        text: data.message || 'Request sent successfully! Waiting for coach approval.' 
+      }
+      
+      // Reload to get updated relationship status
+      await loadMemberData()
+      
+      // Reset form
+      coachCode.value = ''
+      message.value = ''
+      
+    } else if (response.status === 404) {
+      const errorData = await response.json()
+      messageDisplay.value = { 
+        type: 'error', 
+        text: errorData.error || 'Coach not found.' 
+      }
+      
+    } else if (response.status === 400) {
+      const errorData = await response.json()
+      messageDisplay.value = { 
+        type: 'error', 
+        text: errorData.error || 'Cannot send request.' 
+      }
+    } else {
+      const errorData = await response.json()
+      throw new Error(errorData.error || 'Failed to send request')
     }
-    coachStatus.value = 'pending'
-    message.value = { type: 'success', text: 'Request sent! Waiting for coach approval.' }
-    coachCode.value = ''
-    loading.value = false
-  }, 1500)
+  } catch (err) {
+    console.error('Error sending coach request:', err)
+    messageDisplay.value = { type: 'error', text: err.message }
+  } finally {
+    requestLoading.value = false
+  }
+}
+
+async function cancelCoachRequest() {
+  if (!confirm('Are you sure you want to cancel this coach connection?')) {
+    return
+  }
+
+  requestLoading.value = true
+
+  try {
+    const response = await fetch(`${API_BASE}member-request/manage/`, {
+      method: 'DELETE',
+      credentials: 'include',
+    })
+
+    if (response.ok) {
+      messageDisplay.value = { 
+        type: 'success', 
+        text: 'Coach connection cancelled successfully.' 
+      }
+      await loadMemberData()
+    } else {
+      throw new Error('Failed to cancel coach connection')
+    }
+  } catch (err) {
+    console.error('Error cancelling coach request:', err)
+    messageDisplay.value = { type: 'error', text: err.message }
+  } finally {
+    requestLoading.value = false
+  }
 }
 
 function formatDate(dateString) {
+  if (!dateString) return 'N/A'
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
@@ -172,3 +414,12 @@ function formatDate(dateString) {
   })
 }
 </script>
+
+<style scoped>
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+</style>

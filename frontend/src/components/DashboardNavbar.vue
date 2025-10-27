@@ -35,16 +35,6 @@
 
         <!-- Desktop Navigation Links -->
         <ul class="hidden md:flex items-center space-x-8">
-           <li v-if="userStore.role === 'member'">
-            <RouterLink
-              to="/coach"
-              class="font-body text-white hover:text-[#c7d2fe] transition-colors"
-              active-class="text-[#c7d2fe]"
-            >
-              Coach
-            </RouterLink>
-          </li>
-
           <li>
             <RouterLink
               to="/dashboard"
@@ -52,6 +42,15 @@
               active-class="text-[#c7d2fe]"
             >
               Dashboard
+            </RouterLink>
+          </li>
+          <li v-if="userStore.role === 'member'">
+            <RouterLink
+              to="/coach"
+              class="font-body text-white hover:text-[#c7d2fe] transition-colors"
+              active-class="text-[#c7d2fe]"
+            >
+              Coach
             </RouterLink>
           </li>
           <li>
@@ -63,13 +62,22 @@
               Workout
             </RouterLink>
           </li>
-          <li>
+          <li v-if="userStore.level.level.toLowerCase() === 'gold' || userStore.level.level.toLowerCase() === 'silver' || userStore.role.toLowerCase() === 'coach'">
             <RouterLink
               to="/food-recipe"
               class="font-body text-white hover:text-[#c7d2fe] transition-colors"
               active-class="text-[#c7d2fe]"
             >
               Food Recipe
+            </RouterLink>
+          </li>
+          <li v-if="userStore.role === 'member' || userStore.role === 'coach'">
+            <RouterLink
+              to="/food-post"
+              class="font-body text-white hover:text-[#c7d2fe] transition-colors"
+              active-class="text-[#c7d2fe]"
+            >
+              Food Post
             </RouterLink>
           </li>
           <li>
@@ -106,17 +114,16 @@
               active-class="text-[#c7d2fe]"
             >
               Dashboard
-              Dashboard
             </RouterLink>
           </li>
-          <li>
+          <li v-if="userStore.role === 'member'">
             <RouterLink
-              to="/workout-program"
+              to="/coach"
               @click="closeMobileMenu"
               class="block font-body text-white hover:text-[#c7d2fe] transition-colors py-2"
               active-class="text-[#c7d2fe]"
             >
-              Workout Program
+              Coach
             </RouterLink>
           </li>
           <li>

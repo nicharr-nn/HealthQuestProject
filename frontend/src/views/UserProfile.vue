@@ -459,9 +459,9 @@ async function saveChanges() {
       throw new Error(`Failed to save profile changes. Status: ${profileResponse.status}`)
     }
 
-    // Update goal (only if user is normal)
-    if (userStore.role === 'normal' && editProfile.value.current_goal) {
-      const goalResponse = await fetch("http://127.0.0.1:8000/api/fitness/select-goal/", {
+    // Update goal (only if user is normal or member)
+    if ((userStore.role === 'normal' || userStore.role === 'member') && editProfile.value.current_goal) {
+      const goalResponse = await fetch("http://127.0.0.1:8000/api/select-goal/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

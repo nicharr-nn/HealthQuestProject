@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
+from django.apps import apps
 
 from .models import Achievement, UserAchievement
 from .serializers import UserProfileSerializer, UserSerializer
@@ -134,6 +135,44 @@ def user_detail(request, id):
     elif request.method == "DELETE":
         user.delete()
         return Response({"message": "Account deleted permanently"})
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def set_goal(request):
+    """Set user fitness goal"""
+
+    FitnessGoal = apps.get_model("users", "FitnessGoal")
+
+    try:
+        profile = request.user.userprofile
+
+        # Only normal users and members can have fitness goals
+        if profile.role != "normal" and profile.role != "member":
+            return Response(
+                {"detail": "Only normal users and members can set fitness goals."},
+                status=400,
+            )
+
+        goal_type = request.data.get("goal_type")
+        end_date = request.data.get("end_date")
+
+        if not goal_type:
+            return Response({"detail": "Goal type is required."}, status=400)
+
+        # Create new FitnessGoal
+        FitnessGoal.objects.update_or_create(
+            user_profile=profile, goal_type=goal_type, end_date=end_date
+        )
+
+        # Serialize the updated user profile
+
+        serializer = UserSerializer(request.user)
+
+        return Response({"status": "success", "user": serializer.data})
+
+    except Exception as e:
+        return Response({"status": "error", "message": str(e)}, status=400)
 
 
 @api_view(["GET"])

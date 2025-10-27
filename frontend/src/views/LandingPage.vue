@@ -6,7 +6,7 @@
       <div class="bg-cover bg-center" style="background-image: url(src/images/left_box.png)">
       </div>
       <div class="bg-[#FAF4E6] text-[#846757] p-8 md:p-12 lg:p-16">
-        <h1 class="font-display font-bold text-6xl md:text-8xl lg:text-[100px] leading-tight mb-6">
+        <h1 class="font-display text-6xl md:text-8xl lg:text-[100px] leading-tight mb-6">
           Health <br>Quest
         </h1>
         <p class="text-lg md:text-xl lg:text-2xl mb-8 leading-relaxed">
