@@ -76,7 +76,7 @@
           <div class="stat-action">View All →</div>
         </div>
 
-        <div class="stat-card clickable notification-card" @click="router.push('/view-member')">
+        <div class="stat-card clickable notification-card" @click="goToPendingFeedback">
           <div class="stat-number highlight">{{ pendingFeedbackCount }}</div>
           <div class="stat-label">Meals Need Feedback</div>
           <div class="stat-action">Review Now →</div>
@@ -163,6 +163,7 @@ const coachID = ref<string>('')
 const pendingRequestCount = ref(0)
 const memberCount = ref(0)
 const pendingFeedbackCount = ref(0)
+const firstPendingMemberId = ref<string | null>(null)
 const editingProgram = ref<any>(null)
 
 const isApproved = computed(() => approvalStatus.value === 'approved')
@@ -249,9 +250,27 @@ async function loadPendingFeedback() {
     if (!res.ok) throw new Error('Failed to fetch pending feedback')
     const data = await res.json()
     pendingFeedbackCount.value = data.count || 0
+
+    // Store the first member ID for quick navigation
+    if (data.posts && data.posts.length > 0) {
+      firstPendingMemberId.value = data.posts[0].member_id
+    } else {
+      firstPendingMemberId.value = null
+    }
   } catch (err) {
     console.error('Failed to load pending feedback', err)
     pendingFeedbackCount.value = 0
+    firstPendingMemberId.value = null
+  }
+}
+
+function goToPendingFeedback() {
+  if (firstPendingMemberId.value) {
+    // Navigate to the first member's food diary
+    router.push(`/food-diary/${firstPendingMemberId.value}`)
+  } else {
+    // Fallback to member management if no pending posts
+    router.push('/view-member')
   }
 }
 
