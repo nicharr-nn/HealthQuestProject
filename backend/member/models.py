@@ -76,3 +76,23 @@ class FoodPost(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+
+
+class FoodPostComment(models.Model):
+    """Coaches can comment on member food posts to provide feedback"""
+
+    food_post = models.ForeignKey(
+        FoodPost, on_delete=models.CASCADE, related_name="comments"
+    )
+    coach = models.ForeignKey(
+        UserProfile, on_delete=models.CASCADE, related_name="food_post_comments"
+    )
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Comment by {self.coach.user.username} on {self.food_post}"
+
+    class Meta:
+        ordering = ["created_at"]

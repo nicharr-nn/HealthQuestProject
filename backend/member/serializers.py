@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from member.models import CoachMemberRelationship, Member, FoodPost
+from member.models import CoachMemberRelationship, Member, FoodPost, FoodPostComment
 from users.models import FitnessGoal
 from coach.serializers import CoachSerializer
 
@@ -101,5 +101,43 @@ class FoodPostSerializer(serializers.ModelSerializer):
 
         validated_data["user_profile"] = user_profile
         validated_data["coach"] = relationship.coach.user
+
+        return super().create(validated_data)
+
+
+class FoodPostCommentSerializer(serializers.ModelSerializer):
+    author_name = serializers.SerializerMethodField()
+    is_own = serializers.SerializerMethodField()
+
+    class Meta:
+        model = FoodPostComment
+        fields = [
+            "id",
+            "food_post",
+            "text",
+            "author_name",
+            "is_own",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "food_post", "created_at", "updated_at", "author_name", "is_own"]
+
+    def get_author_name(self, obj):
+        return obj.coach.user.username
+
+    def get_is_own(self, obj):
+        request = self.context.get("request")
+        if request and hasattr(request, "user"):
+            return obj.coach.user == request.user
+        return False
+
+    def create(self, validated_data):
+        user = self.context["request"].user
+        user_profile = user.userprofile
+
+        if user_profile.role != "coach":
+            raise serializers.ValidationError("Only coaches can comment on food posts.")
+
+        validated_data["coach"] = user_profile
 
         return super().create(validated_data)
