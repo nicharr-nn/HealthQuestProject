@@ -13,9 +13,10 @@
       </div>
 
       <div class="header-actions">
-        <button 
-          class="btn primary" 
-          @click="router.push('/create-workout-program')" 
+        <NotificationBell v-if="isApproved" />
+        <button
+          class="btn primary"
+          @click="router.push('/create-workout-program')"
           :disabled="!isApproved"
         >
           + Create New Program
@@ -68,18 +69,6 @@
           <div class="stat-number">{{ memberCount }}</div>
           <div class="stat-label">My Members</div>
           <div class="stat-action">View All →</div>
-        </div>
-
-        <div class="stat-card clickable" @click="router.push('/view-request')">
-          <div class="stat-number">{{ pendingRequestCount }}</div>
-          <div class="stat-label">Pending Requests</div>
-          <div class="stat-action">View All →</div>
-        </div>
-
-        <div class="stat-card clickable notification-card" @click="goToPendingFeedback">
-          <div class="stat-number highlight">{{ pendingFeedbackCount }}</div>
-          <div class="stat-label">Meals Need Feedback</div>
-          <div class="stat-action">Review Now →</div>
         </div>
       </div>
 
@@ -152,6 +141,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import NotificationBell from '@/components/NotificationBell.vue'
 
 const router = useRouter()
 
@@ -160,10 +150,7 @@ const showCreateProgram = ref(false)
 const approvalStatus = ref<'pending'|'approved'|'rejected'>('pending')
 const programs = ref<any[]>([])
 const coachID = ref<string>('')
-const pendingRequestCount = ref(0)
 const memberCount = ref(0)
-const pendingFeedbackCount = ref(0)
-const firstPendingMemberId = ref<string | null>(null)
 const editingProgram = ref<any>(null)
 
 const isApproved = computed(() => approvalStatus.value === 'approved')
@@ -227,50 +214,16 @@ async function loadPrograms() {
   }
 }
 
-async function loadPendingRequests() {
+async function loadMemberCount() {
   try {
     const res = await fetch('http://127.0.0.1:8000/api/member/coach-requests/', { credentials: 'include' })
     if (!res.ok) throw new Error('Failed to fetch requests')
     const data = await res.json()
 
-    pendingRequestCount.value = data.filter((r: any) => r.status === 'pending').length
     memberCount.value = data.filter((r: any) => r.status === 'accepted').length
   } catch (err) {
-    console.error('Failed to load pending requests', err)
-    pendingRequestCount.value = 0
+    console.error('Failed to load member count', err)
     memberCount.value = 0
-  }
-}
-
-async function loadPendingFeedback() {
-  try {
-    const res = await fetch('http://127.0.0.1:8000/api/member/food-posts/pending-feedback/', {
-      credentials: 'include'
-    })
-    if (!res.ok) throw new Error('Failed to fetch pending feedback')
-    const data = await res.json()
-    pendingFeedbackCount.value = data.count || 0
-
-    // Store the first member ID for quick navigation
-    if (data.posts && data.posts.length > 0) {
-      firstPendingMemberId.value = data.posts[0].member_id
-    } else {
-      firstPendingMemberId.value = null
-    }
-  } catch (err) {
-    console.error('Failed to load pending feedback', err)
-    pendingFeedbackCount.value = 0
-    firstPendingMemberId.value = null
-  }
-}
-
-function goToPendingFeedback() {
-  if (firstPendingMemberId.value) {
-    // Navigate to the first member's food diary
-    router.push(`/food-diary/${firstPendingMemberId.value}`)
-  } else {
-    // Fallback to member management if no pending posts
-    router.push('/view-member')
   }
 }
 
@@ -326,7 +279,7 @@ onMounted(async () => {
   await loadCoachStatus()
 
  if (isApproved.value) {
-    await Promise.all([loadPrograms(), loadPendingRequests(), loadPendingFeedback()])
+    await Promise.all([loadPrograms(), loadMemberCount()])
   }
 
   loading.value = false
@@ -406,6 +359,9 @@ onMounted(async () => {
 
 .header-actions {
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
 .status-card {
@@ -510,43 +466,6 @@ onMounted(async () => {
   font-size: 13px;
   color: #3b82f6;
   font-weight: 600;
-}
-
-/* Notification Card Styles */
-.stat-card.notification-card {
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-  border-color: #fbbf24;
-  position: relative;
-  overflow: hidden;
-}
-
-.stat-card.notification-card::before {
-  content: '🔔';
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  font-size: 20px;
-  opacity: 0.3;
-}
-
-.stat-card.notification-card:hover {
-  background: linear-gradient(135deg, #fde68a 0%, #fcd34d 100%);
-  border-color: #f59e0b;
-  transform: translateY(-2px) scale(1.02);
-}
-
-.stat-number.highlight {
-  color: #f59e0b;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
 }
 
 .programs-section {
