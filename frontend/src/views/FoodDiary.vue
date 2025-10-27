@@ -63,78 +63,86 @@
           </div>
         </div>
 
-        <!-- Post Image -->
-        <div v-if="post.image" class="post-image-container">
-          <img :src="getImageUrl(post.image)" :alt="post.title" class="post-image" />
-        </div>
-        <div v-else class="no-image-placeholder">
-          <span>📸 No image uploaded</span>
-        </div>
+        <!-- Left-Right Split Layout -->
+        <div class="post-body">
+          <!-- Left Side: Image and Content -->
+          <div class="post-left">
+            <!-- Post Image -->
+            <div v-if="post.image" class="post-image-container">
+              <img :src="getImageUrl(post.image)" :alt="post.title" class="post-image" />
+            </div>
+            <div v-else class="no-image-placeholder">
+              <span>📸 No image uploaded</span>
+            </div>
 
-        <!-- Post Content -->
-        <div class="post-content">
-          <p class="post-description">{{ post.content }}</p>
-        </div>
-
-        <!-- Comments Section -->
-        <div class="comments-section">
-          <div class="comments-header">
-            <h4 class="comments-title">
-              Coach Comments
-              <span class="comment-count">({{ getCommentCount(post.id) }})</span>
-            </h4>
-          </div>
-
-          <!-- Comments List -->
-          <div v-if="hasComments(post.id)" class="comments-list">
-            <div
-              v-for="comment in getComments(post.id)"
-              :key="comment.id"
-              class="comment-item"
-            >
-              <div class="comment-header">
-                <span class="comment-author">🧑‍💼 {{ comment.author_name || 'You' }}</span>
-                <span class="comment-time">{{ formatTime(comment.created_at) }}</span>
-              </div>
-              <p class="comment-text">{{ comment.text }}</p>
-
-              <!-- Comment Actions (if it's coach's own comment) -->
-              <div v-if="comment.is_own" class="comment-actions">
-                <button @click="editComment(post.id, comment)" class="edit-btn">
-                  Edit
-                </button>
-                <button @click="deleteComment(post.id, comment.id)" class="delete-btn">
-                  Delete
-                </button>
-              </div>
+            <!-- Post Content -->
+            <div class="post-content">
+              <p class="post-description">{{ post.content }}</p>
             </div>
           </div>
 
-          <!-- No Comments Message -->
-          <div v-else class="no-comments">
-            <p>No feedback yet. Be the first to comment!</p>
-          </div>
+          <!-- Right Side: Comments -->
+          <div class="post-right">
+            <div class="comments-section">
+              <div class="comments-header">
+                <h4 class="comments-title">
+                  Coach Comments
+                  <span class="comment-count">({{ getCommentCount(post.id) }})</span>
+                </h4>
+              </div>
 
-          <!-- Add Comment Form -->
-          <div class="add-comment-form">
-            <textarea
-              v-model="commentTexts[post.id]"
-              :placeholder="`Add feedback for ${memberDisplayName}...`"
-              class="comment-input"
-              rows="3"
-              maxlength="500"
-            ></textarea>
-            <div class="comment-form-footer">
-              <span class="char-count">
-                {{ getCharCount(post.id) }}/500
-              </span>
-              <button
-                @click="addComment(post.id)"
-                :disabled="!canSubmitComment(post.id) || submittingComment[post.id]"
-                class="submit-comment-btn"
-              >
-                {{ submittingComment[post.id] ? 'Posting...' : '💬 Post Comment' }}
-              </button>
+              <!-- Comments List -->
+              <div v-if="hasComments(post.id)" class="comments-list">
+                <div
+                  v-for="comment in getComments(post.id)"
+                  :key="comment.id"
+                  class="comment-item"
+                >
+                  <div class="comment-header">
+                    <span class="comment-author">🧑‍💼 {{ comment.author_name || 'You' }}</span>
+                    <span class="comment-time">{{ formatTime(comment.created_at) }}</span>
+                  </div>
+                  <p class="comment-text">{{ comment.text }}</p>
+
+                  <!-- Comment Actions (if it's coach's own comment) -->
+                  <div v-if="comment.is_own" class="comment-actions">
+                    <button @click="editComment(post.id, comment)" class="edit-btn">
+                      Edit
+                    </button>
+                    <button @click="deleteComment(post.id, comment.id)" class="delete-btn">
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- No Comments Message -->
+              <div v-else class="no-comments">
+                <p>No feedback yet. Be the first to comment!</p>
+              </div>
+
+              <!-- Add Comment Form -->
+              <div class="add-comment-form">
+                <textarea
+                  v-model="commentTexts[post.id]"
+                  :placeholder="`Add feedback for ${memberDisplayName}...`"
+                  class="comment-input"
+                  rows="3"
+                  maxlength="500"
+                ></textarea>
+                <div class="comment-form-footer">
+                  <span class="char-count">
+                    {{ getCharCount(post.id) }}/500
+                  </span>
+                  <button
+                    @click="addComment(post.id)"
+                    :disabled="!canSubmitComment(post.id) || submittingComment[post.id]"
+                    class="submit-comment-btn"
+                  >
+                    {{ submittingComment[post.id] ? 'Posting...' : '💬 Post Comment' }}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -711,10 +719,26 @@ onMounted(() => {
   font-weight: 500;
 }
 
+/* Post Body - Left/Right Split */
+.post-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+
+.post-left {
+  background: #f9fafb;
+  border-right: 2px solid #e5e7eb;
+}
+
+.post-right {
+  background: #fef3c7;
+}
+
 /* Post Image */
 .post-image-container {
   width: 100%;
-  height: 300px;
+  height: 250px;
   overflow: hidden;
   background: #f3f4f6;
 }
@@ -738,13 +762,13 @@ onMounted(() => {
 
 /* Post Content */
 .post-content {
-  padding: 24px;
+  padding: 20px;
 }
 
 .post-description {
   color: #374151;
   line-height: 1.6;
-  font-size: 15px;
+  font-size: 14px;
   margin: 0;
   white-space: pre-line;
 }
@@ -752,8 +776,9 @@ onMounted(() => {
 /* Comments Section */
 .comments-section {
   padding: 24px;
-  background: #fef3c7;
-  border-top: 2px solid #fbbf24;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .comments-header {
@@ -1060,6 +1085,20 @@ onMounted(() => {
   .filter-section {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  /* Stack layout on mobile */
+  .post-body {
+    grid-template-columns: 1fr;
+  }
+
+  .post-left {
+    border-right: none;
+    border-bottom: 2px solid #e5e7eb;
+  }
+
+  .post-image-container {
+    height: 200px;
   }
 
   .date-picker {
