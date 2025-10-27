@@ -444,3 +444,41 @@ def food_post_comment_detail(request, post_id, comment_id):
         return Response(
             {"message": "Comment deleted"}, status=status.HTTP_204_NO_CONTENT
         )
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def uncommented_food_posts(request):
+    """Get food posts that need coach feedback (no comments yet)"""
+    profile = request.user.userprofile
+
+    if profile.role != "coach":
+        return Response(
+            {"error": "Only coaches can access this endpoint"},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    # Get all food posts where this coach is assigned and has no comments
+    uncommented_posts = FoodPost.objects.filter(
+        coach=profile, comments__isnull=True
+    ).select_related("user_profile__user").order_by("-created_at")
+
+    # Serialize the posts
+    data = []
+    for post in uncommented_posts:
+        data.append(
+            {
+                "id": post.id,
+                "title": post.title,
+                "member_name": post.user_profile.user.username,
+                "member_id": getattr(
+                    post.user_profile.member_profile, "member_id", "N/A"
+                ),
+                "created_at": post.created_at,
+                "image": post.image.url if post.image else None,
+            }
+        )
+
+    return Response(
+        {"count": len(data), "posts": data}, status=status.HTTP_200_OK
+    )

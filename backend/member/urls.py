@@ -11,6 +11,7 @@ from .views import (
     upload_food_post_image,
     food_post_comments,
     food_post_comment_detail,
+    uncommented_food_posts,
 )
 
 urlpatterns = [
@@ -44,5 +45,11 @@ urlpatterns = [
         "food-posts/<int:post_id>/comments/<int:comment_id>/",
         food_post_comment_detail,
         name="food-post-comment-detail",
+    ),
+    # notification endpoints
+    path(
+        "food-posts/pending-feedback/",
+        uncommented_food_posts,
+        name="uncommented-food-posts",
     ),
 ]
