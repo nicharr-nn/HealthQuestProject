@@ -84,7 +84,7 @@ class FoodPostComment(models.Model):
     food_post = models.ForeignKey(
         FoodPost, on_delete=models.CASCADE, related_name="comments"
     )
-    coach = models.ForeignKey(
+    author = models.ForeignKey(
         UserProfile, on_delete=models.CASCADE, related_name="food_post_comments"
     )
     text = models.TextField()
@@ -92,7 +92,7 @@ class FoodPostComment(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"Comment by {self.coach.user.username} on {self.food_post}"
+        return f"Comment by {self.author.user.username} on {self.food_post}"
 
     class Meta:
         ordering = ["created_at"]

@@ -392,24 +392,13 @@ def food_post_comments(request, post_id):
     profile = request.user.userprofile
 
     if request.method == "GET":
-        # Anyone (coach or member) can view comments
         comments = post.comments.all()
-        serializer = FoodPostCommentSerializer(
-            comments, many=True, context={"request": request}
-        )
+        serializer = FoodPostCommentSerializer(comments, many=True, context={"request": request})
         return Response(serializer.data)
 
     elif request.method == "POST":
-        # Only coaches can create comments
-        if profile.role != "coach":
-            return Response(
-                {"error": "Only coaches can comment on food posts"},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        serializer = FoodPostCommentSerializer(
-            data=request.data, context={"request": request}
-        )
+        # Both member and coach can comment
+        serializer = FoodPostCommentSerializer(data=request.data, context={"request": request})
         if serializer.is_valid():
             serializer.save(food_post=post)
             return Response(serializer.data, status=status.HTTP_201_CREATED)

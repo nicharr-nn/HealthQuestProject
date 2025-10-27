@@ -99,7 +99,15 @@
                   class="comment-item"
                 >
                   <div class="comment-header">
-                    <span class="comment-author">🧑‍💼 {{ comment.author_name || 'You' }}</span>
+                    <span 
+                      class="comment-author" 
+                      :class="{
+                        'coach': comment.author_role === 'coach',
+                        'member': comment.author_role === 'member'
+                      }"
+                    >
+                      {{ comment.author_name || 'You' }}
+                    </span>
                     <span class="comment-time">{{ formatTime(comment.created_at) }}</span>
                   </div>
                   <p class="comment-text">{{ comment.text }}</p>
@@ -811,7 +819,6 @@ onMounted(() => {
   background: white;
   padding: 16px;
   border-radius: 12px;
-  border-left: 4px solid #10b981;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
@@ -825,7 +832,15 @@ onMounted(() => {
 .comment-author {
   font-size: 13px;
   font-weight: 700;
-  color: #059669;
+  text-transform: uppercase;
+}
+
+.comment-author.coach {
+  color: #db2777;
+}
+
+.comment-author.member {
+  color: #16a34a;
 }
 
 .comment-time {
