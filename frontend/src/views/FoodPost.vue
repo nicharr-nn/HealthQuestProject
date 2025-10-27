@@ -25,12 +25,34 @@
         <!-- Image Section -->
         <div class="flex flex-col items-center text-center p-6 text-[#846757]">
           <h3 class="text-3xl mb-4">{{ post.title }}</h3>
-          <div class="w-48 h-48 rounded-lg overflow-hidden shadow-md mx-auto">
+          <div class="w-48 h-48 rounded-lg overflow-hidden shadow-md mx-auto cursor-pointer">
             <img
               :src="getImageUrl(post.image)"
               :alt="post.title"
               class="w-full h-full object-cover"
+              @click="openImageModal(getImageUrl(post.image))"
             />
+          </div>
+          <div
+            v-if="showImageModal"
+            class="fixed inset-0 bg-black/20 flex items-center justify-center z-50 p-4"
+          >
+            <div class="relative">
+              <!-- Close button on top-left of the image -->
+              <button
+                @click="closeImageModal"
+                class="absolute top-2 right-2 text-white text-2xl font-bold bg-black/30 rounded-full w-8 h-8 flex items-center justify-center cursor-pointer"
+              >
+                ×
+              </button>
+
+              <!-- Image -->
+              <img
+                :src="currentImage"
+                alt="Full size"
+                class="max-h-[90vh] max-w-full rounded-lg shadow-lg"
+              />
+            </div>
           </div>
         </div>
 
@@ -216,6 +238,8 @@ const uploading = ref(false)
 const editMode = ref(false)
 const editingId = ref(null)
 const currentImageUrl = ref('')
+const showImageModal = ref(false)
+const currentImage = ref('')
 const token = localStorage.getItem('access_token') || ''
 
 // Comments (local only)
@@ -423,6 +447,16 @@ const deletePost = async (id) => {
   } catch (err) {
     alert('Error connecting to backend: ' + err.message)
   }
+}
+
+const openImageModal = (imgUrl) => {
+  currentImage.value = imgUrl
+  showImageModal.value = true
+}
+
+const closeImageModal = () => {
+  showImageModal.value = false
+  currentImage.value = ''
 }
 
 // Modal logic
