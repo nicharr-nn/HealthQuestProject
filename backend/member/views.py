@@ -45,7 +45,6 @@ def coach_member_requests(request, pk=None):
                     # Update member status to approve
                     if hasattr(member, "status"):
                         member.status = "approved"
-                        member.member_id = f"M-{member.id:05d}"
                         member.save()
 
                 elif new_status == "rejected":
@@ -114,6 +113,7 @@ def apply_as_member(request):
             "experience_level": request.data.get("experience_level", "beginner"),
             "program_name": None,
             "message": request.data.get("message", ""),
+            "member_id": f"M-{profile.user.id:05d}",
         },
     )
 
