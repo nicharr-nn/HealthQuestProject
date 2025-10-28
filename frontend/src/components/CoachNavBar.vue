@@ -227,9 +227,6 @@ async function logout() {
 </script>
 
 <style scoped>
-header {
-  position: sticky;
-}
 
 .fade-enter-active, .fade-leave-active {
   transition: opacity 0.2s ease;
