@@ -711,15 +711,15 @@ async function submitProgram() {
   }
 
 
-  const url = editingProgramId.value 
-    ? `http://127.0.0.1:8000/api/workout/programs/${editingProgramId.value}/` 
+  const url = editingProgramId.value
+    ? `http://127.0.0.1:8000/api/workout/programs/${editingProgramId.value}/`
     : 'http://127.0.0.1:8000/api/workout/programs/'
 
   try {
     const response = await fetch(url, {
       method: editingProgramId.value ? 'PUT' : 'POST',
       credentials: 'include',
-      headers: { 
+      headers: {
         'Content-Type': 'application/json',
         'X-CSRFToken': getCsrfToken()
       },
@@ -739,7 +739,6 @@ async function submitProgram() {
     emit('programCreated', body)
     alert('Program saved successfully!')
     router.push('/coach-dashboard')
-    
   } catch (error) {
     console.error('Error saving program:', error)
     alert('Failed to save program: ' + error.message)

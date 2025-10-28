@@ -13,9 +13,10 @@
       </div>
 
       <div class="header-actions">
-        <button 
-          class="btn primary" 
-          @click="router.push('/create-workout-program')" 
+        <NotificationBell v-if="isApproved" />
+        <button
+          class="btn primary"
+          @click="router.push('/create-workout-program')"
           :disabled="!isApproved"
         >
           + Create New Program
@@ -67,12 +68,6 @@
         <div class="stat-card clickable" @click="router.push('/view-member')">
           <div class="stat-number">{{ memberCount }}</div>
           <div class="stat-label">My Members</div>
-          <div class="stat-action">View All →</div>
-        </div>
-
-        <div class="stat-card clickable" @click="router.push('/view-request')">
-          <div class="stat-number">{{ pendingRequestCount }}</div>
-          <div class="stat-label">Pending Requests</div>
           <div class="stat-action">View All →</div>
         </div>
       </div>
@@ -146,6 +141,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import NotificationBell from '@/components/NotificationBell.vue'
 
 const router = useRouter()
 
@@ -154,7 +150,6 @@ const showCreateProgram = ref(false)
 const approvalStatus = ref<'pending'|'approved'|'rejected'>('pending')
 const programs = ref<any[]>([])
 const coachID = ref<string>('')
-const pendingRequestCount = ref(0)
 const memberCount = ref(0)
 const editingProgram = ref<any>(null)
 
@@ -219,17 +214,15 @@ async function loadPrograms() {
   }
 }
 
-async function loadPendingRequests() {
+async function loadMemberCount() {
   try {
     const res = await fetch('http://127.0.0.1:8000/api/member/coach-requests/', { credentials: 'include' })
     if (!res.ok) throw new Error('Failed to fetch requests')
     const data = await res.json()
 
-    pendingRequestCount.value = data.filter((r: any) => r.status === 'pending').length
     memberCount.value = data.filter((r: any) => r.status === 'accepted').length
   } catch (err) {
-    console.error('Failed to load pending requests', err)
-    pendingRequestCount.value = 0
+    console.error('Failed to load member count', err)
     memberCount.value = 0
   }
 }
@@ -286,9 +279,9 @@ onMounted(async () => {
   await loadCoachStatus()
 
  if (isApproved.value) {
-    await Promise.all([loadPrograms(), loadPendingRequests()])
+    await Promise.all([loadPrograms(), loadMemberCount()])
   }
-  
+
   loading.value = false
 })
 </script>
@@ -366,6 +359,9 @@ onMounted(async () => {
 
 .header-actions {
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
 .status-card {

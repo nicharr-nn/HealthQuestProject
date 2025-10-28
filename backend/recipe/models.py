@@ -98,6 +98,17 @@ class Recipe(models.Model):
     def average_rating(self):
         return self.ratings.aggregate(Avg("rating"))["rating__avg"] or 0
 
+    def save(self, *args, **kwargs):
+        if self.pk:
+            old = Recipe.objects.get(pk=self.pk)
+            self._changed_fields = [
+                f for f in ["title", "ingredients", "steps"]
+                if getattr(old, f) != getattr(self, f)
+            ]
+        else:
+            self._changed_fields = ["title", "ingredients", "steps"]
+        super().save(*args, **kwargs)
+
     class Meta:
         ordering = ["-created_at"]
 

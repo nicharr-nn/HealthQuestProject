@@ -4,10 +4,11 @@
     <div
       class="bg-[#D0F4DE] p-6 my-6 rounded-lg max-w-5xl mx-auto flex items-center justify-between"
     >
-      <h2 class="text-2xl md:text-3xl font-bold">Share Your Meal with Your Coach</h2>
+      <h2 class="text-2xl md:text-3xl font-bold text-[#846757]">Share Your Meal with Your Coach</h2>
       <button
         @click="openModal"
-        class="bg-[#F9B4FF] hover:bg-pink-400 px-8 py-3 rounded-lg shadow-md cursor-pointer"
+        class="bg-[#fac3e1] hover:bg-pink-300 px-8 py-3 rounded-lg shadow-md cursor-pointer font-semibold"
+        style="color: #9c547b;"
       >
         Upload Meal
       </button>
@@ -20,16 +21,38 @@
       class="max-w-5xl mx-auto bg-purple-200 shadow-lg rounded-2xl my-8 grid lg:grid-cols-[1.5fr_1fr] overflow-hidden"
     >
       <!-- Left side (image, name, content) -->
-      <div class="flex flex-col font-body">
+      <div class="bg-[#e2dbff] flex flex-col font-body">
         <!-- Image Section -->
         <div class="flex flex-col items-center text-center p-6 text-[#846757]">
-          <h3 class="text-3xl mb-4">{{ post.title }}</h3>
-          <div class="w-48 h-48 rounded-lg overflow-hidden shadow-md mx-auto">
+          <h3 class="text-3xl font-semibold mb-4">{{ post.title }}</h3>
+          <div class="w-full h-64 md:h-80 rounded-lg overflow-hidden shadow-md mx-auto cursor-pointer">
             <img
               :src="getImageUrl(post.image)"
               :alt="post.title"
               class="w-full h-full object-cover"
+              @click="openImageModal(getImageUrl(post.image))"
             />
+          </div>
+          <div
+            v-if="showImageModal"
+            class="fixed inset-0 bg-black/20 flex items-center justify-center z-50 p-4"
+          >
+            <div class="relative">
+              <!-- Close button on top-left of the image -->
+              <button
+                @click="closeImageModal"
+                class="absolute top-2 right-2 text-white text-2xl font-bold bg-black/30 rounded-full w-8 h-8 flex items-center justify-center cursor-pointer"
+              >
+                ×
+              </button>
+
+              <!-- Image -->
+              <img
+                :src="currentImage"
+                alt="Full size"
+                class="max-h-[90vh] max-w-full rounded-lg shadow-lg"
+              />
+            </div>
           </div>
         </div>
 
@@ -50,7 +73,7 @@
             </button>
             <button
               @click="deletePost(post.id)"
-              class="cursor-pointer bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-lg font-semibold shadow-md"
+              class="cursor-pointer bg-red-400 hover:bg-red-500 text-white px-5 py-2 rounded-lg font-semibold shadow-md"
             >
               Delete
             </button>
@@ -60,21 +83,35 @@
 
       <!-- Right side (Comments) -->
       <div class="bg-[#E6F3E6] p-6 flex flex-col justify-between font-body">
-        <h4 class="text-xl font-semibold mb-3">Comments</h4>
-
-        <div class="flex-1 overflow-y-auto space-y-2 mb-4">
-          <p
-            v-for="(comment, idx) in comments[post.id] || []"
-            :key="idx"
-            class="bg-white p-2 rounded-lg shadow-sm text-sm text-gray-800"
+        <h4 class="text-xl font-semibold mb-3">Coach Comments</h4>
+        <div class="flex-1 overflow-y-auto space-y-2 mb-4 max-h-90">
+          <div
+            v-for="comment in comments[post.id] || []"
+            :key="comment.id"
+            class="bg-white p-3 rounded-lg shadow-sm text-sm text-gray-800"
           >
-            {{ comment }}
-          </p>
+            <div class="flex justify-between items-center mb-1">
+              <span 
+                class="font-extrabold uppercase" 
+                :class="{
+                  'text-pink-500 text-xs': comment.author_role === 'coach',
+                  'text-green-600 text-xs': comment.author_role === 'member',
+                }"
+              >
+                {{ comment.author_name }}
+              </span>
+              <span class="text-xs text-gray-500">
+                {{ formatCommentTime(comment.created_at) }}
+              </span>
+            </div>
+            <p class="text-gray-800 whitespace-pre-line">{{ comment.text }}</p>
+          </div>
+
           <p
             v-if="!comments[post.id] || comments[post.id].length === 0"
             class="text-gray-500 italic text-sm"
           >
-            No comments yet.
+            No comment yet.
           </p>
         </div>
 
@@ -97,12 +134,12 @@
 
     <!-- Upload/Edit Modal -->
     <div
-      v-if="showModal"
-      class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4"
-    >
-      <div
-        class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 relative max-h-[90vh] overflow-y-auto"
+        v-if="showModal"
+        class="fixed inset-0 bg-black/20 flex items-center justify-center z-50 p-4"
       >
+        <div
+          class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 relative max-h-[90vh] overflow-y-auto"
+        >
         <button
           @click="closeModal"
           class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl"
@@ -201,19 +238,57 @@ const uploading = ref(false)
 const editMode = ref(false)
 const editingId = ref(null)
 const currentImageUrl = ref('')
+const showImageModal = ref(false)
+const currentImage = ref('')
 const token = localStorage.getItem('access_token') || ''
 
 // Comments (local only)
 const comments = ref({})
 const newComment = ref('')
 
-// Add comment (local)
-const addComment = (postId) => {
+// Fetch comments for a post
+const fetchComments = async (postId) => {
+  try {
+    const res = await fetch(`http://127.0.0.1:8000/api/member/food-posts/${postId}/comments/`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      credentials: 'include'
+    })
+    if (!res.ok) throw new Error(`Failed to fetch comments for post ${postId}`)
+    comments.value[postId] = await res.json()
+  } catch (err) {
+    console.error(err)
+    comments.value[postId] = []
+  }
+}
+
+// Add comment (send to backend)
+const addComment = async (postId) => {
   if (!newComment.value.trim()) return
-  if (!comments.value[postId]) comments.value[postId] = []
-  comments.value[postId].push(newComment.value)
-  comments.value = { ...comments.value } // trigger reactivity
-  newComment.value = ''
+  try {
+    const payload = { text: newComment.value }
+
+    const res = await fetch(`http://127.0.0.1:8000/api/member/food-posts/${postId}/comments/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: token ? `Bearer ${token}` : ''
+      },
+      body: JSON.stringify(payload),
+      credentials: 'include'
+    })
+
+    if (!res.ok) throw new Error(`Failed to add comment: ${res.statusText}`)
+
+    // Backend returns the created comment
+    const newCmt = await res.json()
+
+    if (!comments.value[postId]) comments.value[postId] = []
+    comments.value[postId].push(newCmt)
+    newComment.value = ''
+  } catch (err) {
+    console.error(err)
+    alert('Failed to post comment: ' + err.message)
+  }
 }
 
 // Image helper
@@ -223,7 +298,6 @@ const getImageUrl = (path) => {
   return `http://127.0.0.1:8000${path}`
 }
 
-// Fetch posts
 const fetchFoodPosts = async () => {
   try {
     const headers = token ? { Authorization: `Bearer ${token}` } : {}
@@ -233,6 +307,11 @@ const fetchFoodPosts = async () => {
     })
     if (!response.ok) throw new Error(`Failed to fetch: ${response.status}`)
     foodPosts.value = await response.json()
+
+    // Fetch comments for each post
+    for (const post of foodPosts.value) {
+      await fetchComments(post.id)
+    }
   } catch (err) {
     console.error('Error:', err)
     alert('Failed to load posts: ' + err.message)
@@ -370,6 +449,16 @@ const deletePost = async (id) => {
   }
 }
 
+const openImageModal = (imgUrl) => {
+  currentImage.value = imgUrl
+  showImageModal.value = true
+}
+
+const closeImageModal = () => {
+  showImageModal.value = false
+  currentImage.value = ''
+}
+
 // Modal logic
 const openEditModal = (post) => {
   editMode.value = true
@@ -415,6 +504,15 @@ const handleImageUpload = (e) => {
     imageFile.value = null
     imageName.value = ''
   }
+}
+
+// Format date
+const formatCommentTime = (dateString) => {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  const options = { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }
+  const formattedDate = date.toLocaleString('en-US', options)
+  return formattedDate.replace(',', ' at')
 }
 
 onMounted(() => {

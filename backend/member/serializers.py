@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from member.models import CoachMemberRelationship, Member, FoodPost
+from member.models import CoachMemberRelationship, Member, FoodPost, FoodPostComment
 from users.models import FitnessGoal
 from coach.serializers import CoachSerializer
 
@@ -102,4 +102,39 @@ class FoodPostSerializer(serializers.ModelSerializer):
         validated_data["user_profile"] = user_profile
         validated_data["coach"] = relationship.coach.user
 
+        return super().create(validated_data)
+
+
+class FoodPostCommentSerializer(serializers.ModelSerializer):
+    author_name = serializers.SerializerMethodField()
+    author_role = serializers.SerializerMethodField()
+    is_own = serializers.SerializerMethodField()
+
+    class Meta:
+        model = FoodPostComment
+        fields = [
+            "id",
+            "food_post",
+            "text",
+            "author_name",
+            "author_role",
+            "is_own",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "food_post", "author_name", "author_role", "is_own"]
+
+    def get_author_name(self, obj):
+        return obj.author.user.username
+
+    def get_author_role(self, obj):
+        return obj.author.role
+
+    def get_is_own(self, obj):
+        request = self.context.get("request")
+        return bool(request and obj.author == request.user.userprofile)
+
+    def create(self, validated_data):
+        user_profile = self.context["request"].user.userprofile
+        validated_data["author"] = user_profile
         return super().create(validated_data)

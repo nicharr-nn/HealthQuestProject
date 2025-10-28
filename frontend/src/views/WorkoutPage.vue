@@ -1,6 +1,6 @@
 <template>
   <div class="m-8 rounded-xl flex justify-center">
-    <h1 class="ml-2 text-[50px] font-subtitle">Choose Your Workout</h1>
+    <h1 class="ml-2 text-[50px] text-[#846757] font-subtitle">Choose Your Workout</h1>
   </div>
 
   <!-- Loading & Error States -->
@@ -15,7 +15,7 @@
       class="bg-[#B0D3cc] rounded-xl p-6 shadow-lg hover:shadow-2xl transition-shadow cursor-pointer flex flex-col justify-between"
     >
       <div>
-        <h2 class="text-2xl font-bold text-gray-800 mb-2">{{ program.title }}</h2>
+        <h2 class="text-2xl font-extrabold text-gray-800 mb-2 uppercase">{{ program.title }}</h2>
         <p class="text-gray-600 mb-4 line-clamp-3">{{ program.description }}</p>
 
         <div class="flex flex-wrap gap-2 mb-4 text-sm">

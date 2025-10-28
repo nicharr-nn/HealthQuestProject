@@ -2,12 +2,13 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Member, CoachMemberRelationship, FoodPost
+from .models import Member, CoachMemberRelationship, FoodPost, FoodPostComment
 from django.shortcuts import get_object_or_404
 from .serializers import (
     CoachMemberRelationshipSerializer,
     MemberSerializer,
     FoodPostSerializer,
+    FoodPostCommentSerializer,
 )
 from coach.models import Coach
 
@@ -377,4 +378,97 @@ def upload_food_post_image(request, id):
     return Response(
         {"message": "Image uploaded", "image_url": post.image.url},
         status=status.HTTP_200_OK,
+    )
+
+
+# ==================== FOOD POST COMMENTS ====================
+
+
+@api_view(["GET", "POST"])
+@permission_classes([IsAuthenticated])
+def food_post_comments(request, post_id):
+    """List or create comments for a food post"""
+    post = get_object_or_404(FoodPost, pk=post_id)
+
+    if request.method == "GET":
+        comments = post.comments.all()
+        serializer = FoodPostCommentSerializer(comments, many=True,
+                                               context={"request": request})
+        return Response(serializer.data)
+
+    elif request.method == "POST":
+        # Both member and coach can comment
+        serializer = FoodPostCommentSerializer(data=request.data,
+                                               context={"request": request})
+        if serializer.is_valid():
+            serializer.save(food_post=post)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["PUT", "DELETE"])
+@permission_classes([IsAuthenticated])
+def food_post_comment_detail(request, post_id, comment_id):
+    """Update or delete a specific comment"""
+    comment = get_object_or_404(FoodPostComment, pk=comment_id, food_post_id=post_id)
+    profile = request.user.userprofile
+
+    # Only the comment author (coach) can update/delete
+    if comment.coach != profile:
+        return Response(
+            {"error": "You can only modify your own comments"},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    if request.method == "PUT":
+        serializer = FoodPostCommentSerializer(
+            comment, data=request.data, partial=True, context={"request": request}
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == "DELETE":
+        comment.delete()
+        return Response(
+            {"message": "Comment deleted"}, status=status.HTTP_204_NO_CONTENT
+        )
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def uncommented_food_posts(request):
+    """Get food posts that need coach feedback (no comments yet)"""
+    profile = request.user.userprofile
+
+    if profile.role != "coach":
+        return Response(
+            {"error": "Only coaches can access this endpoint"},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    # Get all food posts where this coach is assigned and has no comments
+    uncommented_posts = FoodPost.objects.filter(
+        coach=profile, comments__isnull=True
+    ).select_related("user_profile__user").order_by("-created_at")
+
+    # Serialize the posts
+    data = []
+    for post in uncommented_posts:
+        data.append(
+            {
+                "id": post.id,
+                "title": post.title,
+                "member_name": post.user_profile.user.username,
+                "member_id": getattr(
+                    post.user_profile.member_profile, "member_id", "N/A"
+                ),
+                "created_at": post.created_at,
+                "image": post.image.url if post.image else None,
+            }
+        )
+
+    return Response(
+        {"count": len(data), "posts": data}, status=status.HTTP_200_OK
     )

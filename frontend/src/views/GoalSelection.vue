@@ -7,10 +7,17 @@
     <p class="font-subtitle text-center text-xl md:text-2xl text-gray-500 mt-4">
       TO START YOUR JOURNEY
     </p>
+    
+    <!-- Selected Goal Indicator -->
+    <div v-if="selectedGoal" class="mt-4 text-center">
+      <div class="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-full">
+        <span class="font-subtitle">{{ formatGoalName(selectedGoal) }} selected</span>
+      </div>
+    </div>
 
     <!-- Cards -->
     <div class="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <button @click="selectGoal('lose_weight')" class="text-left focus:outline-none">
+      <button @click="selectGoal('lose_weight')" class="cursor-pointer text-left focus:outline-none transition-transform hover:scale-105">
         <GoalCard
           title="LOSE WEIGHT"
           color="text-[#8C876A]"
@@ -25,7 +32,7 @@
         />
       </button>
 
-      <button @click="selectGoal('build_muscle')" class="text-left focus:outline-none">
+      <button @click="selectGoal('build_muscle')" class="cursor-pointer text-left focus:outline-none transition-transform hover:scale-105">
         <GoalCard
           title="BUILD MUSCLE"
           color="text-[#417479]"
@@ -40,7 +47,7 @@
         />
       </button>
 
-      <button @click="selectGoal('improve_endurance')" class="text-left focus:outline-none">
+      <button @click="selectGoal('improve_endurance')" class="cursor-pointer text-left focus:outline-none transition-transform hover:scale-105">
         <GoalCard
           title="IMPROVE ENDURANCE"
           color="text-[#C4847C]"
@@ -55,7 +62,7 @@
         />
       </button>
 
-      <button @click="selectGoal('general_fitness')" class="text-left focus:outline-none">
+      <button @click="selectGoal('general_fitness')" class="cursor-pointer text-left focus:outline-none transition-transform hover:scale-105">
         <GoalCard
           title="GENERAL FITNESS"
           color="text-[#7D6A8C]"
@@ -75,11 +82,15 @@
     <div class="mt-12 text-center">
       <button 
         @click="saveGoal" 
-        :disabled="!selectedGoal"
-        class="bg-[#88ACEA] hover:bg-[#6a96d3] disabled:bg-gray-400 text-white font-bold py-3 px-8 rounded-full text-lg shadow-lg transition-colors"
+        :disabled="!selectedGoal || isLoading"
+        class="bg-[#88ACEA] hover:bg-[#6a96d3] disabled:bg-gray-400 text-white font-bold py-3 px-8 rounded-full text-lg shadow-lg transition-colors disabled:cursor-not-allowed"
       >
-        Continue
+        <span v-if="isLoading">Saving...</span>
+        <span v-else>Continue</span>
       </button>
+      <p v-if="!selectedGoal" class="text-sm text-gray-500 mt-2">
+        Please select a goal to continue
+      </p>
     </div>
   </section>
 </template>
@@ -105,6 +116,16 @@ function selectGoal(goal) {
   selectedGoal.value = goal;
   userStore.setGoal(goal);
   console.log("Selected goal:", goal);
+}
+
+function formatGoalName(goalType) {
+  const goalMap = {
+    'lose_weight': 'Lose Weight',
+    'build_muscle': 'Build Muscle',
+    'improve_endurance': 'Improve Endurance',
+    'general_fitness': 'General Fitness'
+  };
+  return goalMap[goalType] || goalType;
 }
 
 async function saveGoal() {

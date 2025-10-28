@@ -72,9 +72,27 @@
               <p class="text-sm text-white/80">{{ currentLevel }} Level</p>
             </div>
             
-            <div class="bg-white/20 backdrop-blur-sm rounded-2xl px-4 py-3 text-center">
+            <div class="bg-white/20 backdrop-blur-sm rounded-2xl px-4 py-3 mb-4 text-center">
               <div class="text-sm text-white/80 mb-1">Current XP</div>
               <div class="text-xl sm:text-2xl font-bold">{{ xp }}</div>
+            </div>
+
+            <!-- Member ID Card - only show for members -->
+            <div v-if="memberProfile && memberProfile.member_id" class="bg-white/20 backdrop-blur-sm rounded-2xl px-4 py-3 text-center">
+              <div class="text-sm text-white/80 mb-1">Member ID</div>
+              <div class="text-lg sm:text-xl font-bold tracking-wider">{{ memberProfile.member_id }}</div>
+              <div v-if="memberProfile.status" class="mt-2">
+                <span 
+                  class="text-xs px-2 py-1 rounded-full font-medium"
+                  :class="{
+                    'bg-green-500/80 text-white': memberProfile.status === 'approved',
+                    'bg-yellow-500/80 text-white': memberProfile.status === 'pending',
+                    'bg-red-500/80 text-white': memberProfile.status === 'rejected'
+                  }"
+                >
+                  {{ memberProfile.status.toUpperCase() }}
+                </span>
+              </div>
             </div>
           </div>
           
@@ -220,12 +238,22 @@ export default {
     const store = useUserStore()
     const router = useRouter()
 
+    // Member profile data
+    const memberProfile = ref(null)
+    const loadingMember = ref(false)
+    const memberError = ref(null)
+
     onMounted(async () => {
       if (!store.user || !store.profile) {
         await store.init()
       }
       await loadWeeklyActivity()
       await loadAnalytics()
+
+
+      if (store.profile?.role === 'member') {
+        await loadMemberProfile()
+      }
     })
 
     const userInitial = computed(() => (store.displayName?.charAt(0) || 'U').toUpperCase())
@@ -245,6 +273,38 @@ export default {
       if (!nextRequirement.value) return 100
       return Math.min(100, Math.round((xp.value / nextRequirement.value) * 100))
     })
+
+    // --- Load Member Profile ---
+    async function loadMemberProfile() {
+      loadingMember.value = true
+      memberError.value = null
+      try {
+        const res = await fetch('http://127.0.0.1:8000/api/member/member-profile/', {
+          credentials: 'include'
+        })
+        if (!res.ok) {
+          if (res.status === 404) {
+            console.log('No member profile found')
+            memberProfile.value = null
+            return
+          }
+          const err = await res.json().catch(() => ({}))
+          memberError.value = err.detail || `HTTP ${res.status}`
+          memberProfile.value = null
+          return
+        }
+        const data = await res.json()
+        memberProfile.value = data
+        console.log('Member profile loaded:', data)
+      } catch (err) {
+        console.error('Error loading member profile:', err)
+        memberError.value = err.message || String(err)
+        memberProfile.value = null
+      } finally {
+        loadingMember.value = false
+      }
+    }
+
 
     // --- API-driven fields ---
     const analyticsRaw = ref(null)
@@ -336,6 +396,9 @@ export default {
       analyticsError,
       streak,
       weekDays,
+      memberProfile,
+      loadingMember,
+      memberError,
       startWorkout,
       goToRecipes,
     }
