@@ -389,16 +389,17 @@ def upload_food_post_image(request, id):
 def food_post_comments(request, post_id):
     """List or create comments for a food post"""
     post = get_object_or_404(FoodPost, pk=post_id)
-    profile = request.user.userprofile
 
     if request.method == "GET":
         comments = post.comments.all()
-        serializer = FoodPostCommentSerializer(comments, many=True, context={"request": request})
+        serializer = FoodPostCommentSerializer(comments, many=True, 
+                                               context={"request": request})
         return Response(serializer.data)
 
     elif request.method == "POST":
         # Both member and coach can comment
-        serializer = FoodPostCommentSerializer(data=request.data, context={"request": request})
+        serializer = FoodPostCommentSerializer(data=request.data, 
+                                               context={"request": request})
         if serializer.is_valid():
             serializer.save(food_post=post)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
