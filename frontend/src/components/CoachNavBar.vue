@@ -1,5 +1,5 @@
 <template>
-  <header class="bg-[#88ACEA] shadow-md fixed w-full top-0 left-0 z-50">
+  <header class="bg-[#88ACEA] shadow-md">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between h-16 items-center">
         <!-- Left: Brand -->
@@ -92,7 +92,7 @@
                   @click="closeDropdown"
                   class="block px-4 py-2 text-white hover:text-[#c7d2fe] rounded-t-md"
                 >
-                  Recipe
+                  Food Recipes
                 </RouterLink>
               </li>
               <li>
