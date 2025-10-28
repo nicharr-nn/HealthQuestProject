@@ -1,11 +1,11 @@
 <template>
   <div class="min-h-screen py-8 px-4 font-subtitle">
     <!-- Header with Quote -->
-    <div class="bg-pink-300 p-6 my-6 rounded-lg max-w-5xl mx-auto">
-      <p class="text-2xl md:text-3xl font-bold leading-snug">
+    <div class="bg-[#fac3e1] p-6 my-6 rounded-lg max-w-5xl mx-auto">
+      <p class="text-[#9c547b] text-2xl md:text-3xl font-bold leading-snug">
         "To eat is a necessity, but to eat intelligently is an art."
       </p>
-      <p class="text-sm text-right mt-2 italic">– Michael Pollan -</p>
+      <p class="text-[#9c547b] text-sm text-right mt-2 italic">– Michael Pollan -</p>
     </div>
 
     <!-- Filter Buttons -->
