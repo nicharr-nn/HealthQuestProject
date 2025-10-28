@@ -39,6 +39,7 @@ const routes = [
   { path: '/coach', name: 'MemberConnect', component: MemberConnect, props: true, },
   { path: '/food-recipe', name: 'FoodRecipe', component: FoodRecipe, props: true, },
   { path: '/food-post', name: 'FoodPost', component: FoodPost, props: true, },
+  { path: '/food-diary', name: 'MyFoodDiary', component: FoodDiary},
   { path: '/food-diary/:memberId', name: 'FoodDiary', component: FoodDiary, props: true, meta: { requiresCoach: true } },
 ]
 
