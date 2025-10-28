@@ -29,7 +29,27 @@ User = get_user_model()
 @permission_classes([IsAuthenticated])
 def workout_programs(request):
     if request.method == "GET":
-        programs = WorkoutProgram.objects.all()
+        user_profile = request.user.userprofile
+        user_level = user_profile.get_current_level()
+        
+        # Build query based on user's level
+        level_filters = models.Q(level_access="all")
+        
+        if user_level.level_rank >= 1:  # Bronze and above
+            level_filters |= models.Q(level_access="bronze")
+        if user_level.level_rank >= 2:  # Silver and above
+            level_filters |= models.Q(level_access="silver")
+        if user_level.level_rank >= 3:  # Gold and above
+            level_filters |= models.Q(level_access="gold")
+        
+        # Apply filters and get public programs or programs by user's coach
+        programs = WorkoutProgram.objects.filter(
+            level_filters & (
+                models.Q(is_public=True) |
+                models.Q(coach=user_profile)  # Users can see their own coach's private programs
+            )
+        ).distinct()
+        
         serializer = WorkoutProgramSerializer(programs, many=True)
         return Response(serializer.data)
 
@@ -41,7 +61,6 @@ def workout_programs(request):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=400)
-
 
 @api_view(["GET", "PUT", "DELETE"])
 @permission_classes([IsAuthenticated])
