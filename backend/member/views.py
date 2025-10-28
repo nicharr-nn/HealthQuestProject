@@ -392,13 +392,13 @@ def food_post_comments(request, post_id):
 
     if request.method == "GET":
         comments = post.comments.all()
-        serializer = FoodPostCommentSerializer(comments, many=True, 
+        serializer = FoodPostCommentSerializer(comments, many=True,
                                                context={"request": request})
         return Response(serializer.data)
 
     elif request.method == "POST":
         # Both member and coach can comment
-        serializer = FoodPostCommentSerializer(data=request.data, 
+        serializer = FoodPostCommentSerializer(data=request.data,
                                                context={"request": request})
         if serializer.is_valid():
             serializer.save(food_post=post)
