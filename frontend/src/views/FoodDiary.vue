@@ -64,7 +64,10 @@
         <div class="grid md:grid-cols-2">
           <!-- Left Side -->
           <div class="bg-gray-50 border-r border-gray-200">
-            <div v-if="post.image" class="w-full h-64 overflow-hidden bg-gray-100">
+            <div
+              v-if="post.image"
+              class="w-full h-64 md:h-80 lg:h-[480px] overflow-hidden bg-gray-100"
+            >
               <img :src="getImageUrl(post.image)" :alt="post.title" class="w-full h-full object-cover" />
             </div>
             <div v-else class="w-full h-48 flex items-center justify-center bg-gray-100 text-gray-400 text-sm">📸 No image uploaded</div>
