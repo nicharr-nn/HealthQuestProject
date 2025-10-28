@@ -89,11 +89,11 @@
         </div>
 
         <!-- Footer -->
-        <div class="dropdown-footer">
+        <!-- <div class="dropdown-footer">
           <button @click="goToViewAll" class="view-all-btn">
             View All Activity
           </button>
-        </div>
+        </div> -->
       </div>
     </transition>
   </div>
