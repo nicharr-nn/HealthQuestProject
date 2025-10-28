@@ -15,10 +15,19 @@ def _generate_pdf(instance: Recipe):
 
 
 @receiver(post_save, sender=Recipe)
-def generate_recipe_pdf(sender, instance, created, **kwargs):
+def generate_or_update_recipe_pdf(sender, instance, created, **kwargs):
     """
-    Generate a PDF file for a newly created Recipe after the DB transaction commits.
+    Generate or update the PDF for a Recipe when it's created or edited.
     """
-    if created and not instance.pdf_file:
-        # run after transaction commit to ensure instance is persisted
+    def _needs_pdf_update():
+        # Only regenerate if PDF is missing or the recipe content changed
+        if not instance.pdf_file:
+            return True
+        changed_fields = getattr(instance, "_changed_fields", None)
+        if changed_fields:
+            return any(field in changed_fields for field in ["title", "ingredients", "steps"])
+        return True
+
+    # Always trigger on commit, to avoid race condition
+    if created or _needs_pdf_update():
         transaction.on_commit(lambda: _generate_pdf(instance))
