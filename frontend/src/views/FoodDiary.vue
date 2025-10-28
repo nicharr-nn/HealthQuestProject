@@ -193,11 +193,6 @@ const selectedMemberId = ref('') // <-- default to All Members
 const memberId = ref('') // <-- default to all members
 const memberDisplayName = ref('All Members')
 
-const isToday = computed(() => {
-  const today = new Date()
-  return selectedDate.value.toDateString() === today.toDateString()
-})
-
 // Helper Functions
 const getImageUrl = (path) => {
   if (!path) return ''
