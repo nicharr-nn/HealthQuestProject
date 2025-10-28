@@ -25,7 +25,8 @@ def generate_or_update_recipe_pdf(sender, instance, created, **kwargs):
             return True
         changed_fields = getattr(instance, "_changed_fields", None)
         if changed_fields:
-            return any(field in changed_fields for field in ["title", "ingredients", "steps"])
+            return any(field in changed_fields 
+                       for field in ["title", "ingredients", "steps"])
         return True
 
     # Always trigger on commit, to avoid race condition

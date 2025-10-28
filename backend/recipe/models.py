@@ -109,7 +109,6 @@ class Recipe(models.Model):
             self._changed_fields = ["title", "ingredients", "steps"]
         super().save(*args, **kwargs)
 
-
     class Meta:
         ordering = ["-created_at"]
 
