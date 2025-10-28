@@ -173,9 +173,6 @@ const props = defineProps({
   }
 })
 
-// Emits
-const emit = defineEmits(['back'])
-
 // State
 const foodPosts = ref([])
 const comments = ref({}) // { postId: [comments] }
@@ -195,27 +192,6 @@ const members = ref([])
 const selectedMemberId = ref('') // <-- default to All Members
 const memberId = ref('') // <-- default to all members
 const memberDisplayName = ref('All Members')
-
-// Computed
-const formattedDate = computed(() => {
-  if (viewingAll.value) return 'All Time'
-
-  const today = new Date()
-  const selected = selectedDate.value
-
-  if (selected.toDateString() === today.toDateString()) return 'Today'
-
-  const yesterday = new Date(today)
-  yesterday.setDate(yesterday.getDate() - 1)
-  if (selected.toDateString() === yesterday.toDateString()) return 'Yesterday'
-
-  return selected.toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric'
-  })
-})
 
 const isToday = computed(() => {
   const today = new Date()
@@ -259,29 +235,6 @@ const getCharCount = (postId) => {
 const canSubmitComment = (postId) => {
   const text = commentTexts.value[postId] || ''
   return text.trim().length > 0
-}
-
-// Date Navigation
-const previousDay = () => {
-  const newDate = new Date(selectedDate.value)
-  newDate.setDate(newDate.getDate() - 1)
-  selectedDate.value = newDate
-  viewingAll.value = false
-  fetchFoodPosts()
-}
-
-const nextDay = () => {
-  if (isToday.value) return
-  const newDate = new Date(selectedDate.value)
-  newDate.setDate(newDate.getDate() + 1)
-  selectedDate.value = newDate
-  viewingAll.value = false
-  fetchFoodPosts()
-}
-
-const loadAllPosts = () => {
-  viewingAll.value = true
-  fetchFoodPosts()
 }
 
 // API Calls
@@ -402,13 +355,6 @@ const addComment = async (postId) => {
   }
 }
 
-const editComment = (postId, comment) => {
-  editingPostId.value = postId
-  editingCommentId.value = comment.id
-  editingCommentText.value = comment.text
-  showEditModal.value = true
-}
-
 const updateComment = async () => {
   if (!editingCommentText.value.trim()) return
 
@@ -443,34 +389,6 @@ const updateComment = async () => {
   } catch (error) {
     console.error('Error updating comment:', error)
     alert('Failed to update comment: ' + error.message)
-  }
-}
-
-const deleteComment = async (postId, commentId) => {
-  if (!confirm('Are you sure you want to delete this comment?')) return
-
-  try {
-    const token = localStorage.getItem('access_token') || ''
-    const response = await fetch(
-      `http://127.0.0.1:8000/api/member/food-posts/${postId}/comments/${commentId}/`,
-      {
-        method: 'DELETE',
-        headers: {
-          'Authorization': token ? `Bearer ${token}` : ''
-        },
-        credentials: 'include'
-      }
-    )
-
-    if (!response.ok) throw new Error(`Failed to delete comment: ${response.status}`)
-
-    // Remove from local state
-    comments.value[postId] = comments.value[postId].filter(c => c.id !== commentId)
-
-    alert('Comment deleted successfully!')
-  } catch (error) {
-    console.error('Error deleting comment:', error)
-    alert('Failed to delete comment: ' + error.message)
   }
 }
 

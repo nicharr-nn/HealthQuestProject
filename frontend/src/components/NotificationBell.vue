@@ -198,11 +198,6 @@ const goToFoodDiary = (memberId) => {
   router.push(`/food-diary/${memberId}`)
 }
 
-const goToViewAll = () => {
-  closeDropdown()
-  router.push('/view-member')
-}
-
 // Click outside to close
 const handleClickOutside = (event) => {
   if (bellContainer.value && !bellContainer.value.contains(event.target)) {
