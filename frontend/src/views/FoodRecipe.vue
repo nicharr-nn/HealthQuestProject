@@ -59,7 +59,7 @@
     <!-- Upload / Edit Modal -->
     <div
       v-if="showModal"
-      class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4"
+      class="fixed inset-0 bg-black/20 flex items-center justify-center z-50 p-4"
     >
       <div
         class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 
