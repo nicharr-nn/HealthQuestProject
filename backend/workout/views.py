@@ -16,9 +16,10 @@ from .models import (
     WorkoutDay,
     WorkoutDayCompletion,
     WorkoutProgram,
+    WorkoutAssignment,
 )
-from workout_assignment.models import WorkoutAssignment
-from .serializers import WorkoutProgramSerializer
+from member.models import Member
+from .serializers import WorkoutProgramSerializer, WorkoutAssignmentSerializer
 from .xp_rules import calculate_xp, COMPLETION_BONUS
 
 
@@ -319,7 +320,7 @@ def complete_workout_day(request, id):
     # member assignment check
     if profile.role == "member":
         assignments = WorkoutAssignment.objects.filter(
-            user_profile=profile, program=workout_day.program
+            member__user=profile, program=workout_day.program
         )
         for assignment in assignments:
             if assignment.check_completion():
@@ -344,9 +345,9 @@ def complete_workout_day(request, id):
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-def workout_progress(request, program_id):
+def workout_progress(request, id):
     profile = request.user.userprofile
-    program = get_object_or_404(WorkoutProgram, pk=program_id)
+    program = get_object_or_404(WorkoutProgram, pk=id)
 
     total_days = program.days.count()
     completed_qs = WorkoutDayCompletion.objects.filter(
@@ -370,3 +371,123 @@ def workout_progress(request, program_id):
             ),
         }
     )
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def assign_program_to_member(request, member_id):
+    """
+    Assign a workout program to a member (coaches only).
+    """
+    coach_profile = request.user.userprofile
+    if coach_profile.role != "coach":
+        raise PermissionDenied("Only coaches can assign programs.")
+
+    member = get_object_or_404(Member, pk=member_id)
+
+    program_id = request.data.get("program_id")
+    if not program_id:
+        return Response({"error": "Program ID is required."}, status=400)
+
+    program = get_object_or_404(WorkoutProgram, pk=program_id)
+
+    # Optional due date
+    due_date = request.data.get("due_date")
+
+    # Prevent duplicates
+    existing = WorkoutAssignment.objects.filter(member=member, program=program).first()
+    if existing:
+        return Response(
+            {"message": "This program is already assigned to the member."},
+            status=status.HTTP_200_OK,
+        )
+
+    assignment = WorkoutAssignment.objects.create(
+        member=member,
+        program=program,
+        due_date=due_date if due_date else None,
+    )
+
+    serializer = WorkoutAssignmentSerializer(assignment)
+    return Response(
+        {"message": "Program assigned successfully.", "assignment": serializer.data},
+        status=status.HTTP_201_CREATED,
+    )
+
+
+@api_view(["PATCH"])
+@permission_classes([IsAuthenticated])
+def workout_assignment_update(request, id):
+    """
+    Mark assignment completed (member only).
+    """
+    profile = request.user.userprofile
+    if profile.role != "member":
+        raise PermissionDenied("Only members can update assignments.")
+
+    assignment = get_object_or_404(WorkoutAssignment, pk=id, member__user=profile)
+
+    if assignment.status == "completed":
+        return Response({"message": "This assignment is already completed."}, status=200)
+
+    difficulty = assignment.program.difficulty_level
+    duration = assignment.program.duration
+    xp = calculate_xp(duration=duration, difficulty_level=difficulty)
+
+    assignment.status = "completed"
+    assignment.completed_date = timezone.now().date()
+    assignment.save(update_fields=["status", "completed_date"])
+
+    # Mark last workout day complete
+    last_day = assignment.program.days.order_by("-day_number").first()
+    if last_day:
+        WorkoutDayCompletion.objects.get_or_create(
+            user_profile=profile,
+            workout_day=last_day,
+            defaults={"xp_earned": xp},
+        )
+
+    # Award XP to user
+    level = profile.get_current_level()
+    level.add_xp(xp)
+
+    return Response(
+        {"message": "Assignment completed successfully.", "xp_awarded": xp},
+        status=status.HTTP_200_OK,
+    )
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def workout_assignment_detail(request, id):
+    profile = request.user.userprofile
+    assignment = get_object_or_404(WorkoutAssignment, pk=id)
+
+    # Permissions
+    if profile.role == "member" and assignment.member.user != profile:
+        raise PermissionDenied("You cannot access this assignment.")
+    elif profile.role == "coach":
+        if assignment.program.coach != profile:
+            raise PermissionDenied("This assignment is not from your programs.")
+
+    serializer = WorkoutAssignmentSerializer(assignment)
+    return Response(serializer.data, status=200)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def list_my_assignments(request):
+    """
+    - Coach sees all their assigned programs
+    - Member sees only their own assigned programs
+    """
+    profile = request.user.userprofile
+
+    if profile.role == "coach":
+        assignments = WorkoutAssignment.objects.filter(program__coach=profile)
+    elif profile.role == "member":
+        assignments = WorkoutAssignment.objects.filter(member__user=profile)
+    else:
+        assignments = WorkoutAssignment.objects.none()
+
+    serializer = WorkoutAssignmentSerializer(assignments, many=True)
+    return Response(serializer.data)

@@ -60,7 +60,7 @@
         </button>
       </div>
 
-      <!-- 📝 Workouts for Selected Day -->
+      <!-- Workouts for Selected Day -->
       <div v-if="selectedDayInfo" class="max-w-6xl mx-auto">
         <div class="flex items-center justify-between mb-6">
           <h2 class="text-3xl font-bold text-gray-900">{{ selectedDayInfo.title }}</h2>
@@ -87,13 +87,13 @@
                   : 'bg-white border border-gray-200 hover:shadow-md',
               ]"
             >
-              <!-- ✅ Thumbnail & Controls -->
+              <!-- Thumbnail & Controls -->
               <div class="p-6 flex items-start gap-6">
                 <div
                   class="relative flex-shrink-0 rounded-xl overflow-hidden w-72 h-40 group cursor-pointer bg-gray-900"
                   @click="openYouTube(video)"
                 >
-                  <!-- ✅ YouTube Thumbnail -->
+                  <!-- YouTube Thumbnail -->
                   <img
                     v-if="extractYouTubeId(video)"
                     :src="`https://img.youtube.com/vi/${extractYouTubeId(video)}/mqdefault.jpg`"
@@ -101,7 +101,7 @@
                     alt="Video thumbnail"
                     @error="handleImageError"
                   />
-                  <!-- ❌ Fallback -->
+                  <!-- Fallback -->
                   <div
                     v-else
                     class="w-full h-full bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center"
@@ -182,7 +182,7 @@
             </div>
           </div>
 
-          <!-- ✅ Complete Day Section -->
+          <!--  Complete Day Section -->
           <div
             class="mt-8 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl p-8 text-center border-2 border-indigo-200"
           >
@@ -418,10 +418,9 @@ async function completeDay(dayId) {
     if (nextDay) {
       selectedDay.value = nextDay.id;
     } else {
-      alert("🎉 You completed all days in this program!");
+      alert(`🎉 You completed all days in this program! You earned ${xp.value} XP!`);
     }
 
-    alert(`🎉 Congratulations! You earned ${xp.value} XP!`)
   } catch (err) {
     console.error(err)
     alert('Failed to complete day. Please try again.')

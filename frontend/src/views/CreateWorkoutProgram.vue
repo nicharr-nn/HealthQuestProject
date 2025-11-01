@@ -1,48 +1,78 @@
 <template>
-  <div class="create-workout-program">
-    <div class="page-header">
-      <h1 class="page-title">{{ existingProgram ? 'Edit Workout Program' : 'Create Workout Program' }}</h1>
-            <p class="page-subtitle">
-        {{ editingProgramId ? 'Update your existing workout program' : 'Design a comprehensive workout program with YouTube video guides' }}
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 font-body">
+    <!-- Page Header -->
+    <div class="mb-6">
+      <h1 class="text-3xl font-subtitle text-[#B87C4C]">
+        {{ isEditing ? 'Edit Workout Program' : 'Create Workout Program' }}
+      </h1>
+      <p class="text-gray-600 mt-2">
+        {{ isEditing ? 'Update your existing workout program' : 'Design a comprehensive workout program with YouTube video guides' }}
       </p>
     </div>
 
-    <div class="content-grid">
-      <!-- Program Details -->
-      <div class="content-card">
-        <div class="card-title mb-3">Program Information</div>
+    <!-- Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <!-- Program Details Card -->
+      <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+        <div class="text-xl font-semibold text-gray-900 mb-6">Program Information</div>
 
-        <form @submit.prevent="submitProgram" class="workout-form">
-          <div class="form-group">
-            <label class="form-label" for="programName">Program Name *</label>
+        <form @submit.prevent="submitProgram" class="space-y-4">
+          <!-- Program Name -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5" for="programName">
+              Program Name *
+            </label>
             <input
               id="programName"
               v-model="workoutProgram.title"
               type="text"
-              class="form-input"
+              class="w-full border border-gray-300 rounded-lg px-3.5 py-3 text-sm outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
               placeholder="e.g., 8-Week Fat Loss Program"
               required
             />
           </div>
 
-          <div class="form-group">
-            <label class="form-label" for="description">Description</label>
+          <!-- Description with Character Counter -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5" for="description">
+              Description
+            </label>
             <textarea
               id="description"
               v-model="workoutProgram.description"
-              class="form-input"
+              class="w-full border rounded-lg px-3.5 py-3 text-sm outline-none transition-all resize-none"
+              :class="descriptionError ? 'border-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-50' : 'border-gray-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-50'"
               rows="4"
+              maxlength="180"
               placeholder="Describe the goals, target audience, and overview of your program"
+              @input="validateDescription"
             />
+            <div class="flex justify-between items-center mt-1.5">
+              <span 
+                v-if="descriptionError" 
+                class="text-xs text-red-500"
+              >
+                {{ descriptionError }}
+              </span>
+              <span 
+                class="text-xs ml-auto"
+                :class="descriptionLength > 180 ? 'text-red-500 font-semibold' : descriptionLength > 150 ? 'text-orange-500' : 'text-gray-500'"
+              >
+                {{ descriptionLength }}/180 characters
+              </span>
+            </div>
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label" for="level">Difficulty Level *</label>
+          <!-- Difficulty Level & Duration -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1.5" for="level">
+                Difficulty Level *
+              </label>
               <select
                 id="level"
                 v-model="workoutProgram.difficulty_level"
-                class="form-input"
+                class="w-full border border-gray-300 rounded-lg px-3.5 py-3 text-sm outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
                 required
               >
                 <option value="" disabled>Select difficulty level</option>
@@ -52,27 +82,32 @@
               </select>
             </div>
 
-            <div class="form-group">
-              <label class="form-label" for="duration">Duration (days) *</label>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1.5" for="duration">
+                Duration (day{{ workoutProgram.duration === 1 ? '' : 's' }}) *
+              </label>
               <input
                 id="duration"
                 v-model.number="workoutProgram.duration"
                 type="number"
                 min="1"
                 max="365"
-                class="form-input"
+                class="w-full border border-gray-300 rounded-lg px-3.5 py-3 text-sm outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
                 placeholder="30"
                 required
               />
             </div>
           </div>
 
-          <div class="form-group">
-            <label class="form-label" for="category">Category</label>
+          <!-- Category -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5" for="category">
+              Category
+            </label>
             <select
               id="category"
               v-model="workoutProgram.category"
-              class="form-input"
+              class="w-full border border-gray-300 rounded-lg px-3.5 py-3 text-sm outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
             >
               <option value="" disabled>Select category</option>
               <option value="strength_training">Strength Training</option>
@@ -85,10 +120,16 @@
             </select>
           </div>
 
-          <!-- Level access (who can use this program) -->
-          <div class="form-group">
-            <label class="form-label" for="levelAccess">Level Access</label>
-            <select id="levelAccess" v-model="workoutProgram.level_access" class="form-input">
+          <!-- Level Access -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5" for="levelAccess">
+              Level Access
+            </label>
+            <select 
+              id="levelAccess" 
+              v-model="workoutProgram.level_access" 
+              class="w-full border border-gray-300 rounded-lg px-3.5 py-3 text-sm outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+            >
               <option value="all">All levels</option>
               <option value="bronze">Bronze only</option>
               <option value="silver">Silver only</option>
@@ -96,48 +137,80 @@
             </select>
           </div>
 
-          <div class="form-group">
-           <label class="form-label">Visibility</label>
-            <div class="visibility-toggle">
+          <!-- Visibility Toggle -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">
+              Visibility
+            </label>
+            <div class="flex gap-3">
               <button
                 type="button"
-                :class="['btn', workoutProgram.is_public ? 'primary' : 'ghost']"
+                class="flex-1 py-3 rounded-lg font-semibold text-sm transition-all"
+                :class="workoutProgram.is_public 
+                  ? 'bg-blue-500 text-white border-2 border-blue-500' 
+                  : 'bg-white text-gray-700 border-2 border-gray-300 hover:bg-gray-50'"
                 @click="workoutProgram.is_public = true"
               >
                 Public
               </button>
               <button
                 type="button"
-                :class="['btn', !workoutProgram.is_public ? 'primary' : 'ghost']"
+                class="flex-1 py-3 rounded-lg font-semibold text-sm transition-all"
+                :class="!workoutProgram.is_public 
+                  ? 'bg-blue-500 text-white border-2 border-blue-500' 
+                  : 'bg-white text-gray-700 border-2 border-gray-300 hover:bg-gray-50'"
                 @click="workoutProgram.is_public = false"
               >
                 Private
               </button>
             </div>
-            <div class="muted" style="margin-top:8px;font-size:13px">
+            <p class="text-xs text-gray-600 italic mt-2">
               Public programs are discoverable by users. Private programs are only visible to your assigned clients.
+            </p>
+
+            <!-- Member ID Input (only for private) -->
+            <div v-if="workoutProgram.is_public === false" class="mt-4">
+              <label class="block text-sm font-medium text-gray-700 mb-1.5" for="memberID">
+                Member ID
+              </label>
+              <input
+                id="memberID"
+                v-model="workoutAssignment.member_id"
+                type="text"
+                class="w-full border border-gray-300 rounded-lg px-3.5 py-3 text-sm outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                placeholder="e.g., M-12345"
+                required
+              />
             </div>
           </div>
         </form>
       </div>
-      
 
-      <!-- Daily Workout Schedule -->
-      <div class="content-card">
-        <div class="card-title mb-3">Daily Workout Schedule</div>
+      <!-- Daily Workout Schedule Card -->
+      <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+        <div class="text-xl font-semibold text-gray-900 mb-6">Daily Workout Schedule</div>
 
-        <div class="duration-info mb-4">
-          <span class="info-text">
-            Program Duration: {{ workoutProgram.duration }} days
-            {{ workoutProgram.duration > 0 ? `(${Math.ceil(workoutProgram.duration / 7)} weeks)` : '' }}
+        <!-- Duration Info -->
+        <div class="bg-gray-50 px-4 py-3 rounded-lg border-l-4 border-blue-500 mb-6">
+          <span class="text-sm text-gray-700 font-medium">
+            Program Duration:
+            {{ workoutProgram.duration }} day{{ workoutProgram.duration === 1 ? '' : 's' }}
+            {{ workoutProgram.duration > 0
+              ? `(${Math.ceil(workoutProgram.duration / 7)} week${Math.ceil(workoutProgram.duration / 7) === 1 ? '' : 's'})`
+              : '' }}
           </span>
         </div>
 
         <!-- Day Selection -->
-        <div class="day-selector mb-4">
-          <label class="form-label">Select Day to Add Workout:</label>
-          <select v-model="selectedDay" class="form-input day-select">
-            <option value="" disabled class="ml-10 pr-16">Choose a day</option>
+        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-6">
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Select Day to Add Workout:
+          </label>
+          <select 
+            v-model="selectedDay" 
+            class="w-full max-w-xs border border-gray-300 rounded-lg px-3.5 py-3 text-sm outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+          >
+            <option value="" disabled>Choose a day</option>
             <option
               v-for="day in workoutProgram.duration"
               :key="day"
@@ -149,49 +222,57 @@
         </div>
 
         <!-- Existing Daily Workouts -->
-        <div v-if="Object.keys(workoutProgram.WorkoutDays).length > 0" class="daily-workouts-list mb-4">
-          <h4 class="form-section-title">Added Workouts</h4>
-          <div class="days-container">
+        <div v-if="Object.keys(workoutProgram.WorkoutDays).length > 0" class="bg-gray-50 p-5 rounded-xl border border-gray-200 mb-6">
+          <h4 class="text-base font-semibold text-gray-700 mb-4">Added Workouts</h4>
+          <div class="flex flex-col gap-6">
             <div
               v-for="(workouts, day) in workoutProgram.WorkoutDays"
               :key="day"
-              class="day-container"
+              class="bg-white border border-gray-200 rounded-xl p-5 transition-all hover:shadow-sm"
             >
-              <div class="day-header">
-                <div class="day-number-large">Day {{ day }}</div>
-                <div class="day-summary">{{ workouts.length }} workout{{ workouts.length !== 1 ? 's' : '' }}</div>
+              <!-- Day Header -->
+              <div class="flex justify-between items-center mb-4 pb-3 border-b-2 border-gray-200">
+                <div class="bg-blue-500 text-white px-4 py-2 rounded-lg text-base font-bold">
+                  Day {{ day }}
+                </div>
+                <div class="text-sm text-gray-600 font-medium">
+                  {{ workouts.length }} workout{{ workouts.length !== 1 ? 's' : '' }}
+                </div>
               </div>
 
-              <div class="workouts-for-day">
+              <!-- Workouts for this day -->
+              <div class="grid grid-cols-1 gap-4">
                 <div
                   v-for="(workout, workoutIndex) in workouts"
                   :key="workoutIndex"
-                  class="workout-card"
+                  class="bg-gray-50 border border-gray-200 rounded-lg p-4 transition-all hover:border-blue-500 hover:shadow-md"
                 >
-                  <div class="workout-header">
-                    <div class="workout-title">{{ workout.title }}</div>
-                    <div class="workout-actions">
+                  <div class="flex justify-between items-center mb-3">
+                    <div class="font-semibold text-gray-900 flex-1 mr-3">
+                      {{ workout.title }}
+                    </div>
+                    <div class="flex gap-2">
                       <button
                         type="button"
-                        class="btn small ghost"
+                        class="px-3 py-1.5 text-xs font-semibold bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all"
                         @click="editWorkout(Number(day), workoutIndex)"
                       >
                         Edit
                       </button>
                       <button
                         type="button"
-                        class="btn small danger"
+                        class="px-3 py-1.5 text-xs font-semibold bg-red-500 text-white border border-red-500 rounded-lg hover:bg-red-600 transition-all"
                         @click="removeWorkout(Number(day), workoutIndex)"
                       >
                         Remove
                       </button>
                     </div>
                   </div>
-                  <div class="workout-meta">
+                  <div class="flex items-center gap-2 text-xs text-gray-600">
                     <span>{{ workout.duration }} min</span>
-                    <span class="separator">•</span>
+                    <span class="text-gray-300">•</span>
                     <span>{{ workout.type || 'General' }}</span>
-                    <span v-if="workout.video_link" class="youtube-indicator">
+                    <span v-if="workout.video_link" class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded text-[10px] font-medium">
                       📹 Video
                     </span>
                   </div>
@@ -202,120 +283,136 @@
         </div>
 
         <!-- Add/Edit Workout Form -->
-        <div v-if="selectedDay || editingDay !== null" class="add-workout-form">
-          <h4 class="form-section-title">
+        <div v-if="selectedDay || editingDay !== null" class="bg-gray-50 p-5 rounded-xl border-2 border-dashed border-gray-300">
+          <h4 class="text-base font-semibold text-gray-700 mb-4 pt-3 border-t border-gray-300">
             {{ editingDay !== null ? `Edit Workout for Day ${editingDay}` : `Add Workout for Day ${selectedDay}` }}
           </h4>
 
-          <div class="form-group">
-            <label class="form-label" for="workoutName">Workout Name *</label>
-            <input
-              id="workoutName"
-              v-model="currentWorkout.title"
-              type="text"
-              class="form-input"
-              placeholder="e.g., Upper Body Strength Training"
-              required
-            />
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label" for="workoutDuration">Duration (minutes) *</label>
+          <div class="space-y-4">
+            <!-- Workout Name -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1.5" for="workoutName">
+                Workout Name *
+              </label>
               <input
-                id="workoutDuration"
-                v-model.number="currentWorkout.duration"
-                type="number"
-                min="5"
-                max="180"
-                class="form-input"
-                placeholder="45"
+                id="workoutName"
+                v-model="currentWorkout.title"
+                type="text"
+                class="w-full border border-gray-300 rounded-lg px-3.5 py-3 text-sm outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                placeholder="e.g., Upper Body Strength Training"
                 required
               />
             </div>
 
-            <div class="form-group">
-              <label class="form-label" for="workoutType">Workout Type</label>
-              <select
-                id="workoutType"
-                v-model="currentWorkout.type"
-                class="form-input"
-              >
-                <option value="">Select type</option>
-                <option>Strength Training</option>
-                <option>Cardio</option>
-                <option>HIIT</option>
-                <option>Flexibility</option>
-                <option>Recovery</option>
-                <option>Full Body</option>
-                <option>Upper Body</option>
-                <option>Lower Body</option>
-                <option>Core</option>
-              </select>
+            <!-- Duration & Type -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5" for="workoutDuration">
+                  Duration (minutes) *
+                </label>
+                <input
+                  id="workoutDuration"
+                  v-model.number="currentWorkout.duration"
+                  type="number"
+                  min="5"
+                  max="180"
+                  class="w-full border border-gray-300 rounded-lg px-3.5 py-3 text-sm outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                  placeholder="45"
+                  required
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5" for="workoutType">
+                  Workout Type
+                </label>
+                <select
+                  id="workoutType"
+                  v-model="currentWorkout.type"
+                  class="w-full border border-gray-300 rounded-lg px-3.5 py-3 text-sm outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                >
+                  <option value="">Select type</option>
+                  <option>Strength Training</option>
+                  <option>Cardio</option>
+                  <option>HIIT</option>
+                  <option>Flexibility</option>
+                  <option>Recovery</option>
+                  <option>Full Body</option>
+                  <option>Upper Body</option>
+                  <option>Lower Body</option>
+                  <option>Core</option>
+                </select>
+              </div>
             </div>
-          </div>
 
-          <div class="form-group">
-            <label class="form-label" for="workoutvideo_link">YouTube Video URL</label>
-            <input
-              id="workoutvideo_link"
-              v-model="currentWorkout.video_link"
-              type="url"
-              class="form-input"
-              placeholder="https://www.youtube.com/watch?v=..."
-              @blur="validatevideo_link"
-            />
-            <div v-if="youtubeError" class="error-message">{{ youtubeError }}</div>
-          </div>
+            <!-- YouTube URL -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1.5" for="workoutvideo_link">
+                YouTube Video URL
+              </label>
+              <input
+                id="workoutvideo_link"
+                v-model="currentWorkout.video_link"
+                type="url"
+                class="w-full border border-gray-300 rounded-lg px-3.5 py-3 text-sm outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                placeholder="https://www.youtube.com/watch?v=..."
+                @blur="validatevideo_link"
+              />
+              <div v-if="youtubeError" class="text-xs text-red-500 mt-1">
+                {{ youtubeError }}
+              </div>
+            </div>
 
-
-          <div class="form-actions-inline">
-            <button
-              type="button"
-              class="btn primary"
-              @click="saveDayWorkout"
-              :disabled="!currentWorkout.title || !currentWorkout.duration"
-            >
-              {{ editingDay !== null ? 'Update Workout' : 'Add Workout' }}
-            </button>
-            <button
-              type="button"
-              class="btn ghost"
-              @click="cancelWorkoutEdit"
-            >
-              Cancel
-            </button>
+            <!-- Action Buttons -->
+            <div class="flex gap-3">
+              <button
+                type="button"
+                class="flex-1 bg-blue-500 text-white font-semibold px-4 py-3 rounded-lg transition-all hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                @click="saveDayWorkout"
+                :disabled="!currentWorkout.title || !currentWorkout.duration"
+              >
+                {{ editingDay !== null ? 'Update Workout' : 'Add Workout' }}
+              </button>
+              <button
+                type="button"
+                class="flex-1 bg-white text-gray-700 border border-gray-300 font-semibold px-4 py-3 rounded-lg transition-all hover:bg-gray-50"
+                @click="cancelWorkoutEdit"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
 
-        <div v-if="!selectedDay && editingDay === null && Object.keys(workoutProgram.WorkoutDays).length === 0" class="empty-state">
-          <div class="empty-icon">📅</div>
-          <div class="empty-title">No daily workouts added yet</div>
-          <div class="empty-message">Select a day above to start building your workout program schedule.</div>
+        <!-- Empty State -->
+        <div v-if="!selectedDay && editingDay === null && Object.keys(workoutProgram.WorkoutDays).length === 0" class="text-center py-10 px-5 text-gray-600">
+          <div class="text-5xl mb-3">📅</div>
+          <div class="text-base font-semibold text-gray-700 mb-2">No daily workouts added yet</div>
+          <div class="text-sm leading-relaxed">Select a day above to start building your workout program schedule.</div>
         </div>
       </div>
     </div>
 
     <!-- Action Buttons -->
-    <div class="form-actions">
+    <div class="flex flex-col sm:flex-row gap-4 justify-center pt-6 border-t border-gray-200">
       <button
         type="button"
-        class="btn primary large"
+        class="bg-blue-500 text-white font-semibold px-6 py-3.5 rounded-lg text-base transition-all hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
         @click="submitProgram"
         :disabled="!canSubmitProgram"
       >
-        {{ existingProgram ? 'Update Program' : 'Create Program' }}
+        {{ isEditing ? 'Update Program' : 'Create Program' }}
       </button>
       <button
         type="button"
-        class="btn ghost large"
+        class="bg-white text-gray-700 border border-gray-300 font-semibold px-6 py-3.5 rounded-lg text-base transition-all hover:bg-gray-50 shadow-sm"
         @click="resetProgram"
       >
         Reset All
       </button>
       <button
         type="button"
-        class="btn ghost large"
+        class="bg-white text-gray-700 border border-gray-300 font-semibold px-6 py-3.5 rounded-lg text-base transition-all hover:bg-gray-50 shadow-sm"
         @click="handleCancel"
       >
         Cancel
@@ -335,8 +432,19 @@ const coachUserProfileId = ref<number | null>(null)
 const editingProgramId = ref<number | null>(null)
 const backupProgramData = ref<WorkoutProgram | null>(null)
 
+// Description validation
+const descriptionError = ref('')
+const descriptionLength = computed(() => workoutProgram.description.length)
+
+function validateDescription() {
+  if (workoutProgram.description.length > 180) {
+    descriptionError.value = 'Description cannot exceed 180 characters'
+  } else {
+    descriptionError.value = ''
+  }
+}
+
 onMounted(async () => {
-  // Check if we're in edit mode
   const editId = route.query.edit as string
   
   if (editId) {
@@ -351,11 +459,11 @@ onMounted(async () => {
       category: workoutProgram.category,
       is_public: workoutProgram.is_public,
       level_access: workoutProgram.level_access,
-      WorkoutDays: JSON.parse(JSON.stringify(workoutProgram.WorkoutDays)) // Deep clone
+      WorkoutDays: JSON.parse(JSON.stringify(workoutProgram.WorkoutDays)),
+      member_id: workoutAssignment.member_id || ''
     }
   }
 
-  // Load coach profile ID
   try {
     const response = await fetch('http://127.0.0.1:8000/api/coach/status/', {
       credentials: 'include',
@@ -363,22 +471,8 @@ onMounted(async () => {
     
     if (response.ok) {
       const data = await response.json()
-      console.log('Coach status response:', data)
-      
-      coachUserProfileId.value = 
-        data.user?.id ||           // This is where it actually is!
-        data.coach?.user ||
-        null
-      
-      // if (coachUserProfileId.value) {
-      //   console.log('Found UserProfile ID for coach:', coachUserProfileId.value)
-      // } else {
-      //   console.error('No UserProfile ID found in coach status response')
-      //   // Fallback to user-info endpoint
-      //   await fetchUserProfileId()
-      // }
+      coachUserProfileId.value = data.user?.id || data.coach?.user || null
     } else {
-      console.error('Failed to fetch coach status:', response.status)
       await fetchUserProfileId()
     }
   } catch (error) {
@@ -387,7 +481,6 @@ onMounted(async () => {
   }
 })
 
-// Update the fallback function to use the correct path
 async function fetchUserProfileId() {
   try {
     const response = await fetch('http://127.0.0.1:8000/api/user-info/', {
@@ -402,7 +495,6 @@ async function fetchUserProfileId() {
   }
 }
 
-
 interface Props {
   existingProgram?: {
     title: string
@@ -415,6 +507,10 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+const isEditing = computed(() => {
+  return Boolean(props.existingProgram) || Boolean(editingProgramId.value)
+})
 
 const emit = defineEmits<{
   programCreated: [program: {
@@ -447,8 +543,8 @@ interface WorkoutProgram {
   is_public: boolean
   level_access: string
   WorkoutDays: Record<number, WorkoutDay[]>
+  member_id?: string
 }
-
 
 const workoutProgram = reactive<WorkoutProgram>({
   title: '',
@@ -469,27 +565,69 @@ const currentWorkout = reactive<WorkoutDay>({
   type: ''
 })
 
-
 const selectedDay = ref<number | ''>('')
 const editingDay = ref<number | null>(null)
 const editingWorkoutIndex = ref<number | null>(null)
-
 const youtubeError = ref('')
+
+const workoutAssignment = reactive({
+  member_id: '',
+})
+
+function parseMemberId(input: string): number | null {
+  if (!input) return null
+  const digits = (input.match(/\d+/g) || []).join('')
+  if (!digits) return null
+  const normalized = digits.replace(/^0+/, '') || '0'
+  const n = Number(normalized)
+  return Number.isNaN(n) ? null : n
+}
+
+async function createAssignment(programId: number) {
+  const memberNumericId = parseMemberId(workoutAssignment.member_id)
+  if (!memberNumericId) {
+    console.error('Invalid member id format:', workoutAssignment.member_id)
+    alert('Invalid MEMBER ID. Use format like M-00001 or numeric id.')
+    return null
+  }  
+  try {
+    const payload = {
+      program_id: programId,
+      member_id: memberNumericId,
+    }
+    const res = await fetch(`http://127.0.0.1:8000/api/workout/assign/${memberNumericId}/`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCsrfToken(),
+      },
+      body: JSON.stringify(payload),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => null)
+      alert('Failed to create assignment: ' + (err?.detail || JSON.stringify(err) || `HTTP ${res.status}`))
+      return null
+    }
+    return await res.json()
+  } catch (err) {
+    console.error('Assignment create error', err)
+    return null
+  }
+}
 
 const canSubmitProgram = computed(() => {
   return workoutProgram.title &&
          workoutProgram.difficulty_level &&
          workoutProgram.duration &&
-         Object.keys(workoutProgram.WorkoutDays).length > 0
+         Object.keys(workoutProgram.WorkoutDays).length > 0 &&
+         !descriptionError.value
 })
 
 function validatevideo_link() {
   youtubeError.value = ''
-
   if (!currentWorkout.video_link) return
-
   const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)[a-zA-Z0-9_-]{11}/
-
   if (!youtubeRegex.test(currentWorkout.video_link)) {
     youtubeError.value = 'Please enter a valid YouTube URL'
   }
@@ -517,10 +655,8 @@ function saveDayWorkout() {
   }
 
   if (editingDay.value !== null && editingWorkoutIndex.value !== null) {
-    // Editing existing workout
     workoutProgram.WorkoutDays[editingDay.value][editingWorkoutIndex.value] = workout
   } else {
-    // Adding new workout
     if (!workoutProgram.WorkoutDays[targetDay]) {
       workoutProgram.WorkoutDays[targetDay] = []
     }
@@ -542,15 +678,12 @@ function editWorkout(day: number, workoutIndex: number) {
     currentWorkout.video_link = workout.video_link
     currentWorkout.day_number = workout.day_number
     backupWorkout.value = { ...workout }
-    console.log('Backed up workout data for editing:', backupWorkout.value)
   }
 }
 
 function removeWorkout(day: number, workoutIndex: number) {
   if (workoutProgram.WorkoutDays[day]) {
     workoutProgram.WorkoutDays[day].splice(workoutIndex, 1)
-
-    // Remove the day entirely if no workouts left
     if (workoutProgram.WorkoutDays[day].length === 0) {
       delete workoutProgram.WorkoutDays[day]
     }
@@ -558,13 +691,7 @@ function removeWorkout(day: number, workoutIndex: number) {
 }
 
 function handleCancel() {
-  console.log('Cancel clicked. Editing mode:', editingProgramId.value)
-  
   if (editingProgramId.value && backupProgramData.value) {
-    // Editing mode: Restore original data and navigate away
-    console.log('Restoring original program data')
-    
-    // Restore all program data from backup
     workoutProgram.title = backupProgramData.value.title
     workoutProgram.description = backupProgramData.value.description
     workoutProgram.difficulty_level = backupProgramData.value.difficulty_level
@@ -573,32 +700,20 @@ function handleCancel() {
     workoutProgram.is_public = backupProgramData.value.is_public
     workoutProgram.level_access = backupProgramData.value.level_access
     workoutProgram.WorkoutDays = JSON.parse(JSON.stringify(backupProgramData.value.WorkoutDays))
-    
-    // Navigate back to coach dashboard
-    console.log('Navigating back to coach dashboard')
+    workoutAssignment.member_id = backupProgramData.value.member_id || ''
     router.push('/coach-dashboard')
   } else {
-    // Creating mode: Just clear the form and navigate away
-    console.log('Clearing new program data and navigating away')
     resetProgram()
     router.push('/coach-dashboard')
   }
 }
 
-
 function cancelWorkoutEdit() {
-  console.log('Cancelling workout edit/add')
-
   if (editingDay.value !== null && editingWorkoutIndex.value !== null && backupWorkout.value) {
-    // Restore previous workout data (discard user's edits)
-    console.log('Restoring original workout data')
     workoutProgram.WorkoutDays[editingDay.value][editingWorkoutIndex.value] = { ...backupWorkout.value }
   }
-  // Reset everything to exit the edit/create form
   resetCurrentWorkout()
 }
-
-
 
 function resetCurrentWorkout() {
   selectedDay.value = ''
@@ -614,7 +729,6 @@ function resetCurrentWorkout() {
   youtubeError.value = ''
 }
 
-
 async function loadExistingProgram(programId: number) {
   try {
     const response = await fetch(`http://127.0.0.1:8000/api/workout/programs/${programId}/`, {
@@ -626,9 +740,7 @@ async function loadExistingProgram(programId: number) {
     }
 
     const programData = await response.json()
-    console.log('Loaded program data for editing:', programData)
 
-    // Populate the form with existing data
     workoutProgram.title = programData.title || ''
     workoutProgram.description = programData.description || ''
     workoutProgram.difficulty_level = programData.difficulty_level || ''
@@ -637,14 +749,19 @@ async function loadExistingProgram(programId: number) {
     workoutProgram.is_public = programData.is_public ?? true
     workoutProgram.level_access = programData.level_access || 'all'
 
-    // Convert days data to WorkoutDays format
+    workoutAssignment.member_id =
+      programData.assignment?.member?.member_id ||
+      programData.assignment?.member_id ||
+      programData.member_id ||
+      programData.assigned_member_id ||
+      ''
+
     if (programData.days && Array.isArray(programData.days)) {
       workoutProgram.WorkoutDays = {}
       
       programData.days.forEach((day: any) => {
         const dayNumber = day.day_number
         if (dayNumber) {
-          // Create workout entry for this day
           const workout: WorkoutDay = {
             title: day.title,
             type: day.type || '',
@@ -666,12 +783,16 @@ async function loadExistingProgram(programId: number) {
 
 async function submitProgram() {
   if (!canSubmitProgram.value) {
-    alert('Please fill in all required fields (including visibility) and add at least one daily workout')
+    alert('Please fill in all required fields and add at least one daily workout')
+    return
+  }
+
+  if (descriptionError.value) {
+    alert('Please fix the description error before submitting')
     return
   }
 
   if (!coachUserProfileId.value) {
-    // Try one more time before failing
     try {
       const response = await fetch('http://127.0.0.1:8000/api/user-info/', { 
         credentials: 'include' 
@@ -679,7 +800,6 @@ async function submitProgram() {
       if (response.ok) {
         const data = await response.json()
         coachUserProfileId.value = data.user?.profile?.id
-        console.log('Retrieved UserProfile ID:', coachUserProfileId.value)
       }
     } catch (e) {
       console.error('UserProfile fetch retry failed', e)
@@ -693,13 +813,13 @@ async function submitProgram() {
 
   const days = Object.entries(workoutProgram.WorkoutDays).map(([day, workouts]) => ({
     day_number: Number(day),
-    title: `Day ${day}`,
+    title: workouts[0]?.title || `Day ${day}`,
     video_links: workouts.map(w => w.video_link).filter(Boolean),
     duration_minutes: workouts.reduce((sum, w) => sum + (w.duration || 0), 0),
   }))
 
   const payload = {
-    coach: coachUserProfileId.value,  // Use UserProfile ID instead of coach_id
+    coach: coachUserProfileId.value,
     title: workoutProgram.title,
     description: workoutProgram.description,
     difficulty_level: workoutProgram.difficulty_level,
@@ -709,7 +829,6 @@ async function submitProgram() {
     category: workoutProgram.category || "full_body",
     days
   }
-
 
   const url = editingProgramId.value
     ? `http://127.0.0.1:8000/api/workout/programs/${editingProgramId.value}/`
@@ -736,6 +855,14 @@ async function submitProgram() {
       alert('Failed to save program: ' + JSON.stringify(message))
       return
     }
+
+    if (workoutProgram.is_public === false && workoutAssignment.member_id) {
+      const assignment = await createAssignment(body.id)
+      if (!assignment) {
+        alert('Program saved but failed to create assignment for member.')
+      }
+    }
+    
     emit('programCreated', body)
     alert('Program saved successfully!')
     router.push('/coach-dashboard')
@@ -751,7 +878,6 @@ function getCsrfToken() {
 }
 
 function resetProgram() {
-  console.log('Resetting entire program')
   workoutProgram.title = ''
   workoutProgram.description = ''
   workoutProgram.difficulty_level = ''
@@ -762,12 +888,12 @@ function resetProgram() {
   workoutProgram.WorkoutDays = {}
   editingProgramId.value = null
   backupProgramData.value = null
+  workoutAssignment.member_id = ''
+  descriptionError.value = ''
 
   resetCurrentWorkout()
 }
 
-
-// Watch for existing program prop and populate form
 watch(() => props.existingProgram, (program) => {
   if (program) {
     workoutProgram.title = program.title
@@ -778,329 +904,9 @@ watch(() => props.existingProgram, (program) => {
     workoutProgram.is_public = (program as any).is_public ?? true
     workoutProgram.level_access = (program as any).level_access ?? 'all'
     workoutProgram.WorkoutDays = { ...program.WorkoutDays }
+    workoutAssignment.member_id = (program as any).member_id || ''
   } else {
     resetProgram()
   }
 }, { immediate: true })
 </script>
-
-<style scoped>
-.create-workout-program { max-width: 1200px; margin: 0 auto; padding: 24px; }
-.page-header { margin-bottom: 24px; }
-.page-title { font-size: 28px; font-weight: 700; margin: 0; color: #111827; }
-.page-subtitle { color: #6b7280; margin-top: 6px; font-size: 16px; }
-
-.content-grid { display: grid; grid-template-columns: 1fr; gap: 24px; margin-bottom: 24px; }
-@media (min-width: 1024px) { .content-grid { grid-template-columns: 1fr 1fr; } }
-
-.content-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-.card-title { font-weight: 600; font-size: 20px; color: #111827; }
-.muted { color: #6b7280; font-style: italic; }
-
-.workout-form, .add-session-form { display: grid; gap: 16px; }
-.form-group { display: grid; gap: 6px; }
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.form-label { font-size: 14px; color: #374151; font-weight: 500; }
-.form-input {
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  padding: 12px 14px;
-  font-size: 14px;
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-.form-input:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
-}
-
-.form-hint {
-  font-size: 13px;
-  color: #6b7280;
-  margin-top: 6px;
-  line-height: 1.4;
-}
-
-.form-section-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #374151;
-  margin: 0 0 12px 0;
-  padding-top: 12px;
-  border-top: 1px solid #e5e7eb;
-}
-
-.sessions-list { display: grid; gap: 12px; }
-.session-item {
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 16px;
-  background: #f9fafb;
-}
-.session-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-.session-title { font-weight: 600; color: #111827; }
-.session-meta {
-  color: #6b7280;
-  font-size: 13px;
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-.youtube-indicator {
-  background: #fef3c7;
-  color: #92400e;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 11px;
-}
-
-.btn {
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  padding: 10px 16px;
-  font-weight: 600;
-  background: #fff;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 14px;
-}
-.btn:hover { background: #f9fafb; }
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.btn.primary {
-  background: #3b82f6;
-  color: #fff;
-  border-color: #3b82f6;
-}
-.btn.primary:hover:not(:disabled) { background: #2563eb; }
-.btn.ghost { background: #fff; color: #374151; }
-.btn.ghost:hover { background: #f3f4f6; }
-.btn.small { padding: 6px 12px; font-size: 12px; }
-.btn.large { padding: 14px 24px; font-size: 16px; }
-.btn.danger {
-  background: #ef4444;
-  color: #fff;
-  border-color: #ef4444;
-}
-.btn.danger:hover { background: #dc2626; }
-
-.form-actions {
-  display: flex;
-  gap: 16px;
-  justify-content: center;
-  padding-top: 24px;
-  border-top: 1px solid #e5e7eb;
-}
-
-.error-message {
-  color: #ef4444;
-  font-size: 12px;
-  margin-top: 4px;
-}
-
-.duration-info {
-  background: #f3f4f6;
-  padding: 12px 16px;
-  border-radius: 8px;
-  border-left: 4px solid #3b82f6;
-}
-
-.info-text {
-  color: #374151;
-  font-weight: 500;
-  font-size: 14px;
-}
-
-.day-selector {
-  background: #fafafa;
-  padding: 16px;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-}
-
-.day-select {
-  max-width: 300px;
-}
-
-.daily-workouts-list {
-  background: #fafafa;
-  padding: 20px;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
-}
-
-.days-container {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  margin-top: 16px;
-}
-
-.day-container {
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 20px;
-  transition: all 0.2s ease;
-}
-
-.day-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 2px solid #e5e7eb;
-}
-
-.day-number-large {
-  background: #3b82f6;
-  color: white;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 700;
-}
-
-.day-summary {
-  color: #6b7280;
-  font-weight: 500;
-  font-size: 14px;
-}
-
-.workouts-for-day {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 16px;
-}
-
-.workout-card {
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 16px;
-  transition: all 0.2s ease;
-}
-
-.workout-card:hover {
-  border-color: #3b82f6;
-  box-shadow: 0 2px 8px rgba(59,130,246,0.15);
-}
-
-.workout-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.day-number {
-  background: #3b82f6;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.workout-title {
-  font-weight: 600;
-  color: #111827;
-  font-size: 16px;
-  flex: 1;
-  margin-right: 12px;
-}
-
-.workout-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.workout-notes {
-  color: #6b7280;
-  font-size: 13px;
-  line-height: 1.4;
-  margin-top: 8px;
-  padding: 8px;
-  background: #f3f4f6;
-  border-radius: 6px;
-}
-
-.workout-meta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #6b7280;
-  font-size: 12px;
-  margin-bottom: 12px;
-}
-
-.separator {
-  color: #d1d5db;
-}
-
-.youtube-indicator {
-  background: #fef3c7;
-  color: #92400e;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 10px;
-  font-weight: 500;
-}
-
-.add-workout-form {
-  background: #f9fafb;
-  padding: 20px;
-  border-radius: 12px;
-  border: 2px dashed #d1d5db;
-  margin-top: 20px;
-}
-
-.form-actions-inline {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 40px 20px;
-  color: #6b7280;
-}
-
-.empty-icon {
-  font-size: 48px;
-  margin-bottom: 12px;
-}
-
-.empty-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #374151;
-  margin-bottom: 8px;
-}
-
-.empty-message {
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-@media (max-width: 768px) {
-  .form-row { grid-template-columns: 1fr; }
-  .form-actions { flex-direction: column; }
-  .form-actions-inline { flex-direction: column; align-items: stretch; }
-  .workouts-for-day { grid-template-columns: 1fr; }
-  .workout-header { flex-direction: column; align-items: flex-start; gap: 8px; }
-  .workout-actions { align-self: stretch; justify-content: space-between; }
-  .day-header { flex-direction: column; align-items: flex-start; gap: 8px; }
-  .day-select { max-width: 100%; }
-}
-</style>

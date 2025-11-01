@@ -1,6 +1,8 @@
 from django.db import models
 
 from users.models import UserProfile
+from member.models import Member
+from django.utils import timezone
 
 
 class WorkoutProgram(models.Model):
@@ -77,3 +79,52 @@ class WorkoutDayCompletion(models.Model):
 
     class Meta:
         unique_together = ("user_profile", "workout_day")
+
+class WorkoutAssignment(models.Model):
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("in_progress", "In Progress"),
+        ("completed", "Completed"),
+        ("paused", "Paused"),
+        ("overdue", "Overdue"),
+    ]
+
+    member = models.ForeignKey(
+        Member,
+        on_delete=models.CASCADE,
+        related_name="assignments",
+        null=True, # removed after testing
+        blank=True, # removed after testing
+    )
+
+    program = models.ForeignKey(
+        WorkoutProgram,
+        on_delete=models.CASCADE,
+        related_name="assignments",
+    )
+    assigned_date = models.DateField(auto_now_add=True)
+    due_date = models.DateField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    completed_date = models.DateField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-assigned_date"]
+        unique_together = ("member", "program")
+
+    def __str__(self):
+        return f"{self.member.user.user.username} → {self.program.title}"
+
+    def check_completion(self):
+        """Check if all days in the program are completed by this member."""
+        total_days = self.program.days.count()
+        completed_days = WorkoutDayCompletion.objects.filter(
+            user_profile=self.member.user,
+            workout_day__program=self.program
+        ).count()
+
+        if total_days > 0 and completed_days >= total_days:
+            self.status = "completed"
+            self.completed_date = timezone.now().date()
+            self.save(update_fields=["status", "completed_date"])
+            return True
+        return False
