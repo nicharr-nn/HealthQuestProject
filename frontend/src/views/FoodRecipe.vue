@@ -152,22 +152,23 @@
     <div
       v-for="menu in menus"
       :key="menu.id"
-      class="flex flex-col lg:flex-row w-full max-w-5xl mx-auto mt-6 font-body h-[300px]"
+      class="flex flex-col lg:flex-row w-full max-w-5xl mx-auto mt-6 h-[300px] text-[#846757] font-body"
     >
       <!-- Left -->
-      <div class="flex-1 p-6 bg-blue-200 rounded-xl flex flex-col items-center">
-        <div class="w-48 h-48 rounded-lg overflow-hidden shadow-md flex-shrink-0">
+      <div class="flex-1 p-4 bg-blue-200 rounded-xl flex flex-col items-center">
+        <div class="p-4 text-center">
+          <h3 class="text-xl font-bold max-w-full">
+            {{ menu.title.length > 40 ? menu.title.slice(0, 40) + '…' : menu.title }}
+          </h3>
+        </div>
+        <div class="w-100 h-50 rounded-lg overflow-hidden shadow-md flex-shrink-0">
           <img
             :src="menu.image || 'https://via.placeholder.com/300x300.png?text=No+Image'"
             :alt="menu.title"
             class="w-full h-full object-cover"
           />
         </div>
-        <div class="p-4 text-center">
-          <h3 class="text-2xl font-bold max-w-full">
-            {{ menu.title.length > 40 ? menu.title.slice(0, 40) + '…' : menu.title }}
-          </h3>
-        </div>
+
       </div>
 
       <!-- Right -->
