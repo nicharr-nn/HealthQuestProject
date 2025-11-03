@@ -20,6 +20,7 @@ const MemberConnect = () => import('../views/MemberConnect.vue')
 const FoodRecipe = () => import('../views/FoodRecipe.vue')
 const FoodPost = () => import('../views/FoodPost.vue')
 const FoodDiary = () => import('../views/FoodDiary.vue')
+const AdminDashboard = () => import('../views/AdminDashboard.vue')
 
 const routes = [
   { path: '/', name: 'LandingPage', component: LandingPage },
@@ -31,6 +32,7 @@ const routes = [
   { path: '/select-goal', name: 'SelectGoal', component: SelectGoal },
   { path: '/coach-portal', name: 'CoachPortal', component: CoachPortal },
   { path: '/coach-dashboard', name: 'CoachDashboard', component: CoachDashboard, meta: { requiresCoach: true } },
+  { path: '/admin', name: 'AdminDashboard', component: AdminDashboard, meta: { requiresAdmin: true } },
   { path: '/workout', name: 'Workout', component: Workout },
   { path: '/workout/:id', name: 'Program', component: Program, props: true },
   { path: '/view-member', name: 'ViewMember', component: MemberManagement, meta: { requiresCoach: true } },
@@ -76,16 +78,26 @@ router.beforeEach(async (to, from, next) => {
   }
 
   const isCoach = userStore.role === 'coach' || userStore.profile?.role === 'coach'
+  const isAdmin = userStore.role === 'admin' || userStore.profile?.role === 'admin'
   const isApproved = userStore.approved === true
   const profileComplete = userStore.profile_complete
 
-  console.log('After init:', { isCoach, isApproved, profileComplete })
+  console.log('After init:', { isCoach, isAdmin, isApproved, profileComplete })
 
   // Onboarding redirect
   if (SKIP_IF_COMPLETE.has(to.path) && profileComplete) {
+    if (isAdmin) return next('/admin')
     if (isCoach && isApproved) return next('/coach-dashboard')
     if (isCoach && !isApproved) return next('/coach-portal')
     return next('/dashboard')
+  }
+
+  // Admin-only pages
+  if (to.meta.requiresAdmin) {
+    if (!isAdmin) {
+      console.warn('Not an admin — redirecting to dashboard')
+      return next('/dashboard')
+    }
   }
 
   // Coach-only pages
