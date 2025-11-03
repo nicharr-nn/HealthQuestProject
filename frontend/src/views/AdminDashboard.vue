@@ -384,38 +384,6 @@ const coaches = ref([
   }
 ])
 
-const nav = [
-  {
-    title: 'Overview',
-    items: [
-      { id: 'dashboard', label: 'Dashboard', icon: '📊' },
-      { id: 'analytics', label: 'Analytics', icon: '📈' }
-    ]
-  },
-  {
-    title: 'User Management',
-    items: [
-      { id: 'users', label: 'Users', icon: '👥' },
-      { id: 'coaches', label: 'Coaches', icon: '🏃', badge: pendingCount.value || null }
-    ]
-  },
-  {
-    title: 'Content Management',
-    items: [
-      { id: 'workouts', label: 'Workouts', icon: '💪' },
-      { id: 'recipes', label: 'Recipes', icon: '🍽️' },
-      { id: 'reports', label: 'Reports', icon: '⚠️' }
-    ]
-  },
-  {
-    title: 'System',
-    items: [
-      { id: 'settings', label: 'Settings', icon: '⚙️' },
-      { id: 'logs', label: 'Audit Logs', icon: '📋' }
-    ]
-  }
-]
-
 const coachModal = ref({
   open: false,
   coach: null
@@ -445,6 +413,38 @@ const filteredCoaches = computed(() => {
 const pendingCount = computed(() => {
   return coaches.value.filter(c => c.status_approval === 'pending').length
 })
+
+const nav = computed(() => [
+  {
+    title: 'Overview',
+    items: [
+      { id: 'dashboard', label: 'Dashboard', icon: '📊' },
+      { id: 'analytics', label: 'Analytics', icon: '📈' }
+    ]
+  },
+  {
+    title: 'User Management',
+    items: [
+      { id: 'users', label: 'Users', icon: '👥' },
+      { id: 'coaches', label: 'Coaches', icon: '🏃', badge: pendingCount.value || null }
+    ]
+  },
+  {
+    title: 'Content Management',
+    items: [
+      { id: 'workouts', label: 'Workouts', icon: '💪' },
+      { id: 'recipes', label: 'Recipes', icon: '🍽️' },
+      { id: 'reports', label: 'Reports', icon: '⚠️' }
+    ]
+  },
+  {
+    title: 'System',
+    items: [
+      { id: 'settings', label: 'Settings', icon: '⚙️' },
+      { id: 'logs', label: 'Audit Logs', icon: '📋' }
+    ]
+  }
+])
 
 function setSection(id) {
   activeSection.value = id
