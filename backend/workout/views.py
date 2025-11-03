@@ -42,9 +42,10 @@ def workout_programs(request):
             level_filters |= models.Q(level_access="gold")
         # Apply filters and get public programs or programs by user's coach
         programs = WorkoutProgram.objects.filter(
-            level_filters & (
-                models.Q(is_public=True) |
-                models.Q(coach=user_profile)  # Users can see their private programs
+            level_filters
+            & (
+                models.Q(is_public=True)
+                | models.Q(coach=user_profile)  # Users can see their private programs
             )
         ).distinct()
         serializer = WorkoutProgramSerializer(programs, many=True)
@@ -372,6 +373,7 @@ def workout_progress(request, id):
         }
     )
 
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def assign_program_to_member(request, member_id):
@@ -427,7 +429,9 @@ def workout_assignment_update(request, id):
     assignment = get_object_or_404(WorkoutAssignment, pk=id, member__user=profile)
 
     if assignment.status == "completed":
-        return Response({"message": "This assignment is already completed."}, status=200)
+        return Response(
+            {"message": "This assignment is already completed."}, status=200
+        )
 
     difficulty = assignment.program.difficulty_level
     duration = assignment.program.duration

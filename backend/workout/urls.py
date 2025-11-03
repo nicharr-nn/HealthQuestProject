@@ -26,7 +26,6 @@ urlpatterns = [
         name="complete-workout-day",
     ),
     path("progress/<int:id>/", views.workout_progress, name="workout-progress"),
-
     # Workout Assignment URLs
     path(
         "assign/<int:member_id>/",

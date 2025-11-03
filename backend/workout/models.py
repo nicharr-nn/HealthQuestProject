@@ -80,6 +80,7 @@ class WorkoutDayCompletion(models.Model):
     class Meta:
         unique_together = ("user_profile", "workout_day")
 
+
 class WorkoutAssignment(models.Model):
     STATUS_CHOICES = [
         ("pending", "Pending"),
@@ -93,8 +94,8 @@ class WorkoutAssignment(models.Model):
         Member,
         on_delete=models.CASCADE,
         related_name="assignments",
-        null=True, # removed after testing
-        blank=True, # removed after testing
+        null=True,  # removed after testing
+        blank=True,  # removed after testing
     )
 
     program = models.ForeignKey(
@@ -118,8 +119,7 @@ class WorkoutAssignment(models.Model):
         """Check if all days in the program are completed by this member."""
         total_days = self.program.days.count()
         completed_days = WorkoutDayCompletion.objects.filter(
-            user_profile=self.member.user,
-            workout_day__program=self.program
+            user_profile=self.member.user, workout_day__program=self.program
         ).count()
 
         if total_days > 0 and completed_days >= total_days:

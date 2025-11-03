@@ -19,14 +19,16 @@ def generate_or_update_recipe_pdf(sender, instance, created, **kwargs):
     """
     Generate or update the PDF for a Recipe when it's created or edited.
     """
+
     def _needs_pdf_update():
         # Only regenerate if PDF is missing or the recipe content changed
         if not instance.pdf_file:
             return True
         changed_fields = getattr(instance, "_changed_fields", None)
         if changed_fields:
-            return any(field in changed_fields
-                       for field in ["title", "ingredients", "steps"])
+            return any(
+                field in changed_fields for field in ["title", "ingredients", "steps"]
+            )
         return True
 
     # Always trigger on commit, to avoid race condition

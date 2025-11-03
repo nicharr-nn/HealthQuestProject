@@ -392,14 +392,49 @@ def food_post_comments(request, post_id):
 
     if request.method == "GET":
         comments = post.comments.all()
-        serializer = FoodPostCommentSerializer(comments, many=True,
-                                               context={"request": request})
+        serializer = FoodPostCommentSerializer(
+            comments, many=True, context={"request": request}
+        )
         return Response(serializer.data)
 
     elif request.method == "POST":
+        profile = request.user.userprofile
+
+        # permission: only the post owner (member) or that member's assigned coach may comment
+        if profile.role == "member":
+            # member may only comment on their own post
+            if post.user_profile != profile:
+                return Response(
+                    {"error": "Members may only comment on their own posts."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+        elif profile.role == "coach":
+            # coach must be assigned to the member who created the post
+            member = getattr(post.user_profile, "member_profile", None)
+            if not member:
+                return Response(
+                    {"error": "Member profile not found for this post."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            assigned = CoachMemberRelationship.objects.filter(
+                coach__user=profile, member=member, status__in=["accepted", "approved"]
+            ).exists()
+            if not assigned:
+                return Response(
+                    {"error": "You are not the assigned coach for this member."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+        else:
+            return Response(
+                {"error": "Only members or coaches may comment."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         # Both member and coach can comment
-        serializer = FoodPostCommentSerializer(data=request.data,
-                                               context={"request": request})
+        serializer = FoodPostCommentSerializer(
+            data=request.data, context={"request": request}
+        )
         if serializer.is_valid():
             serializer.save(food_post=post)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -414,7 +449,7 @@ def food_post_comment_detail(request, post_id, comment_id):
     profile = request.user.userprofile
 
     # Only the comment author (coach) can update/delete
-    if comment.coach != profile:
+    if comment.author != profile:
         return Response(
             {"error": "You can only modify your own comments"},
             status=status.HTTP_403_FORBIDDEN,
@@ -449,9 +484,11 @@ def uncommented_food_posts(request):
         )
 
     # Get all food posts where this coach is assigned and has no comments
-    uncommented_posts = FoodPost.objects.filter(
-        coach=profile, comments__isnull=True
-    ).select_related("user_profile__user").order_by("-created_at")
+    uncommented_posts = (
+        FoodPost.objects.filter(coach=profile, comments__isnull=True)
+        .select_related("user_profile__user")
+        .order_by("-created_at")
+    )
 
     # Serialize the posts
     data = []
@@ -469,6 +506,4 @@ def uncommented_food_posts(request):
             }
         )
 
-    return Response(
-        {"count": len(data), "posts": data}, status=status.HTTP_200_OK
-    )
+    return Response({"count": len(data), "posts": data}, status=status.HTTP_200_OK)
