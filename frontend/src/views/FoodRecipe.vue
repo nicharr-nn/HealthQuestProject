@@ -155,7 +155,7 @@
       class="flex flex-col lg:flex-row w-full max-w-5xl mx-auto mt-6 h-[300px] text-[#846757] font-body"
     >
       <!-- Left -->
-      <div class="flex-1 p-4 bg-blue-200 rounded-xl flex flex-col items-center">
+      <div class="flex-1 p-4 bg-purple-100 rounded-xl flex flex-col items-center">
         <div class="p-4 text-center">
           <h3 class="text-xl font-bold max-w-full">
             {{ menu.title.length > 40 ? menu.title.slice(0, 40) + '…' : menu.title }}
@@ -172,45 +172,57 @@
       </div>
 
       <!-- Right -->
-      <div class="flex-1 p-8 bg-blue-200 rounded-xl flex flex-col justify-between">
-        <div class="overflow-y-auto flex-1">
-          <h4 class="text-lg font-semibold mb-2">Ingredients</h4>
-          <p class="whitespace-pre-line mb-4">
-            {{ limitText(menu.ingredients, 6) }}
-          </p>
+      <div class="flex-1 bg-purple-50 rounded-xl flex justify-between overflow-hidden">
+        <div class="h-full w-full flex-1 p-8">
+          <div class="h-full overflow-y-auto">
+            <h4 class="text-lg font-semibold mb-2"><span class="text-xl">📝</span> Ingredients</h4>
+            <p class="whitespace-pre-line mb-4">
+              {{ limitText(menu.ingredients, 6) }}
+            </p>
 
-          <h4 class="text-lg font-semibold mb-2">Steps</h4>
-          <p class="whitespace-pre-line">
-            {{ limitText(menu.steps, 6) }}
-          </p>
+            <h4 class="text-lg font-semibold mb-2"><span class="text-xl">🎢</span> Steps</h4>
+            <p class="whitespace-pre-line">
+              {{ limitText(menu.steps, 6) }}
+            </p>
+          </div>
         </div>
 
         <!-- Buttons -->
-        <div class="mt-4 flex flex-wrap justify-end gap-3 flex-shrink-0">
-          <a
-            :href="`http://127.0.0.1:8000/api/recipe/${menu.id}/download-pdf/`"
-            class="bg-blue-400 text-white font-semibold px-5 py-2 
-            rounded-lg shadow hover:bg-blue-500 transition"
-            download
-          >
-            Download PDF
-          </a>
+        <div class="w-[10%] flex flex-col flex-shrink-0">
+          <div class="relative h-full group inline-block">
+              <a
+                :href="`http://127.0.0.1:8000/api/recipe/${menu.id}/download-pdf/`"
+                class="bg-blue-200 rounded-r-lg text-white h-full w-full font-semibold flex items-center justify-center
+                hover:bg-blue-300 transition"
+                download
+              >
+                💾
+              </a>
 
-          <template v-if="showMine">
+              <span class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
+              bg-[#846757] text-white text-sm px-2 py-1 rounded-md 
+                opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+              >
+                Download PDF
+              </span>
+          </div>
+          
+
+          <template v-if="showMine" class="mt-4 flex flex-col gap-4">
             <button
               @click="openEditModal(menu)"
-              class="bg-yellow-400 hover:bg-yellow-500 text-white 
-              px-5 py-2 rounded-lg font-semibold shadow-md"
+              class="bg-yellow-200 hover:bg-yellow-300 text-white 
+              h-full w-full px-5 py-2 font-semibold rounded-r-lg cursor-pointer"
             >
-              Edit
+              ✍🏻
             </button>
 
             <button
               @click="deleteRecipe(menu.id)"
-              class="bg-red-500 hover:bg-red-600 text-white px-5 py-2 
-              rounded-lg font-semibold shadow-lg"
+              class="bg-red-200 hover:bg-red-300 text-white h-full w-full px-5 py-2 
+              font-semibold rounded-r-lg cursor-pointer"
             >
-              Delete
+              🗑️
             </button>
           </template>
         </div>
