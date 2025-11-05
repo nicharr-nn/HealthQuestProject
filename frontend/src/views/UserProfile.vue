@@ -534,7 +534,9 @@ async function fetchUserProfile() {
         weight: profileData.weight || '',
         current_goal: profileData.current_goal || '',
         location: profileData.location || '',
-        joinDate: new Date().toLocaleDateString(),
+        joinDate: profileData.created_at
+          ? new Date(profileData.created_at).toLocaleDateString()
+          : '',
         photo: profileData.photo ? `http://127.0.0.1:8000${profileData.photo}` : null,
       }
 

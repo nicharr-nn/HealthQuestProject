@@ -147,7 +147,74 @@ class UserLevel(models.Model):
         self.level_rank = new_rank
         self.level = new_name
         self.save()
+        
+        # Check goal achievement after level up
+        self.check_goal_achievement()
+        
         return (new_rank != previous_rank, previous_rank, new_rank)
+
+    def check_goal_achievement(self):
+        """
+        Check if user has achieved their fitness goals based on current stats
+        """
+        from workout.models import WorkoutDayCompletion
+        
+        try:
+            active_goals = self.user_profile.fitness_goals.filter(
+                end_date__isnull=True  # Ongoing goals
+            )
+            
+            if not active_goals.exists():
+                self.goal_achieved = False
+                self.save(update_fields=["goal_achieved"])
+                return False
+            
+            goal_achieved = False
+            for goal in active_goals:
+                if self._meets_goal_criteria(goal):
+                    goal_achieved = True
+                    break
+            
+            if self.goal_achieved != goal_achieved:
+                self.goal_achieved = goal_achieved
+                self.save(update_fields=["goal_achieved"])
+            
+            return goal_achieved
+            
+        except Exception as e:
+            print(f"Error in check_goal_achievement: {e}")
+            return False
+
+    def meets_goal_criteria(self, goal):
+        """
+        Check if this user level meets specific goal criteria
+        """
+        from workout.models import WorkoutDayCompletion
+        completed_workouts = WorkoutDayCompletion.objects.filter(
+                user_profile=self.user_profile
+            ).count()
+        
+        if goal.goal_type == "lose_weight":
+            return completed_workouts >= 5
+        
+        elif goal.goal_type == "build_muscle":
+            return completed_workouts >= 10
+        
+        elif goal.goal_type == "improve_endurance":
+            total_duration = WorkoutDayCompletion.objects.filter(
+                user_profile=self.user_profile
+            ).aggregate(
+                total_duration=models.Sum('workout_day__duration')
+            )['total_duration'] or 0
+            return total_duration >= 500
+        
+        elif goal.goal_type == "general_fitness":
+            return self.level_rank >= 1 and completed_workouts >= 5
+        
+        elif goal.goal_type == "increase_flexibility":
+            return completed_workouts >= 15
+        
+        return False
 
 
 class Achievement(models.Model):

@@ -1,37 +1,22 @@
 from rest_framework import serializers
 
-from .models import WorkoutDay, WorkoutProgram
-from .models import WorkoutAssignment
+from .models import WorkoutDay, WorkoutProgram, WorkoutAssignment, WorkoutDayCompletion
 
 
 class WorkoutDaySerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkoutDay
-        fields = ["id", "day_number", "title", "video_links", "duration"]
-
+        fields = ["id", "day_number", "title", "video_links", "duration", "type"]
+        
 
 class WorkoutProgramSerializer(serializers.ModelSerializer):
-    days = WorkoutDaySerializer(many=True, read_only=False)
+    days = WorkoutDaySerializer(many=True, required=False)
     assigned_member_id = serializers.SerializerMethodField()  # if assigned to a member
 
     class Meta:
         model = WorkoutProgram
-        fields = [
-            "id",
-            "coach",
-            "title",
-            "description",
-            "level_access",
-            "difficulty_level",
-            "is_public",
-            "duration",
-            "category",
-            "created_at",
-            "updated_at",
-            "days",
-            "assigned_member_id",
-        ]
-
+        fields = '__all__'
+        
     def create(self, validated_data):
         days_data = validated_data.pop("days", [])
         program = WorkoutProgram.objects.create(**validated_data)

@@ -15,6 +15,13 @@ class WorkoutProgram(models.Model):
         ("flexibility", "Flexibility"),
         ("full_body", "Full Body"),
     ]
+
+    DIFFICULTY_CHOICES = [
+        ("easy", "Easy"),
+        ("medium", "Medium"),
+        ("hard", "Hard"),
+    ]
+
     coach = models.ForeignKey(
         UserProfile,
         on_delete=models.CASCADE,
@@ -25,7 +32,7 @@ class WorkoutProgram(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
     level_access = models.CharField(max_length=50, default="all")
-    difficulty_level = models.CharField(max_length=50, default="easy")
+    difficulty_level = models.CharField(max_length=50, choices=DIFFICULTY_CHOICES, default="easy")
     is_public = models.BooleanField(default=True)
     duration = models.IntegerField(help_text="Total duration in days", default=0)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -39,6 +46,18 @@ class WorkoutProgram(models.Model):
 
 
 class WorkoutDay(models.Model):
+    WORKOUT_TYPE_CHOICES = [
+        ("strength_training", "Strength Training"),
+        ("cardio", "Cardio"),
+        ("hiit", "HIIT"),
+        ("flexibility", "Flexibility"),
+        ("recovery", "Recovery"),
+        ("full_body", "Full Body"),
+        ("upper_body", "Upper Body"),
+        ("lower_body", "Lower Body"),
+        ("core", "Core"),
+    ]
+
     program = models.ForeignKey(
         WorkoutProgram,
         on_delete=models.CASCADE,
@@ -54,9 +73,14 @@ class WorkoutDay(models.Model):
         through="WorkoutDayCompletion",
         related_name="completed_days",
     )
+    type = models.CharField(
+        max_length=50, 
+        choices=WORKOUT_TYPE_CHOICES,
+        blank=True,
+        null=True,
+    )
 
     class Meta:
-        unique_together = ("program", "day_number")
         ordering = ["day_number"]
 
     def __str__(self):

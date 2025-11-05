@@ -76,9 +76,9 @@
                 required
               >
                 <option value="" disabled>Select difficulty level</option>
-                <option>Beginner</option>
-                <option>Intermediate</option>
-                <option>Advanced</option>
+                <option value="easy">EASY</option>
+                <option value="medium">MEDIUM</option>
+                <option value="hard">HARD</option>
               </select>
             </div>
 
@@ -317,9 +317,11 @@
                   min="5"
                   max="180"
                   class="w-full border border-gray-300 rounded-lg px-3.5 py-3 text-sm outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
-                  placeholder="45"
+                  placeholder="30"
                   required
+                  @input="validateDuration"
                 />
+                <p v-if="durationError" class="text-xs text-red-500 mt-1">{{ durationError }}</p>
               </div>
 
               <div>
@@ -332,15 +334,15 @@
                   class="w-full border border-gray-300 rounded-lg px-3.5 py-3 text-sm outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
                 >
                   <option value="">Select type</option>
-                  <option>Strength Training</option>
-                  <option>Cardio</option>
-                  <option>HIIT</option>
-                  <option>Flexibility</option>
-                  <option>Recovery</option>
-                  <option>Full Body</option>
-                  <option>Upper Body</option>
-                  <option>Lower Body</option>
-                  <option>Core</option>
+                  <option value="strength_training">Strength Training</option>
+                  <option value="cardio">Cardio</option>
+                  <option value="hiit">HIIT</option>
+                  <option value="flexibility">Flexibility</option>
+                  <option value="recovery">Recovery</option>
+                  <option value="full_body">Full Body</option>
+                  <option value="upper_body">Upper Body</option>
+                  <option value="lower_body">Lower Body</option>
+                  <option value="core">Core</option>
                 </select>
               </div>
             </div>
@@ -356,6 +358,7 @@
                 type="url"
                 class="w-full border border-gray-300 rounded-lg px-3.5 py-3 text-sm outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
                 placeholder="https://www.youtube.com/watch?v=..."
+                required
                 @blur="validatevideo_link"
               />
               <div v-if="youtubeError" class="text-xs text-red-500 mt-1">
@@ -369,7 +372,7 @@
                 type="button"
                 class="flex-1 bg-blue-500 text-white font-semibold px-4 py-3 rounded-lg transition-all hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 @click="saveDayWorkout"
-                :disabled="!currentWorkout.title || !currentWorkout.duration"
+                :disabled="!currentWorkout.title || !currentWorkout.duration || !currentWorkout.video_link || !youtubeRegex.test(currentWorkout.video_link)"
               >
                 {{ editingDay !== null ? 'Update Workout' : 'Add Workout' }}
               </button>
@@ -432,7 +435,6 @@ const coachUserProfileId = ref<number | null>(null)
 const editingProgramId = ref<number | null>(null)
 const backupProgramData = ref<WorkoutProgram | null>(null)
 
-// Description validation
 const descriptionError = ref('')
 const descriptionLength = computed(() => workoutProgram.description.length)
 
@@ -560,7 +562,7 @@ const workoutProgram = reactive<WorkoutProgram>({
 const currentWorkout = reactive<WorkoutDay>({
   day_number: 1,
   title: '',
-  duration: 45,
+  duration: 30,
   video_link: '',
   type: ''
 })
@@ -569,6 +571,7 @@ const selectedDay = ref<number | ''>('')
 const editingDay = ref<number | null>(null)
 const editingWorkoutIndex = ref<number | null>(null)
 const youtubeError = ref('')
+const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)[a-zA-Z0-9_-]{11}/
 
 const workoutAssignment = reactive({
   member_id: '',
@@ -624,33 +627,93 @@ const canSubmitProgram = computed(() => {
          !descriptionError.value
 })
 
+const durationError = ref('')
+
+function validateDuration() {
+  const duration = currentWorkout.duration
+  
+  if (!duration || duration <= 0) {
+    durationError.value = 'Duration must be a positive number'
+    return false
+  }
+
+  if (duration < 5) {
+    durationError.value = 'Duration must be at least 5 minutese'
+    return false
+  }
+
+  if (duration > 180) {
+    durationError.value = 'Duration cannot exceed 180 minutes'
+    currentWorkout.duration = 180
+    return false
+  }
+
+  if (!Number.isInteger(duration)) {
+    currentWorkout.duration = Math.round(duration)
+  }
+
+  durationError.value = ''
+  return true
+}
 function validatevideo_link() {
   youtubeError.value = ''
-  if (!currentWorkout.video_link) return
-  const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)[a-zA-Z0-9_-]{11}/
+  if (!currentWorkout.video_link || currentWorkout.video_link.trim() === '') {
+    return false
+  }
+
   if (!youtubeRegex.test(currentWorkout.video_link)) {
     youtubeError.value = 'Please enter a valid YouTube URL'
+    return false
   }
+  return true
 }
 
+
 function saveDayWorkout() {
-  if (!currentWorkout.title || !currentWorkout.duration) {
-    alert('Please fill in workout title and duration')
+  if (!currentWorkout.title?.trim()) {
+    alert('Please enter a workout title')
     return
   }
 
-  if (currentWorkout.video_link) {
+  if (!currentWorkout.duration || currentWorkout.duration <= 0) {
+    alert('Duration must be a positive number')
+    return
+  }
+
+  if (currentWorkout.duration < 5) {
+    alert('Duration must be at least 5 minutes')
+    currentWorkout.duration = 5
+    return
+  }
+
+  if (currentWorkout.duration > 180) {
+    alert('Duration cannot exceed 180 minutes')
+    currentWorkout.duration = 180
+    return
+  }
+
+  // Ensure duration is integer
+  currentWorkout.duration = Math.round(currentWorkout.duration)
+
+  // Validate YouTube URL if provided
+  if (currentWorkout.video_link && currentWorkout.video_link.trim() !== '') {
     validatevideo_link()
-    if (youtubeError.value) return
+    if (youtubeError.value) {
+      alert('Please fix the YouTube URL error before saving')
+      return
+    }
+  } else {
+    alert('Please enter a YouTube video URL')
+    return
   }
 
   const targetDay = editingDay.value || selectedDay.value as number
 
   const workout: WorkoutDay = {
-    day_number: currentWorkout.day_number,
-    title: currentWorkout.title,
+    day_number: targetDay,
+    title: currentWorkout.title.trim(),
     duration: currentWorkout.duration,
-    video_link: currentWorkout.video_link,
+    video_link: currentWorkout.video_link.trim(),
     type: currentWorkout.type
   }
 
@@ -722,7 +785,7 @@ function resetCurrentWorkout() {
   backupWorkout.value = null
 
   currentWorkout.title = ''
-  currentWorkout.duration = 45
+  currentWorkout.duration = 30
   currentWorkout.type = ''
   currentWorkout.video_link = ''
   currentWorkout.day_number = 1
@@ -752,25 +815,45 @@ async function loadExistingProgram(programId: number) {
     workoutAssignment.member_id =
       programData.assignment?.member?.member_id ||
       programData.assignment?.member_id ||
-      programData.member_id ||
-      programData.assigned_member_id ||
       ''
 
     if (programData.days && Array.isArray(programData.days)) {
       workoutProgram.WorkoutDays = {}
-      
+
       programData.days.forEach((day: any) => {
         const dayNumber = day.day_number
-        if (dayNumber) {
+        if (!dayNumber) return
+
+        // Initialize day array if missing
+        if (!workoutProgram.WorkoutDays[dayNumber]) {
+          workoutProgram.WorkoutDays[dayNumber] = []
+        }
+
+        // Handle multiple videos per day entry
+        const videoLinks = day.video_links || []
+        if (videoLinks.length > 0) {
+          videoLinks.forEach((videoLink: string, index: number) => {
+            const workout: WorkoutDay = {
+              title:
+                videoLinks.length > 1
+                  ? `${day.title || `Day ${dayNumber}`} - Part ${index + 1}`
+                  : day.title || `Day ${dayNumber}`,
+              type: day.type || '',
+              duration: Math.floor((day.duration || 30) / videoLinks.length),
+              video_link: videoLink,
+              day_number: dayNumber
+            }
+            workoutProgram.WorkoutDays[dayNumber].push(workout)
+          })
+        } else {
           const workout: WorkoutDay = {
-            title: day.title,
+            title: day.title || `Day ${dayNumber}`,
             type: day.type || '',
-            duration: day.duration_minutes || 45,
-            video_link: day.video_links && day.video_links.length > 0 ? day.video_links[0] : '',
+            duration: day.duration || 30,
+            video_link: '',
             day_number: dayNumber
           }
-          
-          workoutProgram.WorkoutDays[dayNumber] = [workout]
+          workoutProgram.WorkoutDays[dayNumber].push(workout)
         }
       })
     }
@@ -811,12 +894,15 @@ async function submitProgram() {
     return
   }
 
-  const days = Object.entries(workoutProgram.WorkoutDays).map(([day, workouts]) => ({
+const days = Object.entries(workoutProgram.WorkoutDays).flatMap(([day, workouts]) => {
+  return workouts.map(workout => ({
     day_number: Number(day),
-    title: workouts[0]?.title || `Day ${day}`,
-    video_links: workouts.map(w => w.video_link).filter(Boolean),
-    duration_minutes: workouts.reduce((sum, w) => sum + (w.duration || 0), 0),
+    title: workout.title,
+    type: workout.type || "",
+    video_links: [workout.video_link].filter(Boolean), // Single video per workout
+    duration: workout.duration
   }))
+})
 
   const payload = {
     coach: coachUserProfileId.value,
@@ -827,7 +913,13 @@ async function submitProgram() {
     is_public: workoutProgram.is_public ?? true,
     duration: workoutProgram.duration,
     category: workoutProgram.category || "full_body",
-    days
+    days: days.map(day => ({
+      day_number: day.day_number,
+      title: day.title,
+      type: day.type || "",
+      video_links: Array.isArray(day.video_links) ? day.video_links : [day.video_links].filter(Boolean),
+      duration: day.duration
+    }))
   }
 
   const url = editingProgramId.value
