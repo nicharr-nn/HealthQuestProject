@@ -66,23 +66,23 @@
           <h2 class="text-3xl font-bold text-gray-900">{{ selectedDayInfo.title }}</h2>
           <div class="flex items-center gap-4">
             <span class="font-medium text-gray-600"
-              >{{ selectedDayInfo.video_links.length }} Workouts</span
+              >{{ selectedDayInfo.workouts.length }} Workouts</span
             >
             <span class="text-gray-400">|</span>
-            <span class="font-medium text-gray-600">{{ selectedDayInfo.duration }} Mins</span>
+            <span class="font-medium text-gray-600">{{ selectedDayInfo.total_duration }} Mins</span>
           </div>
         </div>
 
-        <div v-if="selectedDayInfo.video_links.length === 0" class="text-gray-500">
+        <div v-if="selectedDayInfo.workouts.length === 0" class="text-gray-500">
           No workouts for this day.
         </div>
 
         <div v-else class="space-y-4">
-          <div v-for="(video, idx) in selectedDayInfo.video_links" :key="idx">
+          <div v-for="(workout, idx) in selectedDayInfo.workouts" :key="workout.id">
             <div
               :class="[
                 'mb-4 rounded-2xl overflow-hidden transition-all duration-200',
-                workoutStates[`${selectedDay}-${idx}`]?.completed
+                workoutStates[`${selectedDay}-${workout.id}`]?.completed
                   ? 'bg-indigo-50 border-2 border-indigo-200'
                   : 'bg-white border border-gray-200 hover:shadow-md',
               ]"
@@ -90,13 +90,14 @@
               <!-- Thumbnail & Controls -->
               <div class="p-6 flex items-start gap-6">
                 <div
+                  v-if="workout.video_link"
                   class="relative flex-shrink-0 rounded-xl overflow-hidden w-72 h-40 group cursor-pointer bg-gray-900"
-                  @click="openYouTube(video)"
+                  @click="openYouTube(workout.video_link)"
                 >
                   <!-- YouTube Thumbnail -->
                   <img
-                    v-if="extractYouTubeId(video)"
-                    :src="`https://img.youtube.com/vi/${extractYouTubeId(video)}/mqdefault.jpg`"
+                    v-if="extractYouTubeId(workout.video_link)"
+                    :src="`https://img.youtube.com/vi/${extractYouTubeId(workout.video_link)}/mqdefault.jpg`"
                     class="w-full h-full object-cover"
                     alt="Video thumbnail"
                     @error="handleImageError"
@@ -135,30 +136,37 @@
 
                 <!-- Workout Info -->
                 <div class="flex-1">
-                  <h3 class="text-2xl font-bold text-gray-900 mb-3">Workout {{ idx + 1 }}</h3>
+                  <h3 class="text-2xl font-bold text-gray-900 mb-3">{{ workout.title }}</h3>
+                  <div class="flex items-center gap-4 mb-3 text-sm text-gray-600">
+                    <span>{{ workout.duration }} minutes</span>
+                    <span v-if="workout.type" class="bg-gray-100 px-2 py-1 rounded">
+                      {{ workout.type.toUpperCase() }}
+                    </span>
+                  </div>
                   <div class="flex gap-3">
                     <button
-                      @click="openYouTube(video)"
+                      v-if="workout.video_link"
+                      @click="openYouTube(workout.video_link)"
                       class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
                     >
                       ▶ Watch on YouTube
                     </button>
 
                     <button
-                      @click="toggleComplete(selectedDay, idx)"
+                      @click="toggleComplete(selectedDay, workout.id)"
                       :disabled="dayCompletionStates[selectedDay]"
                       :class="[
                         'px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2',
                         dayCompletionStates[selectedDay]
                           ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                          : workoutStates[`${selectedDay}-${idx}`]?.completed
+                          : workoutStates[`${selectedDay}-${workout.id}`]?.completed
                             ? 'bg-green-600 hover:bg-green-700 text-white'
                             : 'bg-indigo-600 hover:bg-indigo-700 text-white',
                       ]"
                     >
                       <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path
-                          v-if="workoutStates[`${selectedDay}-${idx}`]?.completed"
+                          v-if="workoutStates[`${selectedDay}-${workout.id}`]?.completed"
                           fill-rule="evenodd"
                           d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
                           clip-rule="evenodd"
@@ -171,7 +179,7 @@
                         />
                       </svg>
                       {{
-                        workoutStates[`${selectedDay}-${idx}`]?.completed
+                        workoutStates[`${selectedDay}-${workout.id}`]?.completed
                           ? 'Completed'
                           : 'Mark Complete'
                       }}
@@ -182,7 +190,7 @@
             </div>
           </div>
 
-          <!--  Complete Day Section -->
+          <!-- Complete Day Section -->
           <div
             class="mt-8 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl p-8 text-center border-2 border-indigo-200"
           >
@@ -191,14 +199,12 @@
                 <div class="flex items-center justify-center gap-3 mb-3">
                   <span class="text-2xl">{{ getCompletedCount(selectedDay) }}</span>
                   <span class="text-gray-400">/</span>
-                  <span class="text-2xl text-gray-600">{{
-                    selectedDayInfo.video_links.length
-                  }}</span>
+                  <span class="text-2xl text-gray-600">{{ selectedDayInfo.workouts.length }}</span>
                   <span class="text-gray-600 font-medium">workouts completed</span>
                 </div>
                 <div class="max-w-md mx-auto bg-gray-200 rounded-full h-3 overflow-hidden">
                   <div
-                    class="bg-gradient-to-r from-pimk-100 to-pink-600 h-full rounded-full transition-all duration-500"
+                    class="bg-gradient-to-r from-pink-100 to-pink-600 h-full rounded-full transition-all duration-500"
                     :style="{ width: `${getProgressPercentage(selectedDay)}%` }"
                   ></div>
                 </div>
@@ -272,16 +278,49 @@ async function fetchProgramDetail() {
     const data = await res.json()
 
     program.value = data
-    days.value = data.days || []
 
-    // Check completion status for each day
+    // Group days by day_number but keep individual workout data
+    const daysByNumber = {}
+    data.days.forEach((day) => {
+      const dayNumber = day.day_number
+
+      if (!daysByNumber[dayNumber]) {
+        daysByNumber[dayNumber] = {
+          id: day.id, // Use the first day's ID for API calls
+          day_number: dayNumber,
+          title: `Day ${dayNumber}`, // Default day title
+          workouts: [], // Array to store individual workouts
+          total_duration: 0,
+        }
+      }
+
+      // Create individual workout object from each backend day object
+      const workout = {
+        id: day.id, // Use the actual day ID from backend
+        title: day.title || `Workout`,
+        video_link: day.video_links && day.video_links.length > 0 ? day.video_links[0] : '',
+        duration: day.duration || 30,
+        type: day.type || '',
+      }
+      daysByNumber[dayNumber].workouts.push(workout)
+
+      // Accumulate total duration
+      daysByNumber[dayNumber].total_duration += day.duration || 0
+    })
+
+    // Convert back to array
+    days.value = Object.values(daysByNumber)
+
+    // Check completion status for each day (using the first day's ID)
     for (const day of days.value) {
       await checkDayCompletion(day.id)
     }
 
-    // pick the first incomplete day as default
+    // Pick the first incomplete day as default
     const firstIncomplete = days.value.find((d) => !dayCompletionStates.value[d.id])
     selectedDay.value = firstIncomplete ? firstIncomplete.id : (days.value[0]?.id ?? null)
+
+    console.log('Processed days:', days.value) // Debug log
   } catch (err) {
     error.value = err.message
   } finally {
@@ -337,9 +376,7 @@ function scrollRight() {
 function extractYouTubeId(url) {
   if (!url) return null
   if (/^[a-zA-Z0-9_-]{11}$/.test(url)) return url
-  const match = url.match(
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?/]+)/,
-  )
+  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?/]+)/)
   return match ? match[1] : null
 }
 
@@ -352,9 +389,9 @@ function handleImageError(event) {
   event.target.style.display = 'none'
 }
 
-function toggleComplete(dayId, workoutIndex) {
+function toggleComplete(dayId, workoutId) {
   if (dayCompletionStates.value[dayId]) return
-  const key = `${dayId}-${workoutIndex}`
+  const key = `${dayId}-${workoutId}`
   if (!workoutStates.value[key]) workoutStates.value[key] = { completed: false }
   workoutStates.value[key].completed = !workoutStates.value[key].completed
 }
@@ -362,22 +399,23 @@ function toggleComplete(dayId, workoutIndex) {
 function getCompletedCount(dayId) {
   const day = days.value.find((d) => d.id === dayId)
   if (!day) return 0
-  return day.video_links.reduce(
-    (count, _, idx) => (workoutStates.value[`${dayId}-${idx}`]?.completed ? count + 1 : count),
+  return day.workouts.reduce(
+    (count, workout) =>
+      workoutStates.value[`${dayId}-${workout.id}`]?.completed ? count + 1 : count,
     0,
   )
 }
 
 function getProgressPercentage(dayId) {
   const day = days.value.find((d) => d.id === dayId)
-  if (!day || day.video_links.length === 0) return 0
-  return (getCompletedCount(dayId) / day.video_links.length) * 100
+  if (!day || day.workouts.length === 0) return 0
+  return (getCompletedCount(dayId) / day.workouts.length) * 100
 }
 
 function allWorkoutsComplete(dayId) {
   const day = days.value.find((d) => d.id === dayId)
   if (!day) return false
-  return getCompletedCount(dayId) === day.video_links.length
+  return getCompletedCount(dayId) === day.workouts.length
 }
 
 async function getCurrentXp() {
@@ -414,12 +452,13 @@ async function completeDay(dayId) {
     console.log('XP before:', before, 'after:', after, 'earned:', xp.value)
 
     // hide or move to next day automatically
-    const nextDay = days.value.find(d => !dayCompletionStates.value[d.id]);
+    const nextDay = days.value.find((d) => !dayCompletionStates.value[d.id])
     if (nextDay) {
-      selectedDay.value = nextDay.id;
+      selectedDay.value = nextDay.id
     } else {
-      alert(`🎉 You completed all days in this program! You earned ${xp.value} XP!`);
+      alert(`🎉 You completed all days in this program! You earned ${xp.value} XP!`)
     }
+  alert(`🎉 Congratulations! You earned ${xp.value} XP!`)
 
   } catch (err) {
     console.error(err)
@@ -430,12 +469,3 @@ async function completeDay(dayId) {
 }
 </script>
 
-<style scoped>
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-</style>
