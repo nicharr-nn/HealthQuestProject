@@ -140,15 +140,23 @@ class WorkoutAssignment(models.Model):
         return f"{self.member.user.user.username} → {self.program.title}"
 
     def check_completion(self):
-        """Check if all days in the program are completed by this member."""
-        total_days = self.program.days.count()
-        completed_days = WorkoutDayCompletion.objects.filter(
-            user_profile=self.member.user, workout_day__program=self.program
-        ).count()
+        """Check if all day_numbers are completed."""
+        total_days = self.program.days.values("day_number").distinct().count()
+        completed_days = (
+            WorkoutDayCompletion.objects
+            .filter(
+                user_profile=self.member.user,
+                workout_day__program=self.program
+            )
+            .values("workout_day__day_number")
+            .distinct()
+            .count()
+        )
 
-        if total_days > 0 and completed_days >= total_days:
+        if completed_days >= total_days:
             self.status = "completed"
             self.completed_date = timezone.now().date()
             self.save(update_fields=["status", "completed_date"])
             return True
         return False
+

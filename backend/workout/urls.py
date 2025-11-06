@@ -25,13 +25,13 @@ urlpatterns = [
         views.complete_workout_day,
         name="complete-workout-day",
     ),
+        path(
+        "day/<int:id>/complete-status/",
+        views.check_workout_day_completion,
+        name="check-workout-day-completion",
+    ),
     path("progress/<int:id>/", views.workout_progress, name="workout-progress"),
     # Workout Assignment URLs
-    path(
-        "assign/<int:member_id>/",
-        views.assign_program_to_member,
-        name="assign_program_to_member",
-    ),
     path(
         "assignment-update/<int:id>/",
         views.workout_assignment_update,

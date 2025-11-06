@@ -12,6 +12,7 @@ from .views import (
     food_post_comments,
     food_post_comment_detail,
     uncommented_food_posts,
+    assign_program_to_member,
 )
 
 urlpatterns = [
@@ -26,6 +27,11 @@ urlpatterns = [
     path("member-apply/", apply_as_member, name="apply-as-member"),
     path("member-profile/", get_member_profile, name="get-member-profile"),
     path("member-request/manage/", manage_member_request, name="manage-member-request"),
+    path(
+        "assign/<int:member_id>/",
+        assign_program_to_member,
+        name="assign-program-to-member",
+    ),
     # food post endpoints
     path("food-posts/", food_posts, name="food-posts"),
     path("food-posts/<int:id>/update/", food_post_update, name="food-post-update"),

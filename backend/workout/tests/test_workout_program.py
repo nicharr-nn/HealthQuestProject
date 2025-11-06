@@ -61,7 +61,7 @@ class WorkoutProgramTests(TestCase):
             program=self.program,
             day_number=1,
             title="Day 1 - Test Workout",
-            duration=45,
+            duration=30,
         )
 
         # Default authentication as normal user
@@ -89,7 +89,7 @@ class WorkoutProgramTests(TestCase):
             "title": "New Program",
             "description": "New program description",
             "difficulty_level": "easy",
-            "duration": 2,
+            "duration": 1,
             "is_public": True,
             "category": "cardio",
             "coach": self.coach_profile.id,
@@ -141,9 +141,11 @@ class WorkoutProgramTests(TestCase):
         url = reverse('workout-program-detail', kwargs={'id': self.program.id})
         data = {
             "title": "Updated Program Title",
-            "description": "Updated description"
+            "description": "Updated description",
+            "difficulty_level": "medium",
+            "duration": 3,
         }
-        response = self.client.put(url, data, format='json')
+        response = self.client.patch(url, data, format='json')
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.program.refresh_from_db()
@@ -164,7 +166,7 @@ class WorkoutProgramTests(TestCase):
         url = reverse('workout-program-detail', kwargs={'id': self.program.id})
         response = self.client.delete(url)
         
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(WorkoutProgram.objects.count(), 0)
 
     def test_delete_workout_program_as_normal(self):
@@ -183,10 +185,12 @@ class WorkoutDayCompletionTests(WorkoutProgramTests):
         """Test normal can complete a workout day"""
         url = reverse('complete-workout-day', kwargs={'id': self.workout_day_1.id})
         response = self.client.post(url, format='json')
-        
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('xp_awarded', response.data)
-        self.assertIn('leveled_up', response.data)
+        self.assertIn('goal_achieved', response.data)
+        self.assertTrue(response.data['completed'])
+        self.assertEqual(response.data['total_xp'], 530)
         
         # Check completion was created
         completion = WorkoutDayCompletion.objects.filter(
@@ -199,17 +203,25 @@ class WorkoutDayCompletionTests(WorkoutProgramTests):
     def test_complete_already_completed_workout_day(self):
         """Test completing already completed workout day"""
         # First completion
-        WorkoutDayCompletion.objects.create(
-            user_profile=self.normal_profile,
-            workout_day=self.workout_day_1,
-            xp_earned=100
-        )
+        url = reverse('complete-workout-day', kwargs={'id': self.workout_day_1.id})
+        first_response = self.client.post(url, format='json')
+        self.assertEqual(first_response.status_code, status.HTTP_200_OK)
+
+        # Store XP after first completion
+        xp_after_first = first_response.data['total_xp']
         
         url = reverse('complete-workout-day', kwargs={'id': self.workout_day_1.id})
+        # try to make complete again
         response = self.client.post(url, format='json')
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(response.data['completed'])
+        self.assertEqual(response.data['total_xp'], xp_after_first)
+        # No new XP for already-completed day
+        self.assertEqual(response.data['xp_awarded'], 0)
+        self.assertEqual(response.data['current_level'], 'Bronze')
+        self.assertEqual(response.data['goal_achieved'], False)
+
         
         # Should still only have one completion
         completions = WorkoutDayCompletion.objects.filter(
@@ -220,18 +232,19 @@ class WorkoutDayCompletionTests(WorkoutProgramTests):
 
     def test_check_completion_status(self):
         """Test checking completion status of workout day"""
-        url = reverse('complete-workout-day', kwargs={'id': self.workout_day_1.id})
-        
+        url_get = reverse('check-workout-day-completion', kwargs={'id': self.workout_day_1.id})
+        url_post = reverse('complete-workout-day', kwargs={'id': self.workout_day_1.id})
+
         # Check before completion
-        response = self.client.get(url)
+        response = self.client.get(url_get)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertFalse(response.data['completed'])
         
         # Complete the workout
-        self.client.post(url, format='json')
+        self.client.post(url_post, format='json')
         
         # Check after completion
-        response = self.client.get(url)
+        response = self.client.get(url_get)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(response.data['completed'])
         self.assertIn('xp_earned', response.data)

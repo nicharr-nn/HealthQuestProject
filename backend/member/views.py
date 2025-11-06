@@ -1,5 +1,6 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Member, CoachMemberRelationship, FoodPost, FoodPostComment
@@ -11,7 +12,8 @@ from .serializers import (
     FoodPostCommentSerializer,
 )
 from coach.models import Coach
-
+from workout.models import WorkoutProgram, WorkoutAssignment
+from workout.serializers import WorkoutAssignmentSerializer
 
 @api_view(["GET", "PATCH"])
 @permission_classes([IsAuthenticated])
@@ -277,38 +279,49 @@ def manage_member_request(request):
             status=status.HTTP_204_NO_CONTENT,
         )
 
-
-@api_view(["PATCH"])
+@api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def assign_program_to_member(request, member_id):
     """
-    Coach assigns a workout program to an accepted member.
+    Assign a workout program to a member (coaches only).
     """
-    user_profile = getattr(request.user, "userprofile", None)
-    coach_profile = getattr(user_profile, "coach_profile", None)
+    coach_profile = request.user.userprofile
+    if coach_profile.role != "coach":
+        raise PermissionDenied("Only coaches can assign programs.")
 
-    if not coach_profile:
-        return Response({"error": "You are not a coach."}, status=403)
+    member = get_object_or_404(Member, pk=member_id)
 
-    try:
-        relationship = CoachMemberRelationship.objects.get(
-            coach=coach_profile, member__member_id=member_id, status="accepted"
+    program_id = request.data.get("program_id")
+    if not program_id:
+        return Response({"error": "Program ID is required."}, status=400)
+
+    program = get_object_or_404(WorkoutProgram, pk=program_id)
+
+    # Optional due date
+    due_date = request.data.get("due_date")
+
+    # Prevent duplicates
+    existing = WorkoutAssignment.objects.filter(member=member, program=program).first()
+    if existing:
+        return Response(
+            {"message": "This program is already assigned to the member."},
+            status=status.HTTP_200_OK,
         )
-    except CoachMemberRelationship.DoesNotExist:
-        return Response({"error": "No such accepted member."}, status=404)
 
-    program_name = request.data.get("program_name")
-    if not program_name:
-        return Response({"error": "Program name required."}, status=400)
-
-    relationship.member.program_name = program_name
-    relationship.member.save()
-
-    return Response(
-        {"message": f"Program '{program_name}' assigned to member."},
-        status=200,
+    assignment = WorkoutAssignment.objects.create(
+        member=member,
+        program=program,
+        due_date=due_date if due_date else None,
     )
 
+    member.program_name = program.title
+    member.save(update_fields=["program_name"])
+
+    serializer = WorkoutAssignmentSerializer(assignment)
+    return Response(
+        {"message": "Program assigned successfully.", "assignment": serializer.data},
+        status=status.HTTP_201_CREATED,
+    )
 
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
