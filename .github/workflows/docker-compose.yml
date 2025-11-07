@@ -32,6 +32,7 @@ jobs:
           push: true
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/healthquestproject-backend:latest
+            ${{ secrets.DOCKER_USERNAME }}/healthquestproject-backend:${{ github.sha }}
           cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/healthquestproject-backend:buildcache
           cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/healthquestproject-backend:buildcache,mode=max
 
@@ -44,5 +45,6 @@ jobs:
           push: true
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/healthquestproject-frontend:latest
+            ${{ secrets.DOCKER_USERNAME }}/healthquestproject-frontend:${{ github.sha }}
           cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/healthquestproject-frontend:buildcache
           cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/healthquestproject-frontend:buildcache,mode=max
