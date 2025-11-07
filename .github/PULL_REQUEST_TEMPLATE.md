@@ -1,61 +1,58 @@
 ## Description
 This pull request includes the following changes:
-- Improves UI/UX styles across the user dashboard
-- Adds CRUD APIs and tests for Recipe models.
-- Cleans up unused code and improves readability.
-- Adds Docker Hub integration for frontend and backend images.
-- Adds pgAdmin container for PostgreSQL management.
+- Add WorkoutAssignment model and API in workout app.
+- Change CSS to Tailwind CSS to improve layout.
+- Check grammar and limitations.
+- Implement Test cases for models and APIs.
+- fix goal_achive in UserLevel
+- add choiches for difficulty level in workout program (easy, medium, hard).
+- fix bugs when creating workout program.
 
 ## Type of Change
 - [X] feat (new functionality)
 - [X] fix (non-breaking change that fixes an issue)
 - [X] refactor (code restructuring without changing functionality)
 - [X] style (code style improvements, formatting)
-- [X] test (adding or updating tests))
 
-## Changes Introduced
-
-### workflow
-- Add ESLint test
 
 ### Build / Frontend
-- **Fixed Rollup binary issue**
-  - Ensured correct Rollup behavior on ARM64 systems.
-  - Updated Dockerfile to use **Node 20.19 LTS**, compatible with Vite 7.
-  - Cleaned up Docker volumes to preserve `node_modules`.
+- **Adjust code styles**
+  - Modified `CreateWorkoutProgram.vue` to improve layout and responsiveness using Tailwind CSS classes.
+  - Add Assigned Programs section to display programs assigned to the member in `WorkoutPage.vue`.
+  - Remove level access in WorkoutCard and uppercase text.
+  - Add restrictions for creating a workout day program: duration must be positive number in frontend.
+  - Fix bugs for field name mismatch when creating workout program (duration_minutes -> duration).
+  - Adjust fetchProgramDetail logic in `WorkoutProgram.vue` to handle multiple workouts correctly.
+
+- **Grammar and Limitation Fixes**
+  - Updated text in `CreateWorkoutProgram.vue` to correct grammar (e.g., "1 days" to "1 day").
+- **Edit Existing workout fields**
+  - Coach can edit every field in workout program except assigned member.
 
 ### Backend / Infrastructure
--  **Added pgAdmin container** in `docker-compose.yml` for easier PostgreSQL visualization and management.
-  - Uses `dpage/pgadmin4` image.
-  - Configured ports and environment variables via `.env`.
-  - Added persistent `pgadmin_data` volume for configuration storage.
-  - Added Hub repository with images
-  - Add Recipe, workoutassignment models
-  - Add api CRUD for recipe
-  - Add test for recipe access and create
-- Added pgAdmin service to docker-compose.yml for database visualization.
-       Image: dpage/pgadmin4
-      Port: 8081
-      Persistent volume: pgadmin_data
-- Added Docker Hub image build and push workflows (primfordatabase/healthquestproject-*).
-- Added new Recipe and WorkoutAssignment models.
-- Implemented CRUD APIs for Recipe.
-- Added unit tests for Recipe access and creation logic.
+- **New Model and API**
+  - Created `WorkoutAssignment` model to link members with assigned workout programs.
+  - Developed API endpoints to manage workout assignments.
+  - Changed logic in member/views.py to update member's program_name when a workout program is assigned.
+  - Split complete-workout-day API into two endpoints: one for checking completion status and another for marking completion.
+- **Difficulty Level Choices**
+  - Added choices for difficulty level in `WorkoutProgram` model (easy, medium, hard).
+- **Fix UserLevel Goal Achieved Bug**
+  - Corrected logic to properly update `goal_achieved` field in `UserLevel` model.
+- **Serializer Update**
+  - Updated `WorkoutProgramSerializer` to include `assigned_member_id` field.
+  - Updated `WorkoutDay` to include `type` field.
+  - Change logic in check_completion in workout/models to handle many workouts in one day.
+- **Delete workout_assignments, fitness app**
+- **Test Cases**
+  - Added unit tests for the FoodPost, FoodPostComment, Member, CoachMemberRelationship models.
+  - Adjusted some views in FoodPost, Workout.
+
 
 ## Testing Checklist
-- Verified frontend builds successfully under Node 20.19.
-- Confirmed Rollup no longer throws module resolution errors.
-- Confirmed pgAdmin accessible at http://localhost:8081/.
-- Verified PostgreSQL and pgAdmin containers network correctly (depends_on: db).
-- Tested backend CRUD endpoints for Recipe.
-
-## Checklist
-- [x] Docker build completes successfully
-- [x] Frontend serves correctly with Vite
-- [x] Rollup binary issue resolved on ARM & x64
-- [x] pgAdmin container operational and connected to Postgres
-- [x] Updated `.env.example` with new pgAdmin vars
-- [x] Lint tests pass (ESLint & Prettier) 
+- [X] Unit tests added for new model and API endpoints
+- [X] Manual testing of frontend changes
+- [X] Verified grammar and limitation fixes in UI
 
 ## Technical Checklist
 - [ ] Code follows project style guidelines
@@ -65,14 +62,12 @@ This pull request includes the following changes:
 
 ## Database Changes
 - [X] New migrations added
-- [ ] Existing migrations modified
+- [X] Existing migrations modified
 
 ## Steps to check
-1. rm -nodemodules
-2. npm install in frontend
-3. docker-compose up --build
-4. if you can't use frontend remove nodemodules, package-lock.json and docker-compose up --build frontend
-5. docker-compose exec backend python manage.py migrate
-6. docker-compose exec backend python manage.py createsuperuser
-7. docker pull primfordatabase/healthquestproject-frontend:latest
-8. docker pull primfordatabase/healthquestproject-backend:latest
+1. docker-compose exec backend python manage.py migrate
+2. docker-compose exec backend python manage.py test workout
+3. docker-compose exec backend python manage.py test member
+4. Test the frontend changes by navigating to the Create Workout Program page and Workout Page in the application.
+5. Test existing functionalities to ensure no regressions (e.g., coach comments on FoodPost, member completes program and gain bonus point).
+6. Test edge cases for workout program creation (e.g., duration minutes, editing programs).

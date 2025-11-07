@@ -598,7 +598,7 @@ async function createAssignment(programId: number) {
       program_id: programId,
       member_id: memberNumericId,
     }
-    const res = await fetch(`http://127.0.0.1:8000/api/workout/assign/${memberNumericId}/`, {
+    const res = await fetch(`http://127.0.0.1:8000/api/member/assign/${memberNumericId}/`, {
       method: 'POST',
       credentials: 'include',
       headers: {

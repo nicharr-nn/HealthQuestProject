@@ -1,18 +1,18 @@
 <template>
   <div class="min-h-screen my-8">
-    <div class="max-w-4xl mx-auto">
+    <div class="max-w-4xl mx-auto font-body">
       <div class="bg-white rounded-2xl shadow-xl p-8">
         <!-- Header -->
-        <div class="mb-8 text-center">
-          <h1 class="text-3xl font-bold text-gray-800">Coach Management</h1>
-          <p class="text-gray-500 text-sm mt-1">
+        <div class="mb-8 text-center font-subtitle text-[#846757]">
+          <h1 class="text-3xl font-bold">Coach Management</h1>
+          <p class=" text-sm mt-1">
             Connect with your coach or view your request status
           </p>
         </div>
 
         <!-- Loading State -->
         <div v-if="loading" class="text-center py-8">
-          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-300 mx-auto"></div>
           <p class="text-gray-600 mt-4">Loading your coach information...</p>
         </div>
 
@@ -28,22 +28,22 @@
           </button>
         </div>
 
-        <!-- 🟢 Connected Coach -->
+        <!-- Connected Coach -->
         <div v-else-if="coachStatus === 'accepted' || coachStatus === 'approved'" class="mb-8">
-          <h2 class="text-xl font-semibold text-gray-700 mb-4">Your Coach</h2>
+          <h2 class="text-xl font-semibold text-[#846757] mb-4">Your Coach</h2>
 
-          <div class="bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200 rounded-xl p-6">
+          <div class="bg-[#ffc3d3] rounded-xl p-6">
             <div class="grid md:grid-cols-2 gap-4">
               <div>
-                <p class="text-sm text-gray-600 mb-1">Coach Name</p>
+                <p class="text-sm text-gray-800 mb-1">Coach Name</p>
                 <p class="text-lg font-semibold text-gray-800">{{ currentCoach.name }}</p>
               </div>
               <div>
-                <p class="text-sm text-gray-600 mb-1">Coach ID</p>
+                <p class="text-sm text-gray-800 mb-1">Coach ID</p>
                 <p class="text-lg font-semibold text-gray-800">{{ currentCoach.coach_id }}</p>
               </div>
               <div>
-                <p class="text-sm text-gray-600 mb-1">Joined Date</p>
+                <p class="text-sm text-gray-800 mb-1">Joined Date</p>
                 <p class="text-lg font-semibold text-gray-800">{{ formatDate(currentCoach.joined_date) }}</p>
               </div>
             </div>
@@ -59,7 +59,7 @@
           <div class="mt-4 text-center">
             <button
               @click="cancelCoachRequest"
-              class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
+              class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-semibold transition-colors cursor-pointer"
             >
               Cancel Coach Connection
             </button>
@@ -68,8 +68,7 @@
 
         <!-- Pending Coach Request -->
         <div v-else-if="coachStatus === 'pending'" class="text-center mb-8">
-          <h2 class="text-xl font-semibold text-gray-700 mb-3">Coach Request Pending</h2>
-          <p class="text-gray-600 text-sm mb-4">
+          <p class="text-gray-600 text-l mb-4">
             Your request to connect with <strong>{{ pendingCoach.name }}</strong> is waiting for their approval.
           </p>
           <div class="bg-yellow-50 border border-yellow-300 text-yellow-800 p-4 rounded-lg inline-block mb-4">
@@ -80,7 +79,7 @@
           <div class="mt-4">
             <button
               @click="cancelCoachRequest"
-              class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
+              class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-semibold transition-colors cursor-pointer"
             >
               Cancel Request
             </button>
@@ -89,7 +88,7 @@
 
         <!-- No Coach Yet - Send Request -->
         <div v-else>
-          <h2 class="text-xl font-semibold text-gray-700 mb-4">Connect with a Coach</h2>
+          <h2 class="text-xl font-semibold text-gray-700 mb-4 font-subtitle">Connect with a Coach</h2>
 
           <!-- Member Profile Setup -->
           <div v-if="!memberProfile" class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
@@ -117,7 +116,7 @@
                     v-model="coachCode"
                     type="text"
                     placeholder="e.g., C-XXXXX"
-                    class="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                    class="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-300 focus:border-blue-300 outline-none transition-all"
                     :disabled="requestLoading"
                   />
                 </div>
@@ -134,7 +133,7 @@
                 <select
                   id="experienceLevel"
                   v-model="experienceLevel"
-                  class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                  class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-300 focus:border-blue-300 outline-none transition-all"
                   :disabled="requestLoading"
                 >
                   <option value="beginner">Beginner</option>
@@ -153,7 +152,7 @@
                   v-model="message"
                   rows="3"
                   placeholder="Tell the coach about your fitness goals and expectations..."
-                  class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                  class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-300 focus:border-blue-300 outline-none transition-all"
                   :disabled="requestLoading"
                 ></textarea>
               </div>
@@ -175,10 +174,10 @@
                 @click="sendRequest"
                 :disabled="requestLoading || !coachCode.trim()"
                 :class="[
-                  'w-full py-3 px-6 rounded-lg font-semibold text-white transition-all',
+                  'w-full py-3 px-6 rounded-lg font-semibold text-white transition-all cursor-pointer',
                   requestLoading || !coachCode.trim() 
                     ? 'bg-gray-400 cursor-not-allowed' 
-                    : 'bg-indigo-600 hover:bg-indigo-700 hover:shadow-lg'
+                    : 'bg-blue-400 hover:bg-blue-500 hover:shadow-lg'
                 ]"
               >
                 <span v-if="requestLoading" class="flex items-center justify-center gap-2">
@@ -416,10 +415,4 @@ function formatDate(dateString) {
 </script>
 
 <style scoped>
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
 </style>

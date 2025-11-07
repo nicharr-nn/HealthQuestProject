@@ -286,17 +286,17 @@ async function fetchProgramDetail() {
 
       if (!daysByNumber[dayNumber]) {
         daysByNumber[dayNumber] = {
-          id: day.id, // Use the first day's ID for API calls
+          id: day.id,
           day_number: dayNumber,
-          title: `Day ${dayNumber}`, // Default day title
-          workouts: [], // Array to store individual workouts
+          title: `Day ${dayNumber}`,
+          workouts: [], 
           total_duration: 0,
         }
       }
 
       // Create individual workout object from each backend day object
       const workout = {
-        id: day.id, // Use the actual day ID from backend
+        id: day.id,
         title: day.title || `Workout`,
         video_link: day.video_links && day.video_links.length > 0 ? day.video_links[0] : '',
         duration: day.duration || 30,
@@ -320,7 +320,6 @@ async function fetchProgramDetail() {
     const firstIncomplete = days.value.find((d) => !dayCompletionStates.value[d.id])
     selectedDay.value = firstIncomplete ? firstIncomplete.id : (days.value[0]?.id ?? null)
 
-    console.log('Processed days:', days.value) // Debug log
   } catch (err) {
     error.value = err.message
   } finally {
@@ -344,7 +343,7 @@ async function fetchCompletedDays() {
 
 async function checkDayCompletion(dayId) {
   try {
-    const res = await fetch(`http://127.0.0.1:8000/api/workout/day/${dayId}/complete/`, {
+    const res = await fetch(`http://127.0.0.1:8000/api/workout/day/${dayId}/complete-status/`, {
       credentials: 'include',
     })
 
