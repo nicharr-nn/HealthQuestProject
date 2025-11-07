@@ -5,6 +5,7 @@ from workout.models import WorkoutProgram, WorkoutDay, WorkoutDayCompletion
 
 User = get_user_model()
 
+
 class WorkoutDayCompletionTest(TestCase):
     def setUp(self):
         self.client = APIClient()

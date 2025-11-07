@@ -32,7 +32,9 @@ class WorkoutProgram(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
     level_access = models.CharField(max_length=50, default="all")
-    difficulty_level = models.CharField(max_length=50, choices=DIFFICULTY_CHOICES, default="easy")
+    difficulty_level = models.CharField(
+        max_length=50, choices=DIFFICULTY_CHOICES, default="easy"
+    )
     is_public = models.BooleanField(default=True)
     duration = models.IntegerField(help_text="Total duration in days", default=0)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -74,7 +76,7 @@ class WorkoutDay(models.Model):
         related_name="completed_days",
     )
     type = models.CharField(
-        max_length=50, 
+        max_length=50,
         choices=WORKOUT_TYPE_CHOICES,
         blank=True,
         null=True,
@@ -143,10 +145,8 @@ class WorkoutAssignment(models.Model):
         """Check if all day_numbers are completed."""
         total_days = self.program.days.values("day_number").distinct().count()
         completed_days = (
-            WorkoutDayCompletion.objects
-            .filter(
-                user_profile=self.member.user,
-                workout_day__program=self.program
+            WorkoutDayCompletion.objects.filter(
+                user_profile=self.member.user, workout_day__program=self.program
             )
             .values("workout_day__day_number")
             .distinct()
@@ -159,4 +159,3 @@ class WorkoutAssignment(models.Model):
             self.save(update_fields=["status", "completed_date"])
             return True
         return False
-

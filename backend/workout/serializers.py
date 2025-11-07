@@ -1,13 +1,13 @@
 from rest_framework import serializers
 
-from .models import WorkoutDay, WorkoutProgram, WorkoutAssignment, WorkoutDayCompletion
+from .models import WorkoutDay, WorkoutProgram, WorkoutAssignment
 
 
 class WorkoutDaySerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkoutDay
         fields = ["id", "day_number", "title", "video_links", "duration", "type"]
-        
+
 
 class WorkoutProgramSerializer(serializers.ModelSerializer):
     days = WorkoutDaySerializer(many=True, required=False)
@@ -15,8 +15,8 @@ class WorkoutProgramSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = WorkoutProgram
-        fields = '__all__'
-        
+        fields = "__all__"
+
     def create(self, validated_data):
         days_data = validated_data.pop("days", [])
         program = WorkoutProgram.objects.create(**validated_data)

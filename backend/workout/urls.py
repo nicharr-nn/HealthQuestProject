@@ -25,7 +25,7 @@ urlpatterns = [
         views.complete_workout_day,
         name="complete-workout-day",
     ),
-        path(
+    path(
         "day/<int:id>/complete-status/",
         views.check_workout_day_completion,
         name="check-workout-day-completion",

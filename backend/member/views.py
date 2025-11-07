@@ -15,6 +15,7 @@ from coach.models import Coach
 from workout.models import WorkoutProgram, WorkoutAssignment
 from workout.serializers import WorkoutAssignmentSerializer
 
+
 @api_view(["GET", "PATCH"])
 @permission_classes([IsAuthenticated])
 def coach_member_requests(request, pk=None):
@@ -33,7 +34,8 @@ def coach_member_requests(request, pk=None):
             )
         except CoachMemberRelationship.DoesNotExist:
             return Response(
-                {"error": "Request not found"}, status=status.HTTP_404_NOT_FOUND
+                {"error": "Request not found"},
+                status=status.HTTP_404_NOT_FOUND
             )
 
         if request.method == "PATCH":
@@ -279,6 +281,7 @@ def manage_member_request(request):
             status=status.HTTP_204_NO_CONTENT,
         )
 
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def assign_program_to_member(request, member_id):
@@ -323,6 +326,7 @@ def assign_program_to_member(request, member_id):
         status=status.HTTP_201_CREATED,
     )
 
+
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def food_posts(request):
@@ -341,7 +345,8 @@ def food_posts(request):
         return Response(serializer.data)
 
     elif request.method == "POST":
-        serializer = FoodPostSerializer(data=request.data, context={"request": request})
+        serializer = FoodPostSerializer(data=request.data,
+                                        context={"request": request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -413,7 +418,7 @@ def food_post_comments(request, post_id):
     elif request.method == "POST":
         profile = request.user.userprofile
 
-        # permission: only the post owner (member) or that member's assigned coach may comment
+        # only the post owner or that member's coach may comment
         if profile.role == "member":
             # member may only comment on their own post
             if post.user_profile != profile:
@@ -431,7 +436,8 @@ def food_post_comments(request, post_id):
                 )
 
             assigned = CoachMemberRelationship.objects.filter(
-                coach__user=profile, member=member, status__in=["accepted", "approved"]
+                coach__user=profile, member=member,
+                status__in=["accepted", "approved"]
             ).exists()
             if not assigned:
                 return Response(

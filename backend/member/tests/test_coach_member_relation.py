@@ -60,7 +60,7 @@ class CoachMemberRelationshipTests(TestCase):
 
     def test_unique_member_relationship(self):
         """Test that a member can only have one relationship"""
-        relationship1 = CoachMemberRelationship.objects.create(
+        CoachMemberRelationship.objects.create(
             coach=self.coach, member=self.member
         )
 

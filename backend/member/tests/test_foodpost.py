@@ -9,7 +9,7 @@ from member.models import Member, FoodPost, FoodPostComment, CoachMemberRelation
 
 
 class FoodPostTests(TestCase):
-    """Tests for FoodPost and FoodPostComment creation, update, deletion, and commenting."""
+    """Tests for FoodPost and FoodPostComment CRUD."""
 
     def setUp(self):
         self.client = APIClient()
@@ -128,14 +128,14 @@ class FoodPostTests(TestCase):
     def test_food_post_ordering(self):
         """Test that food posts are ordered by creation date descending"""
         # Create additional posts
-        post2 = FoodPost.objects.create(
+        FoodPost.objects.create(
             user_profile=self.member_profile,
             coach=self.coach_profile,
             title="Second Post",
             content="Second post content",
         )
 
-        post3 = FoodPost.objects.create(
+        FoodPost.objects.create(
             user_profile=self.member_profile,
             coach=self.coach_profile,
             title="Third Post",

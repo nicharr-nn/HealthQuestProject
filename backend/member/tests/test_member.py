@@ -120,7 +120,8 @@ class MemberAPITests(TestCase):
         self.assertEqual(relationship.status, "pending")
 
     def test_apply_as_member_create_failed(self):
-        """Test creating a new member application - expect 400 due to existing relationship"""
+        """Test creating a new member application -
+        expect 400 due to existing relationship"""
         self.client.force_login(user=self.member_user)
 
         url = reverse("apply-as-member")

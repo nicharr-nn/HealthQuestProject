@@ -18,7 +18,6 @@ from .models import (
     WorkoutProgram,
     WorkoutAssignment,
 )
-from member.models import Member
 from .serializers import WorkoutProgramSerializer, WorkoutAssignmentSerializer
 from .xp_rules import calculate_xp, COMPLETION_BONUS
 
@@ -51,33 +50,33 @@ def workout_programs(request):
         serializer = WorkoutProgramSerializer(programs, many=True)
         return Response(serializer.data)
 
-    elif request.method == 'POST':
+    elif request.method == "POST":
         user_profile = request.user.userprofile
-        
-        if user_profile.role != 'coach':
+
+        if user_profile.role != "coach":
             return Response(
                 {"error": "Only coaches can create workout programs"},
-                status=status.HTTP_403_FORBIDDEN
+                status=status.HTTP_403_FORBIDDEN,
             )
-        
+
         # Create program with serializer
         data = request.data.copy()
-        
+
         # Ensure coach is set to current user
-        data['coach'] = user_profile.id
-        
+        data["coach"] = user_profile.id
+
         serializer = WorkoutProgramSerializer(data=data)
         if serializer.is_valid():
             program = serializer.save()
-            
+
             # Return the created program
             response_serializer = WorkoutProgramSerializer(program)
             return Response(response_serializer.data, status=status.HTTP_201_CREATED)
-        
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
+@api_view(["GET", "PUT", "PATCH", "DELETE"])
 @permission_classes([IsAuthenticated])
 def workout_program_detail(request, id):
     """
@@ -88,165 +87,73 @@ def workout_program_detail(request, id):
     program = get_object_or_404(WorkoutProgram, pk=id)
     user_profile = request.user.userprofile
 
-    
-    if request.method == 'GET':
+    if request.method == "GET":
         serializer = WorkoutProgramSerializer(program)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
-    elif request.method in ['PUT', 'PATCH']:
+
+    elif request.method in ["PUT", "PATCH"]:
         # Only the coach who created it can update
         if program.coach != user_profile:
             return Response(
                 {"error": "You don't have permission to update this program"},
-                status=status.HTTP_403_FORBIDDEN
+                status=status.HTTP_403_FORBIDDEN,
             )
-        
+
         data = request.data.copy()
-        days_data = data.pop('days', None)
-        
+        days_data = data.pop("days", None)
+
         # Update program fields
         serializer = WorkoutProgramSerializer(
-            program, 
-            data=data, 
-            partial=(request.method == 'PATCH')
+            program, data=data, partial=(request.method == "PATCH")
         )
-        
+
         if serializer.is_valid():
             updated_program = serializer.save()
-            
+
             if days_data is not None:
                 # Delete existing days
                 WorkoutDay.objects.filter(program=updated_program).delete()
-                
+
                 # Create new days
                 for day_data in days_data:
-                    duration_value = day_data.get('duration')
-                    
+                    duration_value = day_data.get("duration")
+
                     WorkoutDay.objects.create(
                         program=updated_program,
-                        day_number=day_data.get('day_number'),
-                        title=day_data.get('title', f"Day {day_data.get('day_number')}"),
-                        type=day_data.get('type', ''),
-                        video_links=day_data.get('video_links', []),
+                        day_number=day_data.get("day_number"),
+                        title=day_data.get(
+                            "title", f"Day {day_data.get('day_number')}"
+                        ),
+                        type=day_data.get("type", ""),
+                        video_links=day_data.get("video_links", []),
                         duration=duration_value,
                     )
-                    
-            
+
             # Return updated program with days
             response_serializer = WorkoutProgramSerializer(updated_program)
             return Response(response_serializer.data, status=status.HTTP_200_OK)
-        
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    elif request.method == 'DELETE':
+
+    elif request.method == "DELETE":
         # Only the coach who created it can delete
         if program.coach != user_profile:
             return Response(
                 {"error": "You don't have permission to delete this program"},
-                status=status.HTTP_403_FORBIDDEN
+                status=status.HTTP_403_FORBIDDEN,
             )
-        
+
         program.delete()
         return Response(
             {"message": "Program deleted successfully"},
-            status=status.HTTP_204_NO_CONTENT
+            status=status.HTTP_204_NO_CONTENT,
         )
 
-
-# @api_view(["GET"])
-# @permission_classes([IsAuthenticated])
-# def user_analytics(request):
-#     profile = request.user.userprofile
-#     today = timezone.localdate()
-
-#     # --- Weekly windows ---
-#     week_start = today - timedelta(days=6)
-#     prev_week_start = week_start - timedelta(days=7)
-#     prev_week_end = week_start - timedelta(days=1)
-
-#     this_week_count = WorkoutDayCompletion.objects.filter(
-#         user_profile=profile, completed_at__date__gte=week_start
-#     ).count()
-
-#     prev_week_count = WorkoutDayCompletion.objects.filter(
-#         user_profile=profile,
-#         completed_at__date__range=(prev_week_start, prev_week_end),
-#     ).count()
-
-#     if prev_week_count == 0:
-#         weekly_improvement = 100 if this_week_count > 0 else 0
-#     else:
-#         weekly_improvement = round(
-#             ((this_week_count - prev_week_count) / prev_week_count) * 100, 1
-#         )
-
-#     # --- Consistency (last 30 days) ---
-#     month_start = today - timedelta(days=29)
-#     days_with_activity = (
-#         WorkoutDayCompletion.objects.filter(
-#             user_profile=profile, completed_at__date__gte=month_start
-#         )
-#         .values("completed_at__date")
-#         .distinct()
-#         .count()
-#     )
-
-#     consistency = round((days_with_activity / 30) * 100, 1)
-
-#     # --- XP last 30 days ---
-#     xp_agg = (
-#         WorkoutDayCompletion.objects.filter(
-#             user_profile=profile, completed_at__date__gte=month_start
-#         ).aggregate(total_xp=Sum("xp_earned"))
-#         or {}
-#     )
-
-#     xp_last_30 = xp_agg.get("total_xp") or 0
-
-#     # --- Monthly challenge ---
-#     target = getattr(profile, "monthly_challenge_target", 20)
-#     completed_month = WorkoutDayCompletion.objects.filter(
-#         user_profile=profile, completed_at__date__gte=today.replace(day=1)
-#     ).count()
-
-#     _, days_in_month = calendar.monthrange(today.year, today.month)
-#     last_day_of_month = today.replace(day=days_in_month)
-#     days_left = (last_day_of_month - today).days
-
-#     # --- Current streak calculation ---
-#     completion_dates = set(
-#         WorkoutDayCompletion.objects.filter(user_profile=profile)
-#         .values_list("completed_at__date", flat=True)
-#     )
-
-#     streak = 0
-#     current_day = today
-#     while current_day in completion_dates:
-#         streak += 1
-#         current_day -= timedelta(days=1)
-
-#     payload = {
-#         "analytics": {
-#             "weeklyImprovement": weekly_improvement,
-#             "consistency": consistency,
-#             "xp_last_30_days": xp_last_30,
-#             "completed_this_week": this_week_count,
-#             "completed_prev_week": prev_week_count,
-#             "current_streak": streak,
-#         },
-#         "monthlyChallenge": {
-#             "description": f"Complete {target} workouts this month",
-#             "completed": completed_month,
-#             "target": target,
-#             "daysLeft": days_left,
-#         },
-#     }
-#     return Response(payload)
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def user_analytics(request):
-    """Return user workout analytics including weekly improvement, consistency, and streak."""
+    """Return user workout analytics."""
     profile = request.user.userprofile
     today = timezone.localdate()
 
@@ -260,17 +167,19 @@ def user_analytics(request):
     monthly_stats = _calculate_monthly_challenge(completions, profile, today)
     streak = _calculate_current_streak(completions, today)
 
-    return Response({
-        "analytics": {
-            "weeklyImprovement": weekly_stats["improvement"],
-            "consistency": consistency_stats["percentage"],
-            "xp_last_30_days": xp_stats["total"],
-            "completed_this_week": weekly_stats["this_week"],
-            "completed_prev_week": weekly_stats["prev_week"],
-            "current_streak": streak,
-        },
-        "monthlyChallenge": monthly_stats,
-    })
+    return Response(
+        {
+            "analytics": {
+                "weeklyImprovement": weekly_stats["improvement"],
+                "consistency": consistency_stats["percentage"],
+                "xp_last_30_days": xp_stats["total"],
+                "completed_this_week": weekly_stats["this_week"],
+                "completed_prev_week": weekly_stats["prev_week"],
+                "current_streak": streak,
+            },
+            "monthlyChallenge": monthly_stats,
+        }
+    )
 
 
 def _calculate_weekly_improvement(completions, today):
@@ -305,7 +214,7 @@ def _calculate_consistency(completions, today):
         .distinct()
         .count()
     )
-    
+
     percentage = round((days_with_activity / 30) * 100, 1)
     return {"percentage": percentage, "active_days": days_with_activity}
 
@@ -314,8 +223,9 @@ def _calculate_xp_last_30_days(completions, today):
     """Calculate total XP earned in last 30 days."""
     month_start = today - timedelta(days=29)
     total = (
-        completions.filter(completed_at__date__gte=month_start)
-        .aggregate(total=Sum("xp_earned"))["total"]
+        completions.filter(completed_at__date__gte=month_start).aggregate(
+            total=Sum("xp_earned")
+        )["total"]
         or 0
     )
     return {"total": total}
@@ -342,13 +252,13 @@ def _calculate_monthly_challenge(completions, profile, today):
 def _calculate_current_streak(completions, today):
     """Calculate consecutive days streak up to today."""
     completion_dates = set(completions.values_list("completed_at__date", flat=True))
-    
+
     streak = 0
     current_day = today
     while current_day in completion_dates:
         streak += 1
         current_day -= timedelta(days=1)
-    
+
     return streak
 
 
@@ -432,6 +342,7 @@ def workout_day_videos(request, id):
             }
         )
 
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def check_workout_day_completion(request, id):
@@ -464,8 +375,7 @@ def complete_workout_day(request, id):
 
     # Get all workouts for this day_number in the program
     same_day_workouts = WorkoutDay.objects.filter(
-        program=program,
-        day_number=target_day.day_number
+        program=program, day_number=target_day.day_number
     )
 
     total_xp = 0
@@ -476,21 +386,18 @@ def complete_workout_day(request, id):
     for workout in same_day_workouts:
         # Skip if already completed
         if WorkoutDayCompletion.objects.filter(
-            user_profile=profile, 
-            workout_day=workout
+            user_profile=profile, workout_day=workout
         ).exists():
             continue
 
         # Calculate and award XP
         xp_earned = calculate_xp(
-            duration=workout.duration or 30,
-            difficulty_level=program.difficulty_level
+           duration=workout.duration or 30,
+           difficulty_level=program.difficulty_level
         )
-        
+
         WorkoutDayCompletion.objects.create(
-            user_profile=profile,
-            workout_day=workout,
-            xp_earned=xp_earned
+            user_profile=profile, workout_day=workout, xp_earned=xp_earned
         )
         total_xp += xp_earned
         workouts_completed_now += 1
@@ -508,54 +415,55 @@ def complete_workout_day(request, id):
         # Check if ALL day_numbers in program are completed by this user
         total_day_numbers = program.days.values("day_number").distinct().count()
         completed_day_numbers = (
-            WorkoutDayCompletion.objects
-            .filter(user_profile=profile, workout_day__program=program)
+            WorkoutDayCompletion.objects.filter(
+                user_profile=profile, workout_day__program=program
+            )
             .values("workout_day__day_number")
             .distinct()
             .count()
         )
-        
-        program_just_completed = (completed_day_numbers >= total_day_numbers)
-        
+
+        program_just_completed = completed_day_numbers >= total_day_numbers
+
         if profile.role == "member":
             member_obj = getattr(profile, "member_profile", None)
             if member_obj:
                 assignment = WorkoutAssignment.objects.filter(
-                    member=member_obj, 
-                    program=program
+                    member=member_obj, program=program
                 ).first()
-                
+
                 if assignment:
                     was_completed = assignment.status == "completed"
                     is_complete = assignment.check_completion()
-                    
+
                     # Award bonus only on first completion
                     if is_complete and not was_completed:
                         bonus_xp = COMPLETION_BONUS
                         leveled_up, prev_rank, new_rank = level.add_xp(bonus_xp)
-        
+
         elif profile.role == "normal":
-            # Check if this normal user just completed the entire program
             if program_just_completed:
-                # Check if we already awarded bonus for this program
-                # (you can track this via a separate model or by counting completions)
-                already_awarded = getattr(profile, f'bonus_program_{program.id}', False)
-                
+                # Check if we already awarded bonus for this program by
+                # checking if completion count matches total days
+                already_awarded = getattr(profile,
+                                          f"bonus_program_{program.id}", False)
+
                 if not already_awarded:
                     bonus_xp = COMPLETION_BONUS
                     leveled_up, prev_rank, new_rank = level.add_xp(bonus_xp)
 
-
     level.refresh_from_db()
 
-    return Response({
-        "xp_awarded": total_xp,
-        "total_xp": level.xp,
-        "current_level": level.level,
-        "goal_achieved": level.goal_achieved,
-        "completed": True,
-        "leveled_up": leveled_up,
-    })
+    return Response(
+        {
+            "xp_awarded": total_xp,
+            "total_xp": level.xp,
+            "current_level": level.level,
+            "goal_achieved": level.goal_achieved,
+            "completed": True,
+            "leveled_up": leveled_up,
+        }
+    )
 
 
 @api_view(["GET"])
@@ -569,8 +477,9 @@ def workout_progress(request, id):
         user_profile=profile, workout_day__program=program
     )
     completed_days = completed_qs.count()
-    xp_earned = completed_qs.aggregate(models.Sum("xp_earned"))["xp_earned__sum"] or 0
-
+    xp_earned = (
+        completed_qs.aggregate(models.Sum("xp_earned"))["xp_earned__sum"] or 0
+    )
     return Response(
         {
             "program_id": program.id,
@@ -578,7 +487,9 @@ def workout_progress(request, id):
             "total_days": total_days,
             "completed_days": completed_days,
             "completion_percentage": (
-                round((completed_days / total_days) * 100, 1) if total_days > 0 else 0
+                round((completed_days / total_days) * 100, 1)
+                if total_days > 0
+                else 0
             ),
             "xp_earned": xp_earned,
             "completed_day_numbers": list(
@@ -587,7 +498,9 @@ def workout_progress(request, id):
         }
     )
 
+
 # ========== WORKOUT ASSIGNMENT VIEWS ==========
+
 
 @api_view(["PATCH"])
 @permission_classes([IsAuthenticated])
