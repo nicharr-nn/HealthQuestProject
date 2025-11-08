@@ -47,6 +47,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "fitness_goals",
             "current_goal",
             "current_level",
+            "created_at",
         ]
         read_only_fields = ["role"]
 

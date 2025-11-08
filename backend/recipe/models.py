@@ -102,7 +102,8 @@ class Recipe(models.Model):
         if self.pk:
             old = Recipe.objects.get(pk=self.pk)
             self._changed_fields = [
-                f for f in ["title", "ingredients", "steps"]
+                f
+                for f in ["title", "ingredients", "steps"]
                 if getattr(old, f) != getattr(self, f)
             ]
         else:

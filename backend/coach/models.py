@@ -29,9 +29,11 @@ class Coach(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.public_id:
-            self.public_id = f"C-{self.coach_id or 0:05d}"
+            self.public_id = f"C-{self.coach_id:05d}"
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return (f"Coach: {self.user.user.username} ({self.public_id}) "
-                f"- Status: {self.status_approval}")
+        return (
+            f"Coach: {self.user.user.username} ({self.public_id}) "
+            f"- Status: {self.status_approval}"
+        )
