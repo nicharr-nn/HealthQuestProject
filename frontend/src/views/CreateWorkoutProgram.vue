@@ -629,15 +629,6 @@ const workoutAssignment = reactive({
   member_id: '',
 })
 
-function parseMemberId(input: string): number | null {
-  if (!input) return null
-  const digits = (input.match(/\d+/g) || []).join('')
-  if (!digits) return null
-  const normalized = digits.replace(/^0+/, '') || '0'
-  const n = Number(normalized)
-  return Number.isNaN(n) ? null : n
-}
-
 async function createAssignment(programId: number) {
   try {
     const payload = {
