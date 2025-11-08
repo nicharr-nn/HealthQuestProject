@@ -7,7 +7,7 @@
       @click="sidebarOpen = false"
     />
 
-    <!-- Sidebar -->
+    Sidebar
     <aside
       class="fixed inset-y-0 left-0 z-50 w-72 bg-slate-900 text-white transition-transform duration-300 md:translate-x-0"
       :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'"
@@ -59,12 +59,11 @@
             </button>
 
             <div class="relative hidden md:block">
-              <span class="absolute left-3 top-1/2 -translate-y-1/2">🔍</span>
               <input
                 type="text"
                 placeholder="Search coaches..."
                 v-model="searchQuery"
-                class="w-80 rounded-md border border-slate-200 pl-9 pr-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                class="w-80 rounded-md border border-slate-200 pl-5 pr-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
               />
             </div>
           </div>
@@ -149,7 +148,7 @@
                 <tbody>
                   <tr v-if="filteredCoaches.length === 0">
                     <td colspan="6" class="px-3 py-8 text-center text-slate-500">
-                      No coaches found{{ coachFilter !== 'all' ? ' with status: ' + coachFilter : '' }}
+                      No {{ coachFilter !== 'all' ? coachFilter : '' }} coaches found
                     </td>
                   </tr>
                   <tr
@@ -250,7 +249,6 @@
                 <span class="text-3xl">📄</span>
                 <div class="flex-1">
                   <div class="text-sm font-medium">Certification Document</div>
-                  <div class="text-xs text-slate-500">{{ coachModal.coach.certification_doc }}</div>
                 </div>
                 <a
                   :href="getDocumentUrl(coachModal.coach.certification_doc)"
@@ -345,7 +343,7 @@ function getStatusClass(status) {
   switch(status){case 'pending': return 'bg-amber-100 text-amber-800'; case 'approved': return 'bg-emerald-100 text-emerald-800'; case 'rejected': return 'bg-rose-100 text-rose-800'; default: return 'bg-slate-100 text-slate-800'}
 }
 function getDocumentUrl(doc) { 
-  return doc?.startsWith('http') ? doc : `${API_URL}/media/${doc}`
+  return doc.startsWith('http') ? doc : `${API_URL}${doc}`
 }
 function viewCoachDetails(coach) { coachModal.value = { open: true, coach } }
 function closeModal() { coachModal.value = { open: false, coach: null } }
