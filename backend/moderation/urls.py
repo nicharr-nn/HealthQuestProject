@@ -1,0 +1,20 @@
+# from django.urls import path
+# from . import views
+
+# urlpatterns = [
+#     path("admin/coaches/", views.list_coaches_for_admin, name="list-coaches"),
+#     path("admin/coaches/<int:coach_id>/approve/", views.approve_coach),
+#     path("admin/coaches/<int:coach_id>/reject/", views.reject_coach),
+
+#     path("admin/recipes/<int:recipe_id>/delete/", views.delete_recipe),
+#     path("admin/users/<int:user_id>/delete/", views.delete_user),
+# ]
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path("admin/coaches/", views.list_coaches_for_admin, name="list_coaches"),
+    path("admin/coaches/<int:coach_id>/approve/", views.approve_coach, name="approve_coach"),
+    path("admin/coaches/<int:coach_id>/reject/", views.reject_coach, name="reject_coach"),
+    path("admin/recipes/<int:recipe_id>/delete/", views.delete_recipe, name="delete_recipe"),
+]
