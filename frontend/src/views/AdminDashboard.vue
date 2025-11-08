@@ -96,6 +96,12 @@
                 <div class="text-[11px] text-slate-500">Administrator</div>
               </div>
             </div>
+            <button
+              @click="logout"
+              class="ml-3 rounded-md bg-red-300 px-3 py-1 text-white hover:bg-red-400 text-sm"
+            >
+              Logout
+            </button>
           </div>
         </div>
       </header>
@@ -119,9 +125,9 @@
                   <option value="approved">Approved</option>
                   <option value="rejected">Rejected</option>
                 </select>
-                <button class="rounded-md bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700" @click="exportCoachList">
+                <!-- <button class="rounded-md bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700" @click="exportCoachList">
                   Export List
-                </button>
+                </button> -->
               </div>
             </div>
 
@@ -347,6 +353,11 @@ function getDocumentUrl(doc) {
 }
 function viewCoachDetails(coach) { coachModal.value = { open: true, coach } }
 function closeModal() { coachModal.value = { open: false, coach: null } }
+
+function logout() {
+  userStore.logout?.()
+  router.push('/')
+}
 
 async function fetchCoaches() {
   loading.value = true
