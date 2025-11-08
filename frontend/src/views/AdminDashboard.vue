@@ -78,8 +78,8 @@
             <div class="flex items-center gap-2">
               <!-- Avatar -->
               <div class="grid h-10 w-10 place-items-center rounded-full bg-blue-500 font-bold text-white">
-                <template v-if="userStore.profile?.user?.username">
-                  {{ getInitials(userStore.profile.user.username) }}
+                <template v-if="userStore.user?.username">
+                  {{ getInitials(userStore.user.username) }}
                 </template>
                 <template v-else>?</template>
               </div>
@@ -87,8 +87,8 @@
               <!-- Username and Role -->
               <div class="leading-tight">
                 <div class="font-medium">
-                  <template v-if="userStore.profile?.user?.username">
-                    {{ userStore.profile.user.username }}
+                  <template v-if="userStore.user?.username">
+                    {{ userStore.user.username }}
                   </template>
                   <template v-else>
                     Loading...
@@ -268,9 +268,6 @@
         </div>
 
         <div class="flex justify-between items-center gap-3 border-t border-slate-200 px-5 py-4 bg-slate-50">
-          <div class="text-xs text-slate-500">
-            Reviewing: {{ coachModal.coach?.name }}
-          </div>
           <div class="flex gap-2">
             <button
               class="rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-700 hover:bg-slate-50"
@@ -307,7 +304,7 @@ import { useUserStore } from '@/stores/user'
 const router = useRouter()
 const userStore = useUserStore()
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
 const sidebarOpen = ref(false)
 const activeSection = ref('coaches')
 const coachFilter = ref('all')
@@ -318,9 +315,9 @@ const error = ref(null)
 const coaches = ref([])
 const coachModal = ref({ open: false, coach: null })
 
-// Computed filtered coaches
 const filteredCoaches = computed(() => {
-  let result = coaches.value
+  let result = coaches.value.filter(c => c.certification_doc)
+  
   if (searchQuery.value) {
     const q = searchQuery.value.toLowerCase()
     result = result.filter(c =>
@@ -347,7 +344,9 @@ function formatDate(date) { return date ? new Date(date).toLocaleDateString('en-
 function getStatusClass(status) {
   switch(status){case 'pending': return 'bg-amber-100 text-amber-800'; case 'approved': return 'bg-emerald-100 text-emerald-800'; case 'rejected': return 'bg-rose-100 text-rose-800'; default: return 'bg-slate-100 text-slate-800'}
 }
-function getDocumentUrl(doc) { return doc ? `${API_URL}/media/${doc}` : '#' }
+function getDocumentUrl(doc) { 
+  return doc?.startsWith('http') ? doc : `${API_URL}/media/${doc}`
+}
 function viewCoachDetails(coach) { coachModal.value = { open: true, coach } }
 function closeModal() { coachModal.value = { open: false, coach: null } }
 
@@ -356,7 +355,7 @@ async function fetchCoaches() {
   error.value = null
   try {
     const params = coachFilter.value !== 'all' ? `?status=${coachFilter.value}` : ''
-    const res = await fetch(`${API_URL}/api/admin/coaches/${params}`, {
+    const res = await fetch(`${API_URL}/api/moderation/admin/coaches/${params}`, {
       credentials: 'include',
       headers: { Accept: 'application/json' },
     })
@@ -370,7 +369,7 @@ async function fetchCoaches() {
 
 async function approveCoach(coach) {
   try {
-    const res = await fetch(`${API_URL}/api/admin/coaches/${coach.coach_id}/approve/`, {
+    const res = await fetch(`${API_URL}/api/moderation/admin/coaches/${coach.coach_id}/approve/`, {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
@@ -387,7 +386,7 @@ async function approveCoach(coach) {
 async function rejectCoach(coach) {
   const reason = prompt('Reason for rejection (optional):')
   try {
-    const res = await fetch(`${API_URL}/api/admin/coaches/${coach.coach_id}/reject/`, {
+    const res = await fetch(`${API_URL}/api/moderation/admin/coaches/${coach.coach_id}/reject/`, {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
@@ -409,5 +408,6 @@ onMounted(async () => {
   if (!userStore.profile) {
     await userStore.init()
   }
+  await fetchCoaches()
 })
 </script>

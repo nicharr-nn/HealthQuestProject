@@ -15,7 +15,7 @@ def approve_coach(request, coach_id):
     except Coach.DoesNotExist:
         return Response({"error": "Coach not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    admin = Admin.objects.get(user=request.user.userprofile)
+    admin = Admin.objects.get(user=request.user)
 
     coach.status_approval = "approved"
     coach.approved_date = timezone.now()
@@ -39,7 +39,7 @@ def reject_coach(request, coach_id):
     except Coach.DoesNotExist:
         return Response({"error": "Coach not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    admin = Admin.objects.get(user=request.user.userprofile)
+    admin = Admin.objects.get(user=request.user)
     reason = request.data.get("reason", "")
 
     coach.status_approval = "rejected"
@@ -58,7 +58,7 @@ def reject_coach(request, coach_id):
 @permission_classes([IsAuthenticated])
 def list_coaches_for_admin(request):
     try:
-        admin = Admin.objects.get(user=request.user.userprofile)
+        admin = Admin.objects.get(user=request.user)
     except Admin.DoesNotExist:
         return Response({"error": "You are not an admin"}, status=403)
 
@@ -86,7 +86,7 @@ def list_coaches_for_admin(request):
 def delete_recipe(request, recipe_id):
     """Allow admin to delete a recipe."""
     try:
-        admin = Admin.objects.get(user=request.user.userprofile)
+        admin = Admin.objects.get(user=request.user)
     except Admin.DoesNotExist:
         return Response({"error": "You are not an admin"}, status=403)
 
@@ -101,7 +101,7 @@ def delete_recipe(request, recipe_id):
     # Log moderation action
     AdminModeration.objects.create(
         admin=admin,
-        action="delete_post",  # reuse same action label or create "delete_recipe" if you prefer
+        action="delete_post",
         reason=f"Deleted recipe '{title}' for policy violation or inappropriate content.",
     )
 
