@@ -4,8 +4,10 @@
 
   <template v-else>
     <CoachNavbar
-      v-if="userStore.profile_complete
-        && (userStore.role === 'coach' || userStore.profile?.role === 'coach')"
+      v-if="
+        userStore.profile_complete &&
+        (userStore.role === 'coach' || userStore.profile?.role === 'coach')
+      "
     />
     <DashboardNavbar v-else-if="userStore.profile_complete" />
     <UnsignNavbar v-else />
@@ -16,7 +18,7 @@
 <script setup>
 import { onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
-import DashboardNavbar from '@/components/DashboardNavbar.vue'
+import DashboardNavbar from '@/components/SignNavbar.vue'
 import UnsignNavbar from '@/components/UnsignNavBar.vue'
 import CoachNavbar from '@/components/CoachNavBar.vue'
 import Toast from '@/components/Toast.vue'

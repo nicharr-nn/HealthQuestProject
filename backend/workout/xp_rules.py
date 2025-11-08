@@ -25,7 +25,6 @@ COMPLETION_BONUS = 500  # flat bonus for finishing a program
 def calculate_xp(
     duration: int = 30,
     difficulty_level: str = "medium",
-    intensity: float = 1.0,
     streak: bool = False,
     completed: bool = False,
 ) -> int:
@@ -36,9 +35,8 @@ def calculate_xp(
     """
     base_per_min = 1
     mult = DIFFICULTY_MULTIPLIER.get(difficulty_level, 1.0)
-    intensity_val = float(intensity) if intensity else 1.0
 
-    xp = duration * base_per_min * mult * intensity_val
+    xp = duration * base_per_min * mult
     if streak:
         xp *= STREAK_BONUS
     xp = round(xp)
