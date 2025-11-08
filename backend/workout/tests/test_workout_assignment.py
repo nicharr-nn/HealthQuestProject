@@ -99,7 +99,7 @@ class WorkoutAssignmentTests(TestCase):
 
     def test_list_my_assignments_as_coach(self):
         """Test coach can list their assigned programs"""
-        self.client.force_authenticate(self.coach_user)
+        self.client.force_login(self.coach_user)
 
         url = reverse("list-my-assignments")
         response = self.client.get(url)
@@ -109,7 +109,7 @@ class WorkoutAssignmentTests(TestCase):
 
     def test_assign_program_to_member_as_coach(self):
         """Test coach can assign program to member"""
-        self.client.force_authenticate(self.coach_user)
+        self.client.force_login(self.coach_user)
 
         # Create another program to assign
         new_program = WorkoutProgram.objects.create(
@@ -121,9 +121,10 @@ class WorkoutAssignmentTests(TestCase):
             is_public=False,
         )
 
-        url = reverse("assign-program-to-member", kwargs={"member_id": self.member.id})
+        url = reverse("assign-program-to-member")
         data = {
             "program_id": new_program.id,
+            "member_id": self.member.member_id,
             "due_date": (timezone.now() + timedelta(days=30)).date().isoformat(),
         }
         response = self.client.post(url, data, format="json")
@@ -132,9 +133,32 @@ class WorkoutAssignmentTests(TestCase):
         self.assertEqual(WorkoutAssignment.objects.count(), 2)
         self.assertIn("assignment", response.data)
 
+    def test_assign_program_to_member_missing_member_id(self):
+        """Test assignment fails when member_id is missing"""
+        self.client.force_login(self.coach_user)
+
+        new_program = WorkoutProgram.objects.create(
+            coach=self.coach_profile,
+            title="Test Program",
+            description="Test description",
+            difficulty_level="medium",
+            duration=7,
+        )
+
+        url = reverse("assign-program-to-member")
+        data = {
+            "program_id": new_program.id,
+            # Missing member_id
+            "due_date": (timezone.now() + timedelta(days=30)).date().isoformat(),
+        }
+        response = self.client.post(url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("Member ID is required", response.data["error"])
+
     def test_assign_program_to_member_as_member(self):
         """Test member cannot assign programs"""
-        url = reverse("assign-program-to-member", kwargs={"member_id": self.member.id})
+        url = reverse("assign-program-to-member")
         data = {"program_id": self.program.id}
         response = self.client.post(url, data, format="json")
 
@@ -142,10 +166,10 @@ class WorkoutAssignmentTests(TestCase):
 
     def test_assign_duplicate_program(self):
         """Test cannot assign duplicate program to same member"""
-        self.client.force_authenticate(self.coach_user)
+        self.client.force_login(self.coach_user)
 
-        url = reverse("assign-program-to-member", kwargs={"member_id": self.member.id})
-        data = {"program_id": self.program.id}
+        url = reverse("assign-program-to-member")
+        data = {"program_id": self.program.id, "member_id": self.member.member_id}
         response = self.client.post(url, data, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -192,3 +216,69 @@ class WorkoutAssignmentTests(TestCase):
         self.assertEqual(self.workout_assignment.status, "completed")
         self.assertIsNotNone(self.workout_assignment.completed_date)
         self.assertIn("xp_awarded", response.data)
+
+    def test_assign_program_without_due_date(self):
+        """Test assignment works without due date"""
+        self.client.force_login(self.coach_user)
+
+        new_program = WorkoutProgram.objects.create(
+            coach=self.coach_profile,
+            title="Test Program No Due Date",
+            description="Test description",
+            difficulty_level="easy",
+            duration=5,
+        )
+
+        url = reverse("assign-program-to-member")
+        data = {
+            "program_id": new_program.id,
+            "member_id": self.member.member_id,
+            # No due_date provided
+        }
+        response = self.client.post(url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(WorkoutAssignment.objects.count(), 2)
+
+        # Check that assignment was created without due date
+        new_assignment = WorkoutAssignment.objects.get(
+            program=new_program, member=self.member
+        )
+        self.assertIsNone(new_assignment.due_date)
+
+    def test_assign_program_to_member_nonexistent_member(self):
+        """Test assignment fails when member doesn't exist"""
+        self.client.force_login(self.coach_user)
+
+        new_program = WorkoutProgram.objects.create(
+            coach=self.coach_profile,
+            title="Test Program",
+            description="Test description",
+            difficulty_level="medium",
+            duration=7,
+        )
+
+        url = reverse("assign-program-to-member")
+        data = {
+            "program_id": new_program.id,
+            "member_id": "M-99999",  # Non-existent member
+            "due_date": (timezone.now() + timedelta(days=30)).date().isoformat(),
+        }
+        response = self.client.post(url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertIn("Member not found", response.data["error"])
+
+    def test_assign_program_to_member_nonexistent_program(self):
+        """Test assignment fails when program doesn't exist"""
+        self.client.force_login(self.coach_user)
+
+        url = reverse("assign-program-to-member")
+        data = {
+            "program_id": 99999,  # Non-existent program
+            "member_id": self.member.member_id,
+            "due_date": (timezone.now() + timedelta(days=30)).date().isoformat(),
+        }
+        response = self.client.post(url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

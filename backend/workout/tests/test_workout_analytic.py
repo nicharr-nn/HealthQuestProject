@@ -20,8 +20,7 @@ class AnalyticsTests(TestCase):
 
         # Create normal user
         self.normal_user = User.objects.create_user(
-            username="normal_user", password="pass123",
-            email="normal@example.com"
+            username="normal_user", password="pass123", email="normal@example.com"
         )
 
         self.normal_profile = self.normal_user.userprofile
@@ -37,8 +36,7 @@ class AnalyticsTests(TestCase):
 
         # Create coach model instance
         self.coach = Coach.objects.create(
-            user=self.coach_profile, public_id="C-00001",
-            status_approval="approved"
+            user=self.coach_profile, public_id="C-00001", status_approval="approved"
         )
 
         # Create workout program

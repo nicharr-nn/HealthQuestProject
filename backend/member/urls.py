@@ -28,7 +28,7 @@ urlpatterns = [
     path("member-profile/", get_member_profile, name="get-member-profile"),
     path("member-request/manage/", manage_member_request, name="manage-member-request"),
     path(
-        "assign/<int:member_id>/",
+        "assign/",
         assign_program_to_member,
         name="assign-program-to-member",
     ),

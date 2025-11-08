@@ -6,7 +6,11 @@
         {{ isEditing ? 'Edit Workout Program' : 'Create Workout Program' }}
       </h1>
       <p class="text-gray-600 mt-2">
-        {{ isEditing ? 'Update your existing workout program' : 'Design a comprehensive workout program with YouTube video guides' }}
+        {{
+          isEditing
+            ? 'Update your existing workout program'
+            : 'Design a comprehensive workout program with YouTube video guides'
+        }}
       </p>
     </div>
 
@@ -41,22 +45,29 @@
               id="description"
               v-model="workoutProgram.description"
               class="w-full border rounded-lg px-3.5 py-3 text-sm outline-none transition-all resize-none"
-              :class="descriptionError ? 'border-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-50' : 'border-gray-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-50'"
+              :class="
+                descriptionError
+                  ? 'border-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-50'
+                  : 'border-gray-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-50'
+              "
               rows="4"
               maxlength="180"
               placeholder="Describe the goals, target audience, and overview of your program"
               @input="validateDescription"
             />
             <div class="flex justify-between items-center mt-1.5">
-              <span 
-                v-if="descriptionError" 
-                class="text-xs text-red-500"
-              >
+              <span v-if="descriptionError" class="text-xs text-red-500">
                 {{ descriptionError }}
               </span>
-              <span 
+              <span
                 class="text-xs ml-auto"
-                :class="descriptionLength > 180 ? 'text-red-500 font-semibold' : descriptionLength > 150 ? 'text-orange-500' : 'text-gray-500'"
+                :class="
+                  descriptionLength > 180
+                    ? 'text-red-500 font-semibold'
+                    : descriptionLength > 150
+                      ? 'text-orange-500'
+                      : 'text-gray-500'
+                "
               >
                 {{ descriptionLength }}/180 characters
               </span>
@@ -125,9 +136,9 @@
             <label class="block text-sm font-medium text-gray-700 mb-1.5" for="levelAccess">
               Level Access
             </label>
-            <select 
-              id="levelAccess" 
-              v-model="workoutProgram.level_access" 
+            <select
+              id="levelAccess"
+              v-model="workoutProgram.level_access"
               class="w-full border border-gray-300 rounded-lg px-3.5 py-3 text-sm outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
             >
               <option value="all">All levels</option>
@@ -139,16 +150,16 @@
 
           <!-- Visibility Toggle -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1.5">
-              Visibility
-            </label>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5"> Visibility </label>
             <div class="flex gap-3">
               <button
                 type="button"
                 class="flex-1 py-3 rounded-lg font-semibold text-sm transition-all"
-                :class="workoutProgram.is_public 
-                  ? 'bg-blue-500 text-white border-2 border-blue-500' 
-                  : 'bg-white text-gray-700 border-2 border-gray-300 hover:bg-gray-50'"
+                :class="
+                  workoutProgram.is_public
+                    ? 'bg-blue-500 text-white border-2 border-blue-500'
+                    : 'bg-white text-gray-700 border-2 border-gray-300 hover:bg-gray-50'
+                "
                 @click="workoutProgram.is_public = true"
               >
                 Public
@@ -156,16 +167,19 @@
               <button
                 type="button"
                 class="flex-1 py-3 rounded-lg font-semibold text-sm transition-all"
-                :class="!workoutProgram.is_public 
-                  ? 'bg-blue-500 text-white border-2 border-blue-500' 
-                  : 'bg-white text-gray-700 border-2 border-gray-300 hover:bg-gray-50'"
+                :class="
+                  !workoutProgram.is_public
+                    ? 'bg-blue-500 text-white border-2 border-blue-500'
+                    : 'bg-white text-gray-700 border-2 border-gray-300 hover:bg-gray-50'
+                "
                 @click="workoutProgram.is_public = false"
               >
                 Private
               </button>
             </div>
             <p class="text-xs text-gray-600 italic mt-2">
-              Public programs are discoverable by users. Private programs are only visible to your assigned clients.
+              Public programs are discoverable by users. Private programs are only visible to your
+              assigned clients.
             </p>
 
             <!-- Member ID Input (only for private) -->
@@ -178,9 +192,14 @@
                 v-model="workoutAssignment.member_id"
                 type="text"
                 class="w-full border border-gray-300 rounded-lg px-3.5 py-3 text-sm outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
-                placeholder="e.g., M-12345"
+                placeholder="e.g., M-00001"
+                pattern="M-\d+"
+                title="Format: M- followed by numbers (e.g., M-00001)"
                 required
               />
+              <p class="text-xs text-gray-600 mt-1">
+                Enter the member's ID exactly as shown in your accepted members list
+              </p>
             </div>
           </div>
         </form>
@@ -195,9 +214,11 @@
           <span class="text-sm text-gray-700 font-medium">
             Program Duration:
             {{ workoutProgram.duration }} day{{ workoutProgram.duration === 1 ? '' : 's' }}
-            {{ workoutProgram.duration > 0
-              ? `(${Math.ceil(workoutProgram.duration / 7)} week${Math.ceil(workoutProgram.duration / 7) === 1 ? '' : 's'})`
-              : '' }}
+            {{
+              workoutProgram.duration > 0
+                ? `(${Math.ceil(workoutProgram.duration / 7)} week${Math.ceil(workoutProgram.duration / 7) === 1 ? '' : 's'})`
+                : ''
+            }}
           </span>
         </div>
 
@@ -206,23 +227,27 @@
           <label class="block text-sm font-medium text-gray-700 mb-2">
             Select Day to Add Workout:
           </label>
-          <select 
-            v-model="selectedDay" 
+          <select
+            v-model="selectedDay"
             class="w-full max-w-xs border border-gray-300 rounded-lg px-3.5 py-3 text-sm outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
           >
             <option value="" disabled>Choose a day</option>
-            <option
-              v-for="day in workoutProgram.duration"
-              :key="day"
-              :value="day"
-            >
-              Day {{ day }} {{ workoutProgram.WorkoutDays[day]?.length ? `(${workoutProgram.WorkoutDays[day].length} workouts)` : '' }}
+            <option v-for="day in workoutProgram.duration" :key="day" :value="day">
+              Day {{ day }}
+              {{
+                workoutProgram.WorkoutDays[day]?.length
+                  ? `(${workoutProgram.WorkoutDays[day].length} workouts)`
+                  : ''
+              }}
             </option>
           </select>
         </div>
 
         <!-- Existing Daily Workouts -->
-        <div v-if="Object.keys(workoutProgram.WorkoutDays).length > 0" class="bg-gray-50 p-5 rounded-xl border border-gray-200 mb-6">
+        <div
+          v-if="Object.keys(workoutProgram.WorkoutDays).length > 0"
+          class="bg-gray-50 p-5 rounded-xl border border-gray-200 mb-6"
+        >
           <h4 class="text-base font-semibold text-gray-700 mb-4">Added Workouts</h4>
           <div class="flex flex-col gap-6">
             <div
@@ -272,7 +297,10 @@
                     <span>{{ workout.duration }} min</span>
                     <span class="text-gray-300">•</span>
                     <span>{{ workout.type || 'General' }}</span>
-                    <span v-if="workout.video_link" class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded text-[10px] font-medium">
+                    <span
+                      v-if="workout.video_link"
+                      class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded text-[10px] font-medium"
+                    >
                       📹 Video
                     </span>
                   </div>
@@ -283,9 +311,16 @@
         </div>
 
         <!-- Add/Edit Workout Form -->
-        <div v-if="selectedDay || editingDay !== null" class="bg-gray-50 p-5 rounded-xl border-2 border-dashed border-gray-300">
+        <div
+          v-if="selectedDay || editingDay !== null"
+          class="bg-gray-50 p-5 rounded-xl border-2 border-dashed border-gray-300"
+        >
           <h4 class="text-base font-semibold text-gray-700 mb-4 pt-3 border-t border-gray-300">
-            {{ editingDay !== null ? `Edit Workout for Day ${editingDay}` : `Add Workout for Day ${selectedDay}` }}
+            {{
+              editingDay !== null
+                ? `Edit Workout for Day ${editingDay}`
+                : `Add Workout for Day ${selectedDay}`
+            }}
           </h4>
 
           <div class="space-y-4">
@@ -372,7 +407,12 @@
                 type="button"
                 class="flex-1 bg-blue-500 text-white font-semibold px-4 py-3 rounded-lg transition-all hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 @click="saveDayWorkout"
-                :disabled="!currentWorkout.title || !currentWorkout.duration || !currentWorkout.video_link || !youtubeRegex.test(currentWorkout.video_link)"
+                :disabled="
+                  !currentWorkout.title ||
+                  !currentWorkout.duration ||
+                  !currentWorkout.video_link ||
+                  !youtubeRegex.test(currentWorkout.video_link)
+                "
               >
                 {{ editingDay !== null ? 'Update Workout' : 'Add Workout' }}
               </button>
@@ -388,10 +428,19 @@
         </div>
 
         <!-- Empty State -->
-        <div v-if="!selectedDay && editingDay === null && Object.keys(workoutProgram.WorkoutDays).length === 0" class="text-center py-10 px-5 text-gray-600">
+        <div
+          v-if="
+            !selectedDay &&
+            editingDay === null &&
+            Object.keys(workoutProgram.WorkoutDays).length === 0
+          "
+          class="text-center py-10 px-5 text-gray-600"
+        >
           <div class="text-5xl mb-3">📅</div>
           <div class="text-base font-semibold text-gray-700 mb-2">No daily workouts added yet</div>
-          <div class="text-sm leading-relaxed">Select a day above to start building your workout program schedule.</div>
+          <div class="text-sm leading-relaxed">
+            Select a day above to start building your workout program schedule.
+          </div>
         </div>
       </div>
     </div>
@@ -448,7 +497,7 @@ function validateDescription() {
 
 onMounted(async () => {
   const editId = route.query.edit as string
-  
+
   if (editId) {
     editingProgramId.value = parseInt(editId)
     await loadExistingProgram(editingProgramId.value)
@@ -462,7 +511,7 @@ onMounted(async () => {
       is_public: workoutProgram.is_public,
       level_access: workoutProgram.level_access,
       WorkoutDays: JSON.parse(JSON.stringify(workoutProgram.WorkoutDays)),
-      member_id: workoutAssignment.member_id || ''
+      member_id: workoutAssignment.member_id || '',
     }
   }
 
@@ -470,7 +519,7 @@ onMounted(async () => {
     const response = await fetch('http://127.0.0.1:8000/api/coach/status/', {
       credentials: 'include',
     })
-    
+
     if (response.ok) {
       const data = await response.json()
       coachUserProfileId.value = data.user?.id || data.coach?.user || null
@@ -515,14 +564,16 @@ const isEditing = computed(() => {
 })
 
 const emit = defineEmits<{
-  programCreated: [program: {
-    title: string
-    description: string
-    difficulty_level: string
-    duration: number
-    category: string
-    WorkoutDays: Record<number, WorkoutDay[]>
-  }]
+  programCreated: [
+    program: {
+      title: string
+      description: string
+      difficulty_level: string
+      duration: number
+      category: string
+      WorkoutDays: Record<number, WorkoutDay[]>
+    },
+  ]
   cancel: []
 }>()
 
@@ -556,7 +607,7 @@ const workoutProgram = reactive<WorkoutProgram>({
   category: '',
   is_public: true,
   level_access: 'all',
-  WorkoutDays: {}
+  WorkoutDays: {},
 })
 
 const currentWorkout = reactive<WorkoutDay>({
@@ -564,14 +615,15 @@ const currentWorkout = reactive<WorkoutDay>({
   title: '',
   duration: 30,
   video_link: '',
-  type: ''
+  type: '',
 })
 
 const selectedDay = ref<number | ''>('')
 const editingDay = ref<number | null>(null)
 const editingWorkoutIndex = ref<number | null>(null)
 const youtubeError = ref('')
-const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)[a-zA-Z0-9_-]{11}/
+const youtubeRegex =
+  /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)[a-zA-Z0-9_-]{11}/
 
 const workoutAssignment = reactive({
   member_id: '',
@@ -587,18 +639,13 @@ function parseMemberId(input: string): number | null {
 }
 
 async function createAssignment(programId: number) {
-  const memberNumericId = parseMemberId(workoutAssignment.member_id)
-  if (!memberNumericId) {
-    console.error('Invalid member id format:', workoutAssignment.member_id)
-    alert('Invalid MEMBER ID. Use format like M-00001 or numeric id.')
-    return null
-  }  
   try {
     const payload = {
       program_id: programId,
-      member_id: memberNumericId,
+      member_id: workoutAssignment.member_id,
     }
-    const res = await fetch(`http://127.0.0.1:8000/api/member/assign/${memberNumericId}/`, {
+
+    const res = await fetch(`http://127.0.0.1:8000/api/member/assign/`, {
       method: 'POST',
       credentials: 'include',
       headers: {
@@ -607,31 +654,35 @@ async function createAssignment(programId: number) {
       },
       body: JSON.stringify(payload),
     })
+
     if (!res.ok) {
       const err = await res.json().catch(() => null)
-      alert('Failed to create assignment: ' + (err?.detail || JSON.stringify(err) || `HTTP ${res.status}`))
+      alert('Failed to create assignment: ' + (err?.error || err?.detail || `HTTP ${res.status}`))
       return null
     }
     return await res.json()
   } catch (err) {
     console.error('Assignment create error', err)
+    alert('Network error while creating assignment')
     return null
   }
 }
 
 const canSubmitProgram = computed(() => {
-  return workoutProgram.title &&
-         workoutProgram.difficulty_level &&
-         workoutProgram.duration &&
-         Object.keys(workoutProgram.WorkoutDays).length > 0 &&
-         !descriptionError.value
+  return (
+    workoutProgram.title &&
+    workoutProgram.difficulty_level &&
+    workoutProgram.duration &&
+    Object.keys(workoutProgram.WorkoutDays).length > 0 &&
+    !descriptionError.value
+  )
 })
 
 const durationError = ref('')
 
 function validateDuration() {
   const duration = currentWorkout.duration
-  
+
   if (!duration || duration <= 0) {
     durationError.value = 'Duration must be a positive number'
     return false
@@ -667,7 +718,6 @@ function validatevideo_link() {
   }
   return true
 }
-
 
 function saveDayWorkout() {
   if (!currentWorkout.title?.trim()) {
@@ -707,14 +757,14 @@ function saveDayWorkout() {
     return
   }
 
-  const targetDay = editingDay.value || selectedDay.value as number
+  const targetDay = editingDay.value || (selectedDay.value as number)
 
   const workout: WorkoutDay = {
     day_number: targetDay,
     title: currentWorkout.title.trim(),
     duration: currentWorkout.duration,
     video_link: currentWorkout.video_link.trim(),
-    type: currentWorkout.type
+    type: currentWorkout.type,
   }
 
   if (editingDay.value !== null && editingWorkoutIndex.value !== null) {
@@ -773,7 +823,9 @@ function handleCancel() {
 
 function cancelWorkoutEdit() {
   if (editingDay.value !== null && editingWorkoutIndex.value !== null && backupWorkout.value) {
-    workoutProgram.WorkoutDays[editingDay.value][editingWorkoutIndex.value] = { ...backupWorkout.value }
+    workoutProgram.WorkoutDays[editingDay.value][editingWorkoutIndex.value] = {
+      ...backupWorkout.value,
+    }
   }
   resetCurrentWorkout()
 }
@@ -813,9 +865,7 @@ async function loadExistingProgram(programId: number) {
     workoutProgram.level_access = programData.level_access || 'all'
 
     workoutAssignment.member_id =
-      programData.assignment?.member?.member_id ||
-      programData.assignment?.member_id ||
-      ''
+      programData.assignment?.member?.member_id || programData.assignment?.member_id || ''
 
     if (programData.days && Array.isArray(programData.days)) {
       workoutProgram.WorkoutDays = {}
@@ -841,7 +891,7 @@ async function loadExistingProgram(programId: number) {
               type: day.type || '',
               duration: Math.floor((day.duration || 30) / videoLinks.length),
               video_link: videoLink,
-              day_number: dayNumber
+              day_number: dayNumber,
             }
             workoutProgram.WorkoutDays[dayNumber].push(workout)
           })
@@ -851,13 +901,12 @@ async function loadExistingProgram(programId: number) {
             type: day.type || '',
             duration: day.duration || 30,
             video_link: '',
-            day_number: dayNumber
+            day_number: dayNumber,
           }
           workoutProgram.WorkoutDays[dayNumber].push(workout)
         }
       })
     }
-
   } catch (error) {
     console.error('Error loading existing program:', error)
     alert('Failed to load program data. Please try again.')
@@ -877,8 +926,8 @@ async function submitProgram() {
 
   if (!coachUserProfileId.value) {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/user-info/', { 
-        credentials: 'include' 
+      const response = await fetch('http://127.0.0.1:8000/api/user-info/', {
+        credentials: 'include',
       })
       if (response.ok) {
         const data = await response.json()
@@ -890,36 +939,40 @@ async function submitProgram() {
   }
 
   if (!coachUserProfileId.value) {
-    alert('Coach profile not found. Please create or confirm your coach profile before creating a program.')
+    alert(
+      'Coach profile not found. Please create or confirm your coach profile before creating a program.',
+    )
     return
   }
 
-const days = Object.entries(workoutProgram.WorkoutDays).flatMap(([day, workouts]) => {
-  return workouts.map(workout => ({
-    day_number: Number(day),
-    title: workout.title,
-    type: workout.type || "",
-    video_links: [workout.video_link].filter(Boolean), // Single video per workout
-    duration: workout.duration
-  }))
-})
+  const days = Object.entries(workoutProgram.WorkoutDays).flatMap(([day, workouts]) => {
+    return workouts.map((workout) => ({
+      day_number: Number(day),
+      title: workout.title,
+      type: workout.type || '',
+      video_links: [workout.video_link].filter(Boolean), // Single video per workout
+      duration: workout.duration,
+    }))
+  })
 
   const payload = {
     coach: coachUserProfileId.value,
     title: workoutProgram.title,
     description: workoutProgram.description,
     difficulty_level: workoutProgram.difficulty_level,
-    level_access: workoutProgram.level_access || "all",
+    level_access: workoutProgram.level_access || 'all',
     is_public: workoutProgram.is_public ?? true,
     duration: workoutProgram.duration,
-    category: workoutProgram.category || "full_body",
-    days: days.map(day => ({
+    category: workoutProgram.category || 'full_body',
+    days: days.map((day) => ({
       day_number: day.day_number,
       title: day.title,
-      type: day.type || "",
-      video_links: Array.isArray(day.video_links) ? day.video_links : [day.video_links].filter(Boolean),
-      duration: day.duration
-    }))
+      type: day.type || '',
+      video_links: Array.isArray(day.video_links)
+        ? day.video_links
+        : [day.video_links].filter(Boolean),
+      duration: day.duration,
+    })),
   }
 
   const url = editingProgramId.value
@@ -932,14 +985,18 @@ const days = Object.entries(workoutProgram.WorkoutDays).flatMap(([day, workouts]
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
-        'X-CSRFToken': getCsrfToken()
+        'X-CSRFToken': getCsrfToken(),
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     })
 
     const text = await response.text()
     let body = null
-    try { body = JSON.parse(text) } catch { body = text }
+    try {
+      body = JSON.parse(text)
+    } catch {
+      body = text
+    }
 
     if (!response.ok) {
       console.error('Save program failed:', response.status, body)
@@ -954,7 +1011,7 @@ const days = Object.entries(workoutProgram.WorkoutDays).flatMap(([day, workouts]
         alert('Program saved but failed to create assignment for member.')
       }
     }
-    
+
     emit('programCreated', body)
     alert('Program saved successfully!')
     router.push('/coach-dashboard')
@@ -986,19 +1043,23 @@ function resetProgram() {
   resetCurrentWorkout()
 }
 
-watch(() => props.existingProgram, (program) => {
-  if (program) {
-    workoutProgram.title = program.title
-    workoutProgram.description = program.description
-    workoutProgram.difficulty_level = program.difficulty_level
-    workoutProgram.duration = program.duration
-    workoutProgram.category = program.category
-    workoutProgram.is_public = (program as any).is_public ?? true
-    workoutProgram.level_access = (program as any).level_access ?? 'all'
-    workoutProgram.WorkoutDays = { ...program.WorkoutDays }
-    workoutAssignment.member_id = (program as any).member_id || ''
-  } else {
-    resetProgram()
-  }
-}, { immediate: true })
+watch(
+  () => props.existingProgram,
+  (program) => {
+    if (program) {
+      workoutProgram.title = program.title
+      workoutProgram.description = program.description
+      workoutProgram.difficulty_level = program.difficulty_level
+      workoutProgram.duration = program.duration
+      workoutProgram.category = program.category
+      workoutProgram.is_public = (program as any).is_public ?? true
+      workoutProgram.level_access = (program as any).level_access ?? 'all'
+      workoutProgram.WorkoutDays = { ...program.WorkoutDays }
+      workoutAssignment.member_id = (program as any).member_id || ''
+    } else {
+      resetProgram()
+    }
+  },
+  { immediate: true },
+)
 </script>

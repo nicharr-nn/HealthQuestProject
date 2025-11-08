@@ -1,6 +1,5 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Member, CoachMemberRelationship, FoodPost, FoodPostComment
@@ -34,8 +33,7 @@ def coach_member_requests(request, pk=None):
             )
         except CoachMemberRelationship.DoesNotExist:
             return Response(
-                {"error": "Request not found"},
-                status=status.HTTP_404_NOT_FOUND
+                {"error": "Request not found"}, status=status.HTTP_404_NOT_FOUND
             )
 
         if request.method == "PATCH":
@@ -284,19 +282,40 @@ def manage_member_request(request):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-def assign_program_to_member(request, member_id):
+def assign_program_to_member(request):
     """
     Assign a workout program to a member (coaches only).
     """
     coach_profile = request.user.userprofile
     if coach_profile.role != "coach":
-        raise PermissionDenied("Only coaches can assign programs.")
+        return Response(
+            {"error": "Only coaches can assign programs."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
 
-    member = get_object_or_404(Member, pk=member_id)
+    member_identifier = request.data.get("member_id")
+    if not member_identifier:
+        return Response(
+            {"error": "Member ID is required."}, status=status.HTTP_400_BAD_REQUEST
+        )
 
     program_id = request.data.get("program_id")
     if not program_id:
-        return Response({"error": "Program ID is required."}, status=400)
+        return Response(
+            {"error": "Program ID is required."}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Try to find member by member_id string first, then by primary key
+    try:
+        if isinstance(member_identifier, str) and member_identifier.startswith("M-"):
+            member = Member.objects.get(member_id=member_identifier)
+        else:
+            # Try as primary key
+            member = Member.objects.get(pk=member_identifier)
+    except Member.DoesNotExist:
+        return Response(
+            {"error": "Member not found."}, status=status.HTTP_404_NOT_FOUND
+        )
 
     program = get_object_or_404(WorkoutProgram, pk=program_id)
 
@@ -304,8 +323,7 @@ def assign_program_to_member(request, member_id):
     due_date = request.data.get("due_date")
 
     # Prevent duplicates
-    existing = WorkoutAssignment.objects.filter(member=member, program=program).first()
-    if existing:
+    if WorkoutAssignment.objects.filter(member=member, program=program).exists():
         return Response(
             {"message": "This program is already assigned to the member."},
             status=status.HTTP_200_OK,
@@ -327,6 +345,7 @@ def assign_program_to_member(request, member_id):
     )
 
 
+# ==================== FOOD POSTS ====================
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def food_posts(request):
@@ -345,8 +364,7 @@ def food_posts(request):
         return Response(serializer.data)
 
     elif request.method == "POST":
-        serializer = FoodPostSerializer(data=request.data,
-                                        context={"request": request})
+        serializer = FoodPostSerializer(data=request.data, context={"request": request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -436,8 +454,7 @@ def food_post_comments(request, post_id):
                 )
 
             assigned = CoachMemberRelationship.objects.filter(
-                coach__user=profile, member=member,
-                status__in=["accepted", "approved"]
+                coach__user=profile, member=member, status__in=["accepted", "approved"]
             ).exists()
             if not assigned:
                 return Response(

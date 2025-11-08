@@ -21,8 +21,7 @@ class WorkoutProgramTests(TestCase):
 
         # Create normal user
         self.normal_user = User.objects.create_user(
-            username="normal_user", password="pass123",
-            email="normal@example.com"
+            username="normal_user", password="pass123", email="normal@example.com"
         )
         self.normal_profile = self.normal_user.userprofile
         self.normal_profile.role = "normal"
@@ -38,8 +37,7 @@ class WorkoutProgramTests(TestCase):
 
         # Create coach model instance
         self.coach = Coach.objects.create(
-            user=self.coach_profile, public_id="C-00001",
-            status_approval="approved"
+            user=self.coach_profile, public_id="C-00001", status_approval="approved"
         )
 
         # Create workout program
@@ -178,8 +176,7 @@ class WorkoutDayCompletionTests(WorkoutProgramTests):
 
     def test_complete_workout_day(self):
         """Test normal can complete a workout day"""
-        url = reverse("complete-workout-day",
-                      kwargs={"id": self.workout_day_1.id})
+        url = reverse("complete-workout-day", kwargs={"id": self.workout_day_1.id})
         response = self.client.post(url, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -198,16 +195,14 @@ class WorkoutDayCompletionTests(WorkoutProgramTests):
     def test_complete_already_completed_workout_day(self):
         """Test completing already completed workout day"""
         # First completion
-        url = reverse("complete-workout-day",
-                      kwargs={"id": self.workout_day_1.id})
+        url = reverse("complete-workout-day", kwargs={"id": self.workout_day_1.id})
         first_response = self.client.post(url, format="json")
         self.assertEqual(first_response.status_code, status.HTTP_200_OK)
 
         # Store XP after first completion
         xp_after_first = first_response.data["total_xp"]
 
-        url = reverse("complete-workout-day",
-                      kwargs={"id": self.workout_day_1.id})
+        url = reverse("complete-workout-day", kwargs={"id": self.workout_day_1.id})
         # try to make complete again
         response = self.client.post(url, format="json")
 
@@ -228,11 +223,9 @@ class WorkoutDayCompletionTests(WorkoutProgramTests):
     def test_check_completion_status(self):
         """Test checking completion status of workout day"""
         url_get = reverse(
-            "check-workout-day-completion",
-            kwargs={"id": self.workout_day_1.id}
+            "check-workout-day-completion", kwargs={"id": self.workout_day_1.id}
         )
-        url_post = reverse("complete-workout-day",
-                           kwargs={"id": self.workout_day_1.id})
+        url_post = reverse("complete-workout-day", kwargs={"id": self.workout_day_1.id})
 
         # Check before completion
         response = self.client.get(url_get)
@@ -301,8 +294,7 @@ class WorkoutDayVideoTests(WorkoutProgramTests):
         ]
         self.workout_day_1.save()
 
-        url = reverse("workout-day-videos",
-                      kwargs={"id": self.workout_day_1.id})
+        url = reverse("workout-day-videos", kwargs={"id": self.workout_day_1.id})
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -312,22 +304,19 @@ class WorkoutDayVideoTests(WorkoutProgramTests):
         """Test coach can add video to workout day"""
         self.client.force_login(self.coach_user)
 
-        url = reverse("workout-day-videos",
-                      kwargs={"id": self.workout_day_1.id})
+        url = reverse("workout-day-videos", kwargs={"id": self.workout_day_1.id})
         data = {"link": "https://youtube.com/watch?v=newvideo"}
         response = self.client.post(url, data, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.workout_day_1.refresh_from_db()
         self.assertIn(
-            "https://youtube.com/watch?v=newvideo",
-            self.workout_day_1.video_links
+            "https://youtube.com/watch?v=newvideo", self.workout_day_1.video_links
         )
 
     def test_add_workout_day_video_as_normal(self):
         """Test normal cannot add videos"""
-        url = reverse("workout-day-videos",
-                      kwargs={"id": self.workout_day_1.id})
+        url = reverse("workout-day-videos", kwargs={"id": self.workout_day_1.id})
         data = {"link": "https://youtube.com/watch?v=normalvideo"}
         response = self.client.post(url, data, format="json")
 
@@ -337,8 +326,7 @@ class WorkoutDayVideoTests(WorkoutProgramTests):
         """Test adding video without link fails"""
         self.client.force_login(self.coach_user)
 
-        url = reverse("workout-day-videos",
-                      kwargs={"id": self.workout_day_1.id})
+        url = reverse("workout-day-videos", kwargs={"id": self.workout_day_1.id})
         data = {}  # Missing link
         response = self.client.post(url, data, format="json")
 

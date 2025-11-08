@@ -234,9 +234,7 @@ def _calculate_xp_last_30_days(completions, today):
 def _calculate_monthly_challenge(completions, profile, today):
     """Calculate monthly challenge progress."""
     target = getattr(profile, "monthly_challenge_target", 20)
-    completed = completions.filter(
-        completed_at__date__gte=today.replace(day=1)
-    ).count()
+    completed = completions.filter(completed_at__date__gte=today.replace(day=1)).count()
 
     _, days_in_month = calendar.monthrange(today.year, today.month)
     days_left = (today.replace(day=days_in_month) - today).days
@@ -392,8 +390,7 @@ def complete_workout_day(request, id):
 
         # Calculate and award XP
         xp_earned = calculate_xp(
-           duration=workout.duration or 30,
-           difficulty_level=program.difficulty_level
+            duration=workout.duration or 30, difficulty_level=program.difficulty_level
         )
 
         WorkoutDayCompletion.objects.create(
@@ -445,8 +442,7 @@ def complete_workout_day(request, id):
             if program_just_completed:
                 # Check if we already awarded bonus for this program by
                 # checking if completion count matches total days
-                already_awarded = getattr(profile,
-                                          f"bonus_program_{program.id}", False)
+                already_awarded = getattr(profile, f"bonus_program_{program.id}", False)
 
                 if not already_awarded:
                     bonus_xp = COMPLETION_BONUS
@@ -477,9 +473,7 @@ def workout_progress(request, id):
         user_profile=profile, workout_day__program=program
     )
     completed_days = completed_qs.count()
-    xp_earned = (
-        completed_qs.aggregate(models.Sum("xp_earned"))["xp_earned__sum"] or 0
-    )
+    xp_earned = completed_qs.aggregate(models.Sum("xp_earned"))["xp_earned__sum"] or 0
     return Response(
         {
             "program_id": program.id,
@@ -487,9 +481,7 @@ def workout_progress(request, id):
             "total_days": total_days,
             "completed_days": completed_days,
             "completion_percentage": (
-                round((completed_days / total_days) * 100, 1)
-                if total_days > 0
-                else 0
+                round((completed_days / total_days) * 100, 1) if total_days > 0 else 0
             ),
             "xp_earned": xp_earned,
             "completed_day_numbers": list(
