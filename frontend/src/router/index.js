@@ -38,10 +38,10 @@ const routes = [
   { path: '/view-member', name: 'ViewMember', component: MemberManagement, meta: { requiresCoach: true } },
   { path: '/view-request', name: 'ViewRequest', component: MemberRequests, meta: { requiresCoach: true } },
   { path: '/create-workout-program', name: 'CreateWorkoutProgram', component: CreateWorkoutProgram, meta: { requiresCoach: true } },
-  { path: '/coach', name: 'MemberConnect', component: MemberConnect, props: true, },
-  { path: '/food-recipe', name: 'FoodRecipe', component: FoodRecipe, props: true, },
-  { path: '/food-post', name: 'FoodPost', component: FoodPost, props: true, },
-  { path: '/food-diary', name: 'MyFoodDiary', component: FoodDiary},
+  { path: '/coach', name: 'MemberConnect', component: MemberConnect, props: true },
+  { path: '/food-recipe', name: 'FoodRecipe', component: FoodRecipe, props: true },
+  { path: '/food-post', name: 'FoodPost', component: FoodPost, props: true },
+  { path: '/food-diary', name: 'MyFoodDiary', component: FoodDiary },
   { path: '/food-diary/:memberId', name: 'FoodDiary', component: FoodDiary, props: true, meta: { requiresCoach: true } },
 ]
 
@@ -50,21 +50,18 @@ const router = createRouter({
   routes,
 })
 
-const SKIP_IF_COMPLETE = new Set(['/select-role', '/about-you'])
+const ONBOARDING_PAGES = new Set(['/select-role', '/about-you'])
 
 router.beforeEach(async (to, from, next) => {
-  console.log(`Navigating from ${from.path} to ${to.path}`)
-
   const userStore = useUserStore()
 
-  // Initialize user if not yet loaded
+  // --- Load user info if not already ---
   if (!userStore.user && !userStore.loading) {
     await userStore.init()
   }
 
-  // Wait if init is still loading
   if (userStore.loading) {
-    await new Promise(resolve => {
+    await new Promise((resolve) => {
       const unwatch = watch(
         () => userStore.loading,
         (val) => {
@@ -77,49 +74,41 @@ router.beforeEach(async (to, from, next) => {
     })
   }
 
+  const isAdmin = userStore.isAdmin
   const isCoach = userStore.role === 'coach' || userStore.profile?.role === 'coach'
-  const isAdmin = userStore.role === 'admin' || userStore.profile?.role === 'admin'
   const isApproved = userStore.approved === true
   const profileComplete = userStore.profile_complete
 
-  console.log('After init:', { isCoach, isAdmin, isApproved, profileComplete })
+  // --- Redirect admin users away from onboarding pages ---
+  if (isAdmin && ['/select-role', '/about-you'].includes(to.path)) {
+    return next('/admin')
+  }
 
-  // Onboarding redirect
-  if (SKIP_IF_COMPLETE.has(to.path) && profileComplete) {
-    if (isAdmin) return next('/admin')
-    if (isCoach && isApproved) return next('/coach-dashboard')
-    if (isCoach && !isApproved) return next('/coach-portal')
+  // --- Redirect approved coaches away from onboarding pages ---
+  if (isCoach && profileComplete && ['/select-role', '/about-you'].includes(to.path)) {
+    if (isApproved) return next('/coach-dashboard')
+    return next('/coach-portal')
+  }
+
+  // --- Redirect regular users away from onboarding pages if profile complete ---
+  if (profileComplete && ['/select-role', '/about-you'].includes(to.path)) {
     return next('/dashboard')
   }
 
-  // Admin-only pages
-  if (to.meta.requiresAdmin) {
-    // TODO: Remove this bypass for production
-    // Temporarily allow access for testing
-    if (!isAdmin) {
-      console.warn('Not an admin — allowing access for testing purposes')
-      // return next('/dashboard')  // Commented out for testing
-    }
+  // --- Admin-only pages ---
+  if (to.meta.requiresAdmin && !isAdmin) {
+    return next('/dashboard')
   }
+  
 
-  // Coach-only pages
+  // --- Coach-only pages ---
   if (to.meta.requiresCoach) {
-    if (!isCoach) {
-      console.warn('Not a coach — redirecting to dashboard')
-      return next('/dashboard')
-    }
-    if (!isApproved) {
-      console.warn('Coach not approved — redirecting to coach portal')
-      return next('/coach-portal')
-    }
+    if (!isCoach) return next('/dashboard')
+    if (!isApproved) return next('/coach-portal')
   }
 
+  // --- Default: allow access ---
   next()
-})
-
-// Global router error handler
-router.onError((error) => {
-  console.error('Router error:', error)
 })
 
 export default router

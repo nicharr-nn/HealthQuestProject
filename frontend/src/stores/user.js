@@ -14,6 +14,7 @@ export const useUserStore = defineStore('user', {
     coach_profile: null,
     approved: false,
     level: { level_rank: 1, level: 'Bronze', xp: 0 },
+    isAdmin: false,
   }),
 
   getters: {
@@ -48,57 +49,67 @@ export const useUserStore = defineStore('user', {
           headers: { Accept: 'application/json' },
         })
 
-        if (res.ok) {
-          const data = await res.json()
+        if (!res.ok) {
+          this.clearAuthStatus()
+          return
+        }
 
-          this.isAuthenticated = data.isAuthenticated
-          this.user = data.user || null
-          this.profile_complete = data.user?.profile_complete === true
-          this.profile = data.user?.profile || null
-          this.role = data.user?.profile?.role || null
-          this.level = data.user?.profile?.current_level || { level_rank: 1, level: 'Bronze', xp: 0 }
+        const data = await res.json()
 
-          // If user is a coach, fetch coach status
-          if (this.role === 'coach') {
-            try {
-              const r = await fetch('http://127.0.0.1:8000/api/coach/status/', {
-                credentials: 'include',
-              })
-              if (r.ok) {
-                const coachData = await r.json()
-                // store raw coach object and a normalized approved flag
-                this.coach_profile = coachData?.coach ?? coachData ?? null
-                const status = this.coach_profile?.status_approval ?? coachData?.status_approval ?? null
-                this.approved = status === 'approved'
+        // Basic user info
+        this.isAuthenticated = data.isAuthenticated
+        this.user = data.user || null
+        this.profile_complete = data.user?.profile_complete === true
+        this.profile = data.user?.profile || null
+        this.goal = data.user?.goal || null
+        this.level = data.user?.profile?.current_level || { level_rank: 1, level: 'Bronze', xp: 0 }
 
-                if (!this.profile) this.profile = {}
-                this.profile.coach_profile = this.coach_profile
-                this.profile.status_approval = status
-                this.profile.approved = this.approved
+        // Normalize role
+        if (data.user?.is_admin || data.user?.is_staff) {
+          this.role = 'admin'
+          this.isAdmin = true
+        } else {
+          this.role = data.user?.profile?.role || 'user'
+          this.isAdmin = false
+        }
 
-                console.log('Coach status fetched:', {
-                  role: this.role,
-                  approved: this.approved,
-                  profile_complete: this.profile_complete
-                })
-                
-              } else {
-                // if coach status endpoint not available, keep approved = false
-                this.coach_profile = null
-                this.approved = false
-              }
-            } catch (err) {
-              console.error('Failed to fetch coach status:', err)
+        // If user is a coach, fetch coach status
+        if (this.role === 'coach') {
+          try {
+            const r = await fetch('http://127.0.0.1:8000/api/coach/status/', {
+              credentials: 'include',
+            })
+            if (r.ok) {
+              const coachData = await r.json()
+              this.coach_profile = coachData?.coach ?? coachData ?? null
+              const status = this.coach_profile?.status_approval ?? coachData?.status_approval ?? null
+              this.approved = status === 'approved'
+
+              if (!this.profile) this.profile = {}
+              this.profile.coach_profile = this.coach_profile
+              this.profile.status_approval = status
+              this.profile.approved = this.approved
+            } else {
               this.coach_profile = null
               this.approved = false
             }
-          } else {
+          } catch (err) {
+            console.error('Failed to fetch coach status:', err)
             this.coach_profile = null
             this.approved = false
           }
         } else {
-          this.clearAuthStatus()
+          this.coach_profile = null
+          this.approved = false
         }
+
+        console.log('User initialized:', {
+          role: this.role,
+          isAdmin: this.isAdmin,
+          approved: this.approved,
+          profile_complete: this.profile_complete,
+        })
+
       } catch (err) {
         console.error('Failed to fetch user info:', err)
         this.clearAuthStatus()
@@ -107,41 +118,16 @@ export const useUserStore = defineStore('user', {
       }
     },
 
-    async logout() {
-      try {
-        await fetch('http://127.0.0.1:8000/accounts/logout/', {
-          credentials: 'include',
-        })
-      } catch (err) {
-        console.error('Logout failed:', err)
-      } finally {
-        this.clearAuthStatus()
-        window.location.href = '/'
-      }
-    },
-
-    setRole(role) {
-      this.role = role
-      if (this.profile) this.profile.role = role
-    },
-
-    setGoal(goal) {
-      this.goal = goal
-    },
-
-    setProfileComplete(value) {
-      this.profile_complete = value
-    },
-
     clearAuthStatus() {
       this.isAuthenticated = false
       this.user = null
       this.profile = null
       this.profile_complete = false
       this.role = null
+      this.isAdmin = false
       this.goal = null
+      this.coach_profile = null
+      this.approved = false
     },
-    
   },
-  
 })

@@ -70,20 +70,30 @@
           </div>
 
           <div class="flex items-center gap-3">
-            <button
-              class="rounded-md bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700"
-              @click="goBackToApp"
-            >
-              Back to App
-            </button>
             <button class="relative rounded-md bg-slate-100 p-2" @click="showNotifications">
               🔔
               <span v-if="pendingCount > 0" class="absolute right-1 top-1 inline-block h-2 w-2 rounded-full bg-rose-500"></span>
             </button>
+            <!-- Header User Info -->
             <div class="flex items-center gap-2">
-              <div class="grid h-10 w-10 place-items-center rounded-full bg-blue-500 font-bold text-white">A</div>
+              <!-- Avatar -->
+              <div class="grid h-10 w-10 place-items-center rounded-full bg-blue-500 font-bold text-white">
+                <template v-if="userStore.profile?.user?.username">
+                  {{ getInitials(userStore.profile.user.username) }}
+                </template>
+                <template v-else>?</template>
+              </div>
+
+              <!-- Username and Role -->
               <div class="leading-tight">
-                <div class="font-medium">{{ userStore.profile?.user?.username || 'Admin' }}</div>
+                <div class="font-medium">
+                  <template v-if="userStore.profile?.user?.username">
+                    {{ userStore.profile.user.username }}
+                  </template>
+                  <template v-else>
+                    Loading...
+                  </template>
+                </div>
                 <div class="text-[11px] text-slate-500">Administrator</div>
               </div>
             </div>
@@ -100,30 +110,11 @@
             <p class="text-sm text-slate-500">Review and verify coach certifications</p>
           </div>
 
-          <!-- Backend API Notice -->
-          <div class="rounded-xl bg-amber-50 border border-amber-200 p-4">
-            <div class="flex items-start gap-3">
-              <span class="text-2xl">⚠️</span>
-              <div class="flex-1">
-                <h4 class="font-semibold text-amber-900">Backend API Required</h4>
-                <p class="text-sm text-amber-800 mt-1">
-                  To fully implement coach certification verification, the following backend endpoints are needed:
-                </p>
-                <ul class="text-sm text-amber-800 mt-2 list-disc list-inside space-y-1">
-                  <li><code class="bg-amber-100 px-1 rounded">GET /api/admin/coaches/</code> - List all coaches with filters</li>
-                  <li><code class="bg-amber-100 px-1 rounded">POST /api/admin/coaches/{id}/approve/</code> - Approve certification</li>
-                  <li><code class="bg-amber-100 px-1 rounded">POST /api/admin/coaches/{id}/reject/</code> - Reject certification</li>
-                </ul>
-                <p class="text-sm text-amber-800 mt-2">Currently showing demonstration with mock data.</p>
-              </div>
-            </div>
-          </div>
-
           <div class="rounded-xl bg-white p-5 shadow-sm">
             <div class="mb-4 flex items-center justify-between">
               <h3 class="text-base font-semibold">Coach Applications</h3>
               <div class="flex items-center gap-3">
-                <select class="rounded-md border border-slate-200 px-3 py-2 text-sm" v-model="coachFilter">
+                <select class="rounded-md border border-slate-200 px-3 py-2 text-sm" v-model="coachFilter" @change="fetchCoaches">
                   <option value="all">All Status</option>
                   <option value="pending">Pending</option>
                   <option value="approved">Approved</option>
@@ -201,17 +192,6 @@
             </div>
           </div>
         </section>
-
-        <!-- OTHER SECTIONS Placeholders -->
-        <section
-          v-for="placeholder in ['dashboard','analytics','users','workouts','recipes','reports','settings','logs']"
-          :key="placeholder"
-          v-show="activeSection === placeholder"
-          class="rounded-xl bg-white p-5 shadow-sm"
-        >
-          <h2 class="text-xl font-semibold capitalize">{{ placeholder }}</h2>
-          <p class="mt-2 text-sm text-slate-600">Content for {{ placeholder }} will be added here.</p>
-        </section>
       </main>
     </div>
 
@@ -285,16 +265,6 @@
               No certification document uploaded
             </div>
           </div>
-
-          <div v-if="coachModal.coach?.status_approval === 'pending'" class="bg-blue-50 border border-blue-200 rounded-md p-4">
-            <div class="text-sm font-medium text-blue-900 mb-2">Verification Checklist</div>
-            <ul class="text-sm text-blue-800 space-y-1">
-              <li>✓ Verify certification document is valid and current</li>
-              <li>✓ Check coach credentials match the information provided</li>
-              <li>✓ Ensure bio is professional and appropriate</li>
-              <li>✓ Confirm coach meets platform requirements</li>
-            </ul>
-          </div>
         </div>
 
         <div class="flex justify-between items-center gap-3 border-t border-slate-200 px-5 py-4 bg-slate-50">
@@ -330,12 +300,14 @@
 </template>
 
 <script setup>
-import { onMounted, ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
 const userStore = useUserStore()
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 const sidebarOpen = ref(false)
 const activeSection = ref('coaches')
 const coachFilter = ref('all')
@@ -343,217 +315,99 @@ const searchQuery = ref('')
 const loading = ref(false)
 const error = ref(null)
 
-// Mock coaches data - In production, this would come from API
-const coaches = ref([
-  {
-    coach_id: 1,
-    name: 'Sarah Johnson',
-    email: 'sarah.johnson@email.com',
-    bio: 'Certified personal trainer with 5 years of experience in strength training and nutrition coaching.',
-    certification_doc: 'coach_certifications/sarah_johnson_cert.pdf',
-    status_approval: 'pending',
-    created_at: '2024-09-10T10:30:00Z'
-  },
-  {
-    coach_id: 2,
-    name: 'Mike Rodriguez',
-    email: 'mike.rodriguez@email.com',
-    bio: 'Yoga instructor and mindfulness coach with RYT-500 certification. Specializing in holistic wellness.',
-    certification_doc: 'coach_certifications/mike_rodriguez_cert.pdf',
-    status_approval: 'approved',
-    created_at: '2024-09-09T14:20:00Z',
-    approved_date: '2024-09-10T09:15:00Z'
-  },
-  {
-    coach_id: 3,
-    name: 'Lisa Wang',
-    email: 'lisa.wang@email.com',
-    bio: 'Nutrition coach and registered dietitian. Helping clients achieve sustainable healthy eating habits.',
-    certification_doc: 'coach_certifications/lisa_wang_cert.pdf',
-    status_approval: 'pending',
-    created_at: '2024-09-08T16:45:00Z'
-  },
-  {
-    coach_id: 4,
-    name: 'James Smith',
-    email: 'james.smith@email.com',
-    bio: 'CrossFit Level 2 trainer with focus on functional fitness and athletic performance.',
-    certification_doc: 'coach_certifications/james_smith_cert.pdf',
-    status_approval: 'rejected',
-    created_at: '2024-09-05T11:00:00Z'
-  }
-])
+const coaches = ref([])
+const coachModal = ref({ open: false, coach: null })
 
-const coachModal = ref({
-  open: false,
-  coach: null
-})
-
+// Computed filtered coaches
 const filteredCoaches = computed(() => {
   let result = coaches.value
-
-  // Filter by status
-  if (coachFilter.value !== 'all') {
-    result = result.filter(c => c.status_approval === coachFilter.value)
-  }
-
-  // Filter by search query
   if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
+    const q = searchQuery.value.toLowerCase()
     result = result.filter(c =>
-      c.name.toLowerCase().includes(query) ||
-      c.email?.toLowerCase().includes(query) ||
-      c.bio?.toLowerCase().includes(query)
+      c.name.toLowerCase().includes(q) ||
+      c.email?.toLowerCase().includes(q) ||
+      c.bio?.toLowerCase().includes(q)
     )
   }
-
   return result
 })
 
-const pendingCount = computed(() => {
-  return coaches.value.filter(c => c.status_approval === 'pending').length
-})
+const pendingCount = computed(() => coaches.value.filter(c => c.status_approval === 'pending').length)
 
 const nav = computed(() => [
-  {
-    title: 'Overview',
-    items: [
-      { id: 'dashboard', label: 'Dashboard', icon: '📊' },
-      { id: 'analytics', label: 'Analytics', icon: '📈' }
-    ]
-  },
-  {
-    title: 'User Management',
-    items: [
-      { id: 'users', label: 'Users', icon: '👥' },
-      { id: 'coaches', label: 'Coaches', icon: '🏃', badge: pendingCount.value || null }
-    ]
-  },
-  {
-    title: 'Content Management',
-    items: [
-      { id: 'workouts', label: 'Workouts', icon: '💪' },
-      { id: 'recipes', label: 'Recipes', icon: '🍽️' },
-      { id: 'reports', label: 'Reports', icon: '⚠️' }
-    ]
-  },
-  {
-    title: 'System',
-    items: [
-      { id: 'settings', label: 'Settings', icon: '⚙️' },
-      { id: 'logs', label: 'Audit Logs', icon: '📋' }
-    ]
-  }
+  { title: 'Overview', items: [{ id: 'dashboard', label: 'Dashboard', icon: '📊' }, { id: 'analytics', label: 'Analytics', icon: '📈' }] },
+  { title: 'User Management', items: [{ id: 'users', label: 'Users', icon: '👥' }, { id: 'coaches', label: 'Coaches', icon: '🏃', badge: pendingCount.value || null }] },
+  { title: 'Content Management', items: [{ id: 'workouts', label: 'Workouts', icon: '💪' }, { id: 'recipes', label: 'Recipes', icon: '🍽️' }, { id: 'reports', label: 'Reports', icon: '⚠️' }] },
+  { title: 'System', items: [{ id: 'settings', label: 'Settings', icon: '⚙️' }, { id: 'logs', label: 'Audit Logs', icon: '📋' }] }
 ])
 
-function setSection(id) {
-  activeSection.value = id
-  if (window.innerWidth < 768) sidebarOpen.value = false
-}
-
-function goBackToApp() {
-  router.push('/')
-}
-
-function getInitials(name) {
-  if (!name) return '?'
-  return name
-    .split(' ')
-    .map(word => word[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
-}
-
-function formatDate(dateString) {
-  if (!dateString) return 'N/A'
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
-}
-
+function setSection(id) { activeSection.value = id; if(window.innerWidth < 768) sidebarOpen.value = false }
+function getInitials(name) { return name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) || '?' }
+function formatDate(date) { return date ? new Date(date).toLocaleDateString('en-US', {year:'numeric',month:'short',day:'numeric'}) : 'N/A' }
 function getStatusClass(status) {
-  switch (status) {
-    case 'pending':
-      return 'bg-amber-100 text-amber-800'
-    case 'approved':
-      return 'bg-emerald-100 text-emerald-800'
-    case 'rejected':
-      return 'bg-rose-100 text-rose-800'
-    default:
-      return 'bg-slate-100 text-slate-800'
+  switch(status){case 'pending': return 'bg-amber-100 text-amber-800'; case 'approved': return 'bg-emerald-100 text-emerald-800'; case 'rejected': return 'bg-rose-100 text-rose-800'; default: return 'bg-slate-100 text-slate-800'}
+}
+function getDocumentUrl(doc) { return doc ? `${API_URL}/media/${doc}` : '#' }
+function viewCoachDetails(coach) { coachModal.value = { open: true, coach } }
+function closeModal() { coachModal.value = { open: false, coach: null } }
+
+async function fetchCoaches() {
+  loading.value = true
+  error.value = null
+  try {
+    const params = coachFilter.value !== 'all' ? `?status=${coachFilter.value}` : ''
+    const res = await fetch(`${API_URL}/api/admin/coaches/${params}`, {
+      credentials: 'include',
+      headers: { Accept: 'application/json' },
+    })
+    if (!res.ok) throw new Error('Failed to fetch coaches')
+    coaches.value = await res.json()
+  } catch(err) {
+    console.error(err)
+    error.value = 'Failed to load coaches'
+  } finally { loading.value = false }
+}
+
+async function approveCoach(coach) {
+  try {
+    const res = await fetch(`${API_URL}/api/admin/coaches/${coach.coach_id}/approve/`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    })
+    if (!res.ok) throw new Error('Failed to approve coach')
+    await fetchCoaches()
+    closeModal()
+  } catch(err) {
+    console.error(err)
+    alert('Failed to approve coach')
   }
 }
 
-function getDocumentUrl(doc) {
-  if (!doc) return '#'
-  // In production, this would be the full URL to the document
-  return `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/media/${doc}`
-}
-
-function viewCoachDetails(coach) {
-  coachModal.value = {
-    open: true,
-    coach: coach
+async function rejectCoach(coach) {
+  const reason = prompt('Reason for rejection (optional):')
+  try {
+    const res = await fetch(`${API_URL}/api/admin/coaches/${coach.coach_id}/reject/`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ reason })
+    })
+    if (!res.ok) throw new Error('Failed to reject coach')
+    await fetchCoaches()
+    closeModal()
+  } catch(err) {
+    console.error(err)
+    alert('Failed to reject coach')
   }
 }
 
-function closeModal() {
-  coachModal.value = {
-    open: false,
-    coach: null
+function exportCoachList() { alert('Exporting CSV (to implement backend endpoint)') }
+function showNotifications() { alert(`${pendingCount.value} pending coach applications`) }
+
+onMounted(async () => {
+  if (!userStore.profile) {
+    await userStore.init()
   }
-}
-
-function approveCoach(coach) {
-  // In production, this would make an API call to approve the coach
-  // POST /api/admin/coaches/{coach.coach_id}/approve/
-
-  console.log('Approving coach:', coach)
-
-  // Update local state (demo only)
-  const index = coaches.value.findIndex(c => c.coach_id === coach.coach_id)
-  if (index !== -1) {
-    coaches.value[index].status_approval = 'approved'
-    coaches.value[index].approved_date = new Date().toISOString()
-  }
-
-  alert(`✓ Coach "${coach.name}" has been approved!\n\nIn production, this would:\n1. Update the database\n2. Send approval email to coach\n3. Grant coach permissions\n4. Log the action in audit trail`)
-
-  closeModal()
-}
-
-function rejectCoach(coach) {
-  const reason = prompt('Please provide a reason for rejection (optional):')
-
-  // In production, this would make an API call to reject the coach
-  // POST /api/admin/coaches/{coach.coach_id}/reject/
-  // Body: { reason: reason }
-
-  console.log('Rejecting coach:', coach, 'Reason:', reason)
-
-  // Update local state (demo only)
-  const index = coaches.value.findIndex(c => c.coach_id === coach.coach_id)
-  if (index !== -1) {
-    coaches.value[index].status_approval = 'rejected'
-    coaches.value[index].rejection_reason = reason
-  }
-
-  alert(`✗ Coach "${coach.name}" has been rejected.\n\nIn production, this would:\n1. Update the database\n2. Send rejection email to coach\n3. Log the action in audit trail\n4. Allow coach to resubmit`)
-
-  closeModal()
-}
-
-function exportCoachList() {
-  alert('Exporting coach list as CSV - download would start here\n\nIn production, this would generate a CSV file with all coach data.')
-}
-
-function showNotifications() {
-  alert(`${pendingCount.value} pending coach applications require review`)
-}
-
-onMounted(() => {
-  // In production, fetch coaches from API here
-  // fetchCoaches()
-  console.log('AdminDashboard mounted. Ready to verify coach certifications.')
 })
 </script>
