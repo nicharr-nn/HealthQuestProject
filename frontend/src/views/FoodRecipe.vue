@@ -43,7 +43,7 @@
       flex-col md:flex-row items-center justify-between gap-4 my-6 shadow-md"
     >
       <p class="text-2xl md:text-3xl text-center md:text-left">
-        Let’s share our favorite recipes and discover healthy meals from others!
+        Let's share our favorite recipes and discover healthy meals from others!
       </p>
 
       <button
@@ -168,7 +168,6 @@
             class="w-full h-full object-cover"
           />
         </div>
-
       </div>
 
       <!-- Right -->
@@ -190,23 +189,22 @@
         <!-- Buttons -->
         <div class="w-[10%] flex flex-col flex-shrink-0">
           <div class="relative h-full group inline-block">
-              <a
-                :href="`http://127.0.0.1:8000/api/recipe/${menu.id}/download-pdf/`"
-                class="bg-blue-200 rounded-r-lg text-white h-full w-full font-semibold flex items-center justify-center
-                hover:bg-blue-300 transition"
-                download
-              >
-                💾
-              </a>
+            <a
+              :href="`http://127.0.0.1:8000/api/recipe/${menu.id}/download-pdf/`"
+              class="bg-blue-200 rounded-r-lg text-white h-full w-full font-semibold flex items-center justify-center
+              hover:bg-blue-300 transition"
+              download
+            >
+              💾
+            </a>
 
-              <span class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
-              bg-[#846757] text-white text-sm px-2 py-1 rounded-md 
-                opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-              >
-                Download PDF
-              </span>
+            <span class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
+            bg-[#846757] text-white text-sm px-2 py-1 rounded-md 
+              opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+            >
+              Download PDF
+            </span>
           </div>
-          
 
           <template v-if="showMine" class="mt-4 flex flex-col gap-4">
             <button
@@ -234,8 +232,10 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
+import { useToastStore } from '@/stores/toast'
 
 const userStore = useUserStore()
+const toast = useToastStore()
 
 const showModal = ref(false)
 const recipeTitle = ref('')
@@ -300,7 +300,7 @@ const limitText = (text, maxLines) => {
 
 const submitRecipe = async () => {
   if (!recipeTitle.value || !recipeIngredients.value || !recipeSteps.value) {
-    alert('Please fill out all fields.')
+    toast.warning('Please fill out all fields.')
     return
   }
 
@@ -326,15 +326,15 @@ const submitRecipe = async () => {
     })
 
     if (response.ok) {
-      alert(editMode.value ? 'Recipe updated successfully!' : 'Recipe uploaded successfully!')
+      toast.success(editMode.value ? 'Recipe updated successfully!' : 'Recipe uploaded successfully!')
       closeModal()
       fetchMenus(showMine.value)
     } else {
       const errText = await response.text()
-      alert((editMode.value ? 'Update' : 'Upload') + ' failed:\n' + errText)
+      toast.error((editMode.value ? 'Update' : 'Upload') + ' failed: ' + errText)
     }
   } catch (err) {
-    alert('Error connecting to backend: ' + err.message)
+    toast.error('Error connecting to backend: ' + err.message)
   } finally {
     uploading.value = false
   }
@@ -386,14 +386,14 @@ const deleteRecipe = async (id) => {
     })
 
     if (response.ok) {
-      alert('Recipe deleted successfully!')
+      toast.success('Recipe deleted successfully!')
       fetchMenus(showMine.value)
     } else {
       const errText = await response.text()
-      alert('Delete failed:\n' + errText)
+      toast.error('Delete failed: ' + errText)
     }
   } catch (err) {
-    alert('Error connecting to backend: ' + err.message)
+    toast.error('Error connecting to backend: ' + err.message)
   }
 }
 </script>

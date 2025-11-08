@@ -227,6 +227,9 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useToastStore } from '@/stores/toast'
+
+const toast = useToastStore()
 
 const showModal = ref(false)
 const foodPosts = ref([])
@@ -287,7 +290,7 @@ const addComment = async (postId) => {
     newComment.value = ''
   } catch (err) {
     console.error(err)
-    alert('Failed to post comment: ' + err.message)
+    toast.success('Failed to post comment: ' + err.message)
   }
 }
 
@@ -314,14 +317,14 @@ const fetchFoodPosts = async () => {
     }
   } catch (err) {
     console.error('Error:', err)
-    alert('Failed to load posts: ' + err.message)
+    toast.error('Failed to load posts: ' + err.message)
   }
 }
 
 // Submit or update post
 const submitMeal = async () => {
   if (!foodName.value || !foodDescription.value || (!editMode.value && !imageFile.value)) {
-    alert('Please fill all required fields')
+    toast.error('Please fill all required fields')
     return
   }
 
@@ -363,7 +366,7 @@ const submitMeal = async () => {
         await uploadImageToPost(editingId.value, imageFile.value)
       }
 
-      alert('Post updated successfully!')
+      toast.success('Post updated successfully!')
     } else {
       const formData = new FormData()
       formData.append('title', foodName.value)
@@ -390,13 +393,13 @@ const submitMeal = async () => {
         throw new Error(`Create failed:\n${errText}`)
       }
 
-      alert('Post created successfully!')
+      toast.success('Post created successfully!')
     }
 
     closeModal()
     fetchFoodPosts()
   } catch (err) {
-    alert('Error: ' + err.message)
+    toast.error('Error: ' + err.message)
   } finally {
     uploading.value = false
   }
@@ -438,14 +441,14 @@ const deletePost = async (id) => {
       }
     )
     if (response.ok) {
-      alert('Post deleted successfully!')
+      toast.success('Post deleted successfully!')
       fetchFoodPosts()
     } else {
       const errText = await response.text()
-      alert('Delete failed:\n' + errText)
+      toast.error('Delete failed:\n' + errText)
     }
   } catch (err) {
-    alert('Error connecting to backend: ' + err.message)
+    toast.error('Error connecting to backend: ' + err.message)
   }
 }
 

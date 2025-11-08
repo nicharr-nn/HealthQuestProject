@@ -1,4 +1,5 @@
 <template>
+  <Toast />
   <div v-if="userStore.loading" class="min-h-screen bg-white"></div>
 
   <template v-else>
@@ -18,6 +19,7 @@ import { useUserStore } from '@/stores/user'
 import DashboardNavbar from '@/components/DashboardNavbar.vue'
 import UnsignNavbar from '@/components/UnsignNavBar.vue'
 import CoachNavbar from '@/components/CoachNavBar.vue'
+import Toast from '@/components/Toast.vue'
 
 const userStore = useUserStore()
 

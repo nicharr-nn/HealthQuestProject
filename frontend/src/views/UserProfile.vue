@@ -253,8 +253,10 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useUserStore } from '@/stores/user'
+import { useToastStore } from '@/stores/toast'
 
 const userStore = useUserStore()
+const toast = useToastStore()
 
 const profile = ref({
   name: '',
@@ -574,12 +576,12 @@ async function deleteAccount() {
   })
 
   if (res.ok) {
-    alert('Account deactivated successfully.')
+    toast.success('Account deactivated successfully.')
     userStore.clearAuthStatus()
     window.location.href = '/'
   } else {
     const data = await res.json().catch(() => ({}))
-    alert(`Failed: ${res.status} ${data.detail || ''}`)
+    toast.error(`Failed: ${res.status} ${data.detail || ''}`)
   }
 }
 
