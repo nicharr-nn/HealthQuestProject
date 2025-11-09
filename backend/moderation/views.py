@@ -80,29 +80,3 @@ def list_coaches_for_admin(request):
         for coach in coaches
     ]
     return Response(data)
-
-@api_view(["DELETE"])
-@permission_classes([IsAuthenticated])
-def delete_recipe(request, recipe_id):
-    """Allow admin to delete a recipe."""
-    try:
-        admin = Admin.objects.get(user=request.user)
-    except Admin.DoesNotExist:
-        return Response({"error": "You are not an admin"}, status=403)
-
-    try:
-        recipe = Recipe.objects.get(pk=recipe_id)
-    except Recipe.DoesNotExist:
-        return Response({"error": "Recipe not found"}, status=404)
-
-    title = recipe.title
-    recipe.delete()
-
-    # Log moderation action
-    AdminModeration.objects.create(
-        admin=admin,
-        action="delete_post",
-        reason=f"Deleted recipe '{title}' for policy violation or inappropriate content.",
-    )
-
-    return Response({"message": f"Recipe '{title}' deleted successfully."}, status=200)
