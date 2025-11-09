@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("member", "0003_remove_member_goals_alter_member_user"),
         ("users", "0015_fitnessgoal"),
