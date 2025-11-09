@@ -1,24 +1,24 @@
 <template>
-  <div class="min-h-screen py-8 px-4 font-subtitle">
+  <div class="min-h-screen py-4 sm:py-8 px-2 sm:px-4 font-subtitle">
     <!-- Header with Quote -->
-    <div class="bg-[#fac3e1] p-6 my-6 rounded-lg max-w-5xl mx-auto">
-      <p class="text-[#9c547b] text-2xl md:text-3xl font-bold leading-snug">
+    <div class="bg-[#fac3e1] p-4 sm:p-6 my-4 sm:my-6 rounded-lg max-w-5xl mx-auto">
+      <p class="text-[#9c547b] text-xl sm:text-2xl md:text-3xl font-bold leading-snug">
         "To eat is a necessity, but to eat intelligently is an art."
       </p>
-      <p class="text-[#9c547b] text-sm text-right mt-2 italic">– Michael Pollan -</p>
+      <p class="text-[#9c547b] text-xs sm:text-sm text-right mt-2 italic">– Michael Pollan -</p>
     </div>
 
     <!-- Filter Buttons -->
-    <div class="bg-blue-100 p-4 rounded-lg max-w-5xl mx-auto mb-6">
-      <div class="flex items-center justify-center gap-8">
-        <div class="text-lg font-semibold">Choose Recipes to Display:</div>
-        <div class="flex gap-4 flex-wrap">
+    <div class="bg-blue-100 p-3 sm:p-4 rounded-lg max-w-5xl mx-auto mb-4 sm:mb-6">
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-8">
+        <div class="text-base sm:text-lg font-semibold text-center">Choose Recipes to Display:</div>
+        <div class="flex gap-3 sm:gap-4 flex-wrap justify-center">
           <button
             v-if="userStore.level.level.toLowerCase() === 'gold' 
             || userStore.role.toLowerCase() === 'coach'"
             @click="showMyRecipes"
             :class="[
-              'px-6 py-2 rounded-lg font-semibold shadow-md transition',
+              'px-4 sm:px-6 py-2 rounded-lg font-semibold shadow-md transition text-sm sm:text-base',
               showMine ? 'bg-[#F9B4FF]' : 'bg-gray-200 hover:bg-gray-300'
             ]"
           >
@@ -27,7 +27,7 @@
           <button
             @click="showAllRecipes"
             :class="[
-              'px-6 py-2 rounded-lg font-semibold shadow-md transition',
+              'px-4 sm:px-6 py-2 rounded-lg font-semibold shadow-md transition text-sm sm:text-base',
               !showMine ? 'bg-[#F9B4FF]' : 'bg-gray-200 hover:bg-gray-300'
             ]"
           >
@@ -39,10 +39,10 @@
 
     <!-- Share Banner -->
     <div
-      class="bg-white rounded-xl p-8 w-full max-w-5xl mx-auto flex 
-      flex-col md:flex-row items-center justify-between gap-4 my-6 shadow-md"
+      class="bg-white rounded-xl p-4 sm:p-8 w-full max-w-5xl mx-auto flex 
+      flex-col md:flex-row items-center justify-between gap-4 my-4 sm:my-6 shadow-md"
     >
-      <p class="text-2xl md:text-3xl text-center md:text-left">
+      <p class="text-lg sm:text-2xl md:text-3xl text-center md:text-left">
         Let's share our favorite recipes and discover healthy meals from others!
       </p>
 
@@ -50,7 +50,7 @@
         v-if="showMine"
         @click="openModal"
         class="bg-pink-400 hover:bg-pink-500 text-white 
-        font-semibold px-6 py-3 rounded-lg shadow-md transition whitespace-nowrap"
+        font-semibold px-4 sm:px-6 py-2 sm:py-3 rounded-lg shadow-md transition whitespace-nowrap text-sm sm:text-base"
       >
         Upload Recipe
       </button>
@@ -62,31 +62,31 @@
       class="fixed inset-0 bg-black/20 flex items-center justify-center z-50 p-4"
     >
       <div
-        class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 
+        class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-4 sm:p-6 
         relative max-h-[90vh] overflow-y-auto"
       >
         <!-- Close -->
         <button
           @click="closeModal"
-          class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl"
+          class="absolute top-2 right-2 sm:top-3 sm:right-3 text-gray-400 hover:text-gray-600 text-2xl cursor-pointer"
         >
           ×
         </button>
 
-        <h2 class="text-2xl font-bold mb-4 text-pink-400">
+        <h2 class="text-xl sm:text-2xl font-bold mb-4 text-pink-400">
           {{ editMode ? 'Edit Recipe' : 'Upload Your Recipe' }}
         </h2>
 
         <form @submit.prevent="submitRecipe" class="space-y-4">
           <!-- Title -->
           <div>
-            <label class="block text-gray-600 font-medium mb-1">Title</label>
+            <label class="block text-gray-600 font-medium mb-1 text-sm sm:text-base">Title</label>
             <input
               v-model="recipeTitle"
               type="text"
               maxlength="30"
               placeholder="e.g., Avocado Toast Deluxe"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm sm:text-base
               focus:ring-2 focus:ring-pink-400 focus:outline-none"
               required
             />
@@ -97,39 +97,39 @@
 
           <!-- Ingredients -->
           <div>
-            <label class="block text-gray-600 font-medium mb-1">Ingredients</label>
+            <label class="block text-gray-600 font-medium mb-1 text-sm sm:text-base">Ingredients</label>
             <textarea
               v-model="recipeIngredients"
               placeholder="e.g., 2 eggs, 1 avocado, salt ..."
               rows="3"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm sm:text-base
               focus:ring-2 focus:ring-pink-400 focus:outline-none"
             ></textarea>
           </div>
 
           <!-- Steps -->
           <div>
-            <label class="block text-gray-600 font-medium mb-1">Steps</label>
+            <label class="block text-gray-600 font-medium mb-1 text-sm sm:text-base">Steps</label>
             <textarea
               v-model="recipeSteps"
               placeholder="Write each step here ..."
               rows="3"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm sm:text-base
               focus:ring-2 focus:ring-pink-400 focus:outline-none"
             ></textarea>
           </div>
 
           <!-- Image -->
           <div>
-            <label class="block text-gray-600 font-medium mb-1">Upload Image</label>
+            <label class="block text-gray-600 font-medium mb-1 text-sm sm:text-base">Upload Image</label>
             <input
               type="file"
               accept="image/*"
               @change="handleImageUpload"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm sm:text-base
                bg-gray-50 cursor-pointer"
             />
-            <p v-if="imageName" class="text-sm text-gray-500 mt-1">
+            <p v-if="imageName" class="text-xs sm:text-sm text-gray-500 mt-1">
               Selected: {{ imageName }}
             </p>
           </div>
@@ -139,7 +139,8 @@
               type="submit"
               :disabled="uploading"
               class="w-full bg-pink-400 hover:bg-pink-500 text-white 
-              font-semibold py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+              font-semibold py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base
+              cursor-pointer"
             >
               {{ uploading ? 'Uploading…' : (editMode ? 'Update Recipe' : 'Submit Recipe') }}
             </button>
@@ -148,20 +149,28 @@
       </div>
     </div>
 
+    <!-- Delete Confirmation Component -->
+    <DeleteModal
+      v-model:show="showDeleteModal"
+      :message="'Are you sure to delete this recipe?'"
+      :confirm-text="'Yes, sure!'"
+      @confirm="confirmDelete"
+    />
+
     <!-- Recipe Display -->
     <div
       v-for="menu in menus"
       :key="menu.id"
-      class="flex flex-col lg:flex-row w-full max-w-5xl mx-auto mt-6 h-[300px] text-[#846757] font-body"
+      class="flex flex-col lg:flex-row w-full max-w-5xl mx-auto mt-4 sm:mt-6 lg:h-[300px] text-[#846757] font-body"
     >
-      <!-- Left -->
-      <div class="flex-1 p-4 bg-purple-100 rounded-xl flex flex-col items-center">
-        <div class="p-4 text-center">
-          <h3 class="text-xl font-bold max-w-full">
+      <!-- Left - Image Section -->
+      <div class="flex-1 p-3 sm:p-4 bg-purple-100 rounded-t-xl lg:rounded-l-xl lg:rounded-tr-none flex flex-col items-center justify-center">
+        <div class="p-2 sm:p-4 text-center w-full">
+          <h3 class="text-base sm:text-lg lg:text-xl font-bold break-words">
             {{ menu.title.length > 40 ? menu.title.slice(0, 40) + '…' : menu.title }}
           </h3>
         </div>
-        <div class="w-100 h-50 rounded-lg overflow-hidden shadow-md flex-shrink-0">
+        <div class="w-full max-w-[350px] h-[180px] sm:h-[200px] lg:h-[180px] rounded-lg overflow-hidden shadow-md">
           <img
             :src="menu.image || 'https://via.placeholder.com/300x300.png?text=No+Image'"
             :alt="menu.title"
@@ -170,55 +179,67 @@
         </div>
       </div>
 
-      <!-- Right -->
-      <div class="flex-1 bg-purple-50 rounded-xl flex justify-between overflow-hidden">
-        <div class="h-full w-full flex-1 p-8">
+      <!-- Right - Content Section -->
+      <div class="flex-1 bg-purple-50 rounded-b-xl lg:rounded-r-xl lg:rounded-bl-none flex flex-col lg:flex-row overflow-hidden">
+        <!-- Content -->
+        <div class="flex-1 p-4 sm:p-6 lg:p-8">
           <div class="h-full overflow-y-auto">
-            <h4 class="text-lg font-semibold mb-2"><span class="text-xl">📝</span> Ingredients</h4>
-            <p class="whitespace-pre-line mb-4">
+            <h4 class="text-sm sm:text-base lg:text-lg font-semibold mb-2">
+              <span class="text-base sm:text-lg lg:text-xl">📝</span> Ingredients
+            </h4>
+            <p class="whitespace-pre-line mb-3 sm:mb-4 text-xs sm:text-sm lg:text-base">
               {{ limitText(menu.ingredients, 6) }}
             </p>
 
-            <h4 class="text-lg font-semibold mb-2"><span class="text-xl">🎢</span> Steps</h4>
-            <p class="whitespace-pre-line">
+            <h4 class="text-sm sm:text-base lg:text-lg font-semibold mb-2">
+              <span class="text-base sm:text-lg lg:text-xl">🎢</span> Steps
+            </h4>
+            <p class="whitespace-pre-line text-xs sm:text-sm lg:text-base">
               {{ limitText(menu.steps, 6) }}
             </p>
           </div>
         </div>
 
         <!-- Buttons -->
-        <div class="w-[10%] flex flex-col flex-shrink-0">
-          <div class="relative h-full group inline-block">
+        <div class="flex lg:flex-col lg:w-[10%] w-full flex-shrink-0">
+          <!-- Download PDF Button -->
+          <div class="relative flex-1 lg:h-full group">
             <a
               :href="`http://127.0.0.1:8000/api/recipe/${menu.id}/download-pdf/`"
-              class="bg-blue-200 rounded-r-lg text-white h-full w-full font-semibold flex items-center justify-center
-              hover:bg-blue-300 transition"
+              class="bg-blue-200 rounded-bl-xl lg:rounded-tr-xl lg:rounded-bl-none text-white 
+              h-full w-full font-semibold flex items-center justify-center
+              hover:bg-blue-300 transition py-3 lg:py-0 text-lg sm:text-xl"
               download
             >
               💾
             </a>
 
-            <span class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
-            bg-[#846757] text-white text-sm px-2 py-1 rounded-md 
-              opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+            <span class="absolute bottom-full lg:bottom-auto lg:top-1/2 lg:-translate-y-1/2 
+            mb-2 lg:mb-0 left-1/2 -translate-x-1/2 lg:left-full lg:translate-x-2 lg:ml-2
+            bg-[#846757] text-white text-xs px-2 py-1 rounded-md whitespace-nowrap
+            opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10"
             >
               Download PDF
             </span>
           </div>
 
-          <template v-if="showMine" class="mt-4 flex flex-col gap-4">
+          <!-- Edit and Delete Buttons (Only show if it the user's recipe) -->
+          <template v-if="showMine">
+            <!-- Edit Button -->
             <button
               @click="openEditModal(menu)"
               class="bg-yellow-200 hover:bg-yellow-300 text-white 
-              h-full w-full px-5 py-2 font-semibold rounded-r-lg cursor-pointer"
+              flex-1 lg:h-full px-5 py-3 lg:py-2 font-semibold cursor-pointer text-lg sm:text-xl"
             >
               ✍🏻
             </button>
 
+            <!-- Delete Button -->
             <button
-              @click="deleteRecipe(menu.id)"
-              class="bg-red-200 hover:bg-red-300 text-white h-full w-full px-5 py-2 
-              font-semibold rounded-r-lg cursor-pointer"
+              @click="openDeleteModal(menu)"
+              class="bg-red-200 hover:bg-red-300 text-white 
+              flex-1 lg:h-full px-5 py-3 lg:py-2
+              font-semibold rounded-br-xl cursor-pointer text-lg sm:text-xl justify-center flex items-center"
             >
               🗑️
             </button>
@@ -233,6 +254,7 @@
 import { ref, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { useToastStore } from '@/stores/toast'
+import DeleteModal from '@/components/DeleteModal.vue'
 
 const userStore = useUserStore()
 const toast = useToastStore()
@@ -249,6 +271,10 @@ const token = localStorage.getItem('access_token') || ''
 const editMode = ref(false)
 const editingId = ref(null)
 const showMine = ref(false)
+
+const showDeleteModal = ref(false)
+const recipeToDeleteId = ref(null)
+const recipeToDeleteTitle = ref('')
 
 const openModal = () => {
   showModal.value = true
@@ -274,6 +300,34 @@ const closeModal = () => {
   recipeSteps.value = ''
   imageFile.value = null
   imageName.value = ''
+}
+
+const openDeleteModal = (menu) => {
+  showDeleteModal.value = true
+  recipeToDeleteId.value = menu.id
+  recipeToDeleteTitle.value = menu.title
+}
+
+const confirmDelete = async () => {
+  if (!recipeToDeleteId.value) return
+  
+  try {
+    const response = await fetch(`http://127.0.0.1:8000/api/recipe/${recipeToDeleteId.value}/delete/`, {
+      method: 'DELETE',
+      headers: { 'X-CSRFToken': getCsrfToken() },
+      credentials: 'include',
+    })
+
+    if (response.ok) {
+      toast.success('Recipe deleted successfully!')
+      fetchMenus(showMine.value)
+    } else {
+      const errText = await response.text()
+      toast.error('Delete failed: ' + errText)
+    }
+  } catch (err) {
+    toast.error('Error connecting to backend: ' + err.message)
+  }
 }
 
 const menus = ref([])
@@ -375,25 +429,5 @@ function getCsrfToken() {
   return ''
 }
 
-const deleteRecipe = async (id) => {
-  if (!confirm('Are you sure you want to delete this recipe?')) return
 
-  try {
-    const response = await fetch(`http://127.0.0.1:8000/api/recipe/${id}/delete/`, {
-      method: 'DELETE',
-      headers: { 'X-CSRFToken': getCsrfToken() },
-      credentials: 'include',
-    })
-
-    if (response.ok) {
-      toast.success('Recipe deleted successfully!')
-      fetchMenus(showMine.value)
-    } else {
-      const errText = await response.text()
-      toast.error('Delete failed: ' + errText)
-    }
-  } catch (err) {
-    toast.error('Error connecting to backend: ' + err.message)
-  }
-}
 </script>

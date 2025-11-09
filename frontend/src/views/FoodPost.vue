@@ -72,7 +72,7 @@
               Edit
             </button>
             <button
-              @click="deletePost(post.id)"
+              @click="openDeleteModal(post)"
               class="cursor-pointer bg-red-400 hover:bg-red-500 text-white px-5 py-2 rounded-lg font-semibold shadow-md"
             >
               Delete
@@ -142,7 +142,7 @@
         >
         <button
           @click="closeModal"
-          class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl"
+          class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl cursor-pointer"
         >
           ×
         </button>
@@ -214,7 +214,8 @@
             <button
               type="submit"
               :disabled="uploading"
-              class="w-full bg-pink-400 hover:bg-pink-500 text-white font-semibold py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+              class="w-full bg-pink-400 hover:bg-pink-500 text-white font-semibold py-2 rounded-lg transition 
+              disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               {{ uploading ? 'Uploading…' : (editMode ? 'Update Meal' : 'Submit Meal') }}
             </button>
@@ -222,12 +223,25 @@
         </form>
       </div>
     </div>
+
+    <!-- Delete Confirmation Component -->
+    <DeleteModal
+      v-model:show="showDeleteModal"
+      title="Delete Meal Post?"
+      message="Are you sure you want to delete"
+      :item-name="postToDeleteTitle"
+      cancel-text="Keep Post"
+      confirm-text="Yes, Delete"
+      @confirm="confirmDeletePost"
+      @close="closeDeleteModal"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useToastStore } from '@/stores/toast'
+import DeleteModal from '@/components/DeleteModal.vue'
 
 const toast = useToastStore()
 
@@ -245,9 +259,53 @@ const showImageModal = ref(false)
 const currentImage = ref('')
 const token = localStorage.getItem('access_token') || ''
 
+// Delete modal state
+const showDeleteModal = ref(false)
+const postToDeleteId = ref(null)
+const postToDeleteTitle = ref('')
+
 // Comments (local only)
 const comments = ref({})
 const newComment = ref('')
+
+// Delete modal functions
+const openDeleteModal = (post) => {
+  showDeleteModal.value = true
+  postToDeleteId.value = post.id
+  postToDeleteTitle.value = post.title
+}
+
+const closeDeleteModal = () => {
+  showDeleteModal.value = false
+  postToDeleteId.value = null
+  postToDeleteTitle.value = ''
+}
+
+const confirmDeletePost = async () => {
+  if (!postToDeleteId.value) return
+  
+  try {
+    const response = await fetch(
+      `http://127.0.0.1:8000/api/member/food-posts/${postToDeleteId.value}/delete/`,
+      {
+        method: 'DELETE',
+        headers: { Authorization: token ? `Bearer ${token}` : '' },
+        credentials: 'include'
+      }
+    )
+    if (response.ok) {
+      toast.success('Post deleted successfully!')
+      fetchFoodPosts()
+    } else {
+      const errText = await response.text()
+      toast.error('Delete failed:\n' + errText)
+    }
+  } catch (err) {
+    toast.error('Error connecting to backend: ' + err.message)
+  } finally {
+    closeDeleteModal()
+  }
+}
 
 // Fetch comments for a post
 const fetchComments = async (postId) => {
@@ -426,30 +484,6 @@ const uploadImageToPost = async (postId, file) => {
   }
 
   return await response.json()
-}
-
-// Delete post
-const deletePost = async (id) => {
-  if (!confirm('Are you sure you want to delete this post?')) return
-  try {
-    const response = await fetch(
-      `http://127.0.0.1:8000/api/member/food-posts/${id}/delete/`,
-      {
-        method: 'DELETE',
-        headers: { Authorization: token ? `Bearer ${token}` : '' },
-        credentials: 'include'
-      }
-    )
-    if (response.ok) {
-      toast.success('Post deleted successfully!')
-      fetchFoodPosts()
-    } else {
-      const errText = await response.text()
-      toast.error('Delete failed:\n' + errText)
-    }
-  } catch (err) {
-    toast.error('Error connecting to backend: ' + err.message)
-  }
 }
 
 const openImageModal = (imgUrl) => {

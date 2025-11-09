@@ -214,13 +214,15 @@
                       @click="saveChanges"
                       :disabled="isFormInvalid"
                       :class="{ 'opacity-50 cursor-not-allowed': validationErrors.height || validationErrors.weight }"
-                      class="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-full font-semibold text-lg transition-colors shadow-lg disabled:hover:bg-blue-500"
+                      class="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-full font-semibold text-lg transition-colors shadow-lg
+                       disabled:hover:bg-blue-500 cursor-pointer"
                     >
                       Save Changes
                     </button>
                     <button
                       @click="cancelEdit"
-                      class="bg-gray-500 hover:bg-gray-600 text-white px-8 py-3 rounded-full font-semibold text-lg transition-colors shadow-lg"
+                      class="bg-gray-500 hover:bg-gray-600 text-white px-8 py-3 rounded-full font-semibold text-lg transition-colors shadow-lg
+                      cursor-pointer"
                     >
                       Cancel
                     </button>
@@ -228,7 +230,7 @@
                   <template v-else>
                     <button
                       @click="isEditing = true"
-                      class="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-full font-semibold text-lg transition-colors shadow-lg"
+                      class="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-full font-semibold text-lg transition-colors shadow-lg cursor-pointer"
                     >
                       Edit Profile
                     </button>
@@ -236,8 +238,8 @@
                 </div>
 
                 <button
-                  @click="deleteAccount"
-                  class="bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-full font-semibold text-lg transition-colors shadow-lg"
+                  @click="openDeleteModal"
+                  class="bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-full font-semibold text-lg transition-colors shadow-lg cursor-pointer"
                 >
                   Delete Account
                 </button>
@@ -247,6 +249,18 @@
         </div>
       </div>
     </div>
+
+    <!-- Delete Confirmation Component -->
+    <DeleteModal
+      v-model:show="showDeleteModal"
+      message="Are you sure you want to delete your account"
+      :item-name="profile.name"
+      cancel-text="Keep Account"
+      confirm-text="Yes, Delete Account"
+      confirm-icon="🗑️"
+      @confirm="deleteUserAccount"
+      @close="closeDeleteModal"
+    />
   </div>
 </template>
 
@@ -254,6 +268,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { useToastStore } from '@/stores/toast'
+import DeleteModal from '@/components/DeleteModal.vue'
 
 const userStore = useUserStore()
 const toast = useToastStore()
@@ -273,6 +288,7 @@ const editProfile = ref({ ...profile.value })
 const isEditing = ref(false)
 const loading = ref(true)
 const error = ref(null)
+const showDeleteModal = ref(false)
 
 const selectedFile = ref(null)
 const uploadMessage = ref('')
@@ -285,6 +301,38 @@ const isFormInvalid = computed(() =>
   validationErrors.value.height !== '' || validationErrors.value.weight !== ''
 )
 
+// Delete modal functions
+const openDeleteModal = () => {
+  showDeleteModal.value = true
+}
+
+const closeDeleteModal = () => {
+  showDeleteModal.value = false
+}
+
+const deleteUserAccount = async () => {
+  try {
+    const response = await fetch(`http://127.0.0.1:8000/api/user-info/`, {
+      method: 'DELETE',
+      credentials: 'include',
+      headers: {
+        'X-CSRFToken': getCsrfToken(),
+      },
+    })
+
+    if (response.ok) {
+      toast.success('Account deactivated successfully.')
+      userStore.clearAuthStatus()
+      window.location.href = '/'
+    } else {
+      const data = await response.json().catch(() => ({}))
+      toast.error(`Failed: ${response.status} ${data.detail || ''}`)
+    }
+  } catch (err) {
+    console.error('Error deleting account:', err)
+    toast.error('Error connecting to server')
+  }
+}
 
 function getCsrfToken() {
   const value = `; ${document.cookie}`;
@@ -424,7 +472,6 @@ async function uploadPhoto() {
     return null
   }
 }
-
 
 async function saveChanges() {
   // Validate form before saving
@@ -566,31 +613,9 @@ function cancelEdit() {
   }
 }
 
-async function deleteAccount() {
-  if (!confirm('Are you sure you want to deactivate your account?')) return
-
-  const res = await fetch(`http://127.0.0.1:8000/api/user-info/`, {
-    method: 'DELETE',
-    credentials: 'include',
-    headers: {
-      'X-CSRFToken': getCsrfToken(),
-    },
-  })
-
-  if (res.ok) {
-    toast.success('Account deactivated successfully.')
-    userStore.clearAuthStatus()
-    window.location.href = '/'
-  } else {
-    const data = await res.json().catch(() => ({}))
-    toast.error(`Failed: ${res.status} ${data.detail || ''}`)
-  }
-}
-
 onMounted(() => {
   fetchUserProfile()
 })
-
 </script>
 
 <style scoped>
