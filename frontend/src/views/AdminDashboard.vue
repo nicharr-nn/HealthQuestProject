@@ -510,13 +510,11 @@
 
         <!-- OTHER SECTIONS Placeholders -->
         <section
-          v-for="placeholder in ['analytics','workouts','reports','settings','logs']"
-          :key="placeholder"
-          v-show="activeSection === placeholder"
+          v-show="activeSection === 'workouts'"
           class="rounded-xl bg-white p-5 shadow-sm"
         >
-          <h2 class="text-xl font-semibold capitalize">{{ placeholder }}</h2>
-          <p class="mt-2 text-sm text-slate-600">Content for {{ placeholder }} will be added here.</p>
+          <h2 class="text-xl font-semibold capitalize">Workouts</h2>
+          <p class="mt-2 text-sm text-slate-600">Content for workouts will be added here.</p>
         </section>
       </main>
     </div>
@@ -1261,8 +1259,7 @@ const nav = computed(() => [
   {
     title: 'Overview',
     items: [
-      { id: 'dashboard', label: 'Dashboard', icon: '📊' },
-      { id: 'analytics', label: 'Analytics', icon: '📈' }
+      { id: 'dashboard', label: 'Dashboard', icon: '📊' }
     ]
   },
   {
@@ -1276,15 +1273,7 @@ const nav = computed(() => [
     title: 'Content Management',
     items: [
       { id: 'workouts', label: 'Workouts', icon: '💪' },
-      { id: 'recipes', label: 'Recipes', icon: '🍽️' },
-      { id: 'reports', label: 'Reports', icon: '⚠️' }
-    ]
-  },
-  {
-    title: 'System',
-    items: [
-      { id: 'settings', label: 'Settings', icon: '⚙️' },
-      { id: 'logs', label: 'Audit Logs', icon: '📋' }
+      { id: 'recipes', label: 'Recipes', icon: '🍽️' }
     ]
   }
 ])
