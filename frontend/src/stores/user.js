@@ -118,6 +118,32 @@ export const useUserStore = defineStore('user', {
       }
     },
 
+    async logout() {
+      try {
+        await fetch('http://127.0.0.1:8000/accounts/logout/', {
+          credentials: 'include',
+        })
+      } catch (err) {
+        console.error('Logout failed:', err)
+      } finally {
+        this.clearAuthStatus()
+        window.location.href = '/'
+      }
+    },
+
+    setRole(role) {
+      this.role = role
+      if (this.profile) this.profile.role = role
+    },
+
+    setGoal(goal) {
+      this.goal = goal
+    },
+
+    setProfileComplete(value) {
+      this.profile_complete = value
+    },
+
     clearAuthStatus() {
       this.isAuthenticated = false
       this.user = null
