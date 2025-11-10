@@ -202,9 +202,315 @@
           </div>
         </section>
 
+        <!-- DASHBOARD SECTION -->
+        <section v-show="activeSection === 'dashboard'" class="space-y-6">
+          <div>
+            <h2 class="text-2xl font-bold">Dashboard</h2>
+            <p class="text-sm text-slate-500">Overview of platform statistics</p>
+          </div>
+
+          <!-- Stats Cards -->
+          <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <div class="rounded-xl bg-white p-5 shadow-sm">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm text-slate-600">Total Users</p>
+                  <p class="text-3xl font-bold text-slate-900">{{ userStats.total }}</p>
+                </div>
+                <div class="grid h-12 w-12 place-items-center rounded-full bg-blue-100 text-2xl">👥</div>
+              </div>
+              <p class="mt-2 text-xs text-emerald-600">+{{ userStats.newThisMonth }} this month</p>
+            </div>
+
+            <div class="rounded-xl bg-white p-5 shadow-sm">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm text-slate-600">Active Coaches</p>
+                  <p class="text-3xl font-bold text-slate-900">{{ userStats.coaches }}</p>
+                </div>
+                <div class="grid h-12 w-12 place-items-center rounded-full bg-emerald-100 text-2xl">🏃</div>
+              </div>
+              <p class="mt-2 text-xs text-slate-600">{{ userStats.pendingCoaches }} pending approval</p>
+            </div>
+
+            <div class="rounded-xl bg-white p-5 shadow-sm">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm text-slate-600">Total Recipes</p>
+                  <p class="text-3xl font-bold text-slate-900">{{ recipeStats.total }}</p>
+                </div>
+                <div class="grid h-12 w-12 place-items-center rounded-full bg-amber-100 text-2xl">🍽️</div>
+              </div>
+              <p class="mt-2 text-xs text-rose-600">{{ recipeStats.pendingReview }} need review</p>
+            </div>
+
+            <div class="rounded-xl bg-white p-5 shadow-sm">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm text-slate-600">Member Requests</p>
+                  <p class="text-3xl font-bold text-slate-900">{{ memberStats.pending }}</p>
+                </div>
+                <div class="grid h-12 w-12 place-items-center rounded-full bg-purple-100 text-2xl">📋</div>
+              </div>
+              <p class="mt-2 text-xs text-slate-600">{{ memberStats.total }} total members</p>
+            </div>
+          </div>
+
+          <!-- User Growth Chart -->
+          <div class="rounded-xl bg-white p-5 shadow-sm">
+            <h3 class="mb-4 text-base font-semibold">User Growth (Last 6 Months)</h3>
+            <div class="h-80">
+              <Line :data="chartData" :options="chartOptions" />
+            </div>
+          </div>
+
+          <!-- User Distribution by Role -->
+          <div class="grid gap-6 md:grid-cols-2">
+            <div class="rounded-xl bg-white p-5 shadow-sm">
+              <h3 class="mb-4 text-base font-semibold">User Distribution by Role</h3>
+              <div class="h-64">
+                <Doughnut :data="roleChartData" :options="doughnutOptions" />
+              </div>
+            </div>
+
+            <div class="rounded-xl bg-white p-5 shadow-sm">
+              <h3 class="mb-4 text-base font-semibold">User Distribution by Gender</h3>
+              <div class="h-64">
+                <Doughnut :data="genderChartData" :options="doughnutOptions" />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- USERS SECTION -->
+        <section v-show="activeSection === 'users'" class="space-y-6">
+          <div>
+            <h2 class="text-2xl font-bold">User Management</h2>
+            <p class="text-sm text-slate-500">View and manage user accounts</p>
+          </div>
+
+          <div class="rounded-xl bg-white p-5 shadow-sm">
+            <div class="mb-4 flex items-center justify-between">
+              <h3 class="text-base font-semibold">All Users</h3>
+              <div class="flex items-center gap-3">
+                <select class="rounded-md border border-slate-200 px-3 py-2 text-sm" v-model="userRoleFilter">
+                  <option value="all">All Roles</option>
+                  <option value="normal">Normal Users</option>
+                  <option value="coach">Coaches</option>
+                  <option value="member">Members</option>
+                </select>
+                <div class="relative">
+                  <span class="absolute left-3 top-1/2 -translate-y-1/2">🔍</span>
+                  <input
+                    type="text"
+                    placeholder="Search users..."
+                    v-model="userSearchQuery"
+                    class="rounded-md border border-slate-200 pl-9 pr-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div v-if="loadingUsers" class="text-center py-8 text-slate-500">
+              Loading users...
+            </div>
+
+            <div v-else class="overflow-x-auto">
+              <table class="w-full border-collapse text-sm">
+                <thead class="text-slate-500">
+                  <tr class="border-b border-slate-200">
+                    <th class="px-3 py-2 text-left font-semibold">User</th>
+                    <th class="px-3 py-2 text-left font-semibold">Email</th>
+                    <th class="px-3 py-2 text-left font-semibold">Role</th>
+                    <th class="px-3 py-2 text-left font-semibold">Level</th>
+                    <th class="px-3 py-2 text-left font-semibold">Joined</th>
+                    <th class="px-3 py-2 text-left font-semibold">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-if="filteredUsers.length === 0">
+                    <td colspan="6" class="px-3 py-8 text-center text-slate-500">
+                      No users found
+                    </td>
+                  </tr>
+                  <tr
+                    v-for="user in filteredUsers"
+                    :key="user.id"
+                    class="border-b border-slate-100 hover:bg-slate-50"
+                  >
+                    <td class="px-3 py-3">
+                      <div class="flex items-center gap-2">
+                        <div class="grid h-8 w-8 place-items-center rounded-full bg-blue-500 text-xs font-bold text-white">
+                          {{ getInitials(user.username) }}
+                        </div>
+                        {{ user.username }}
+                      </div>
+                    </td>
+                    <td class="px-3 py-3">{{ user.email || 'N/A' }}</td>
+                    <td class="px-3 py-3">
+                      <span
+                        class="rounded-full px-2 py-0.5 text-[11px] font-medium capitalize"
+                        :class="getRoleClass(user.role)"
+                      >
+                        {{ user.role }}
+                      </span>
+                    </td>
+                    <td class="px-3 py-3">
+                      <span class="text-xs text-slate-600">
+                        {{ user.level || 'Bronze' }} ({{ user.xp || 0 }} XP)
+                      </span>
+                    </td>
+                    <td class="px-3 py-3">{{ formatDate(user.created_at) }}</td>
+                    <td class="px-3 py-3">
+                      <div class="flex gap-2">
+                        <button
+                          class="rounded-md bg-blue-600 px-3 py-1.5 text-white hover:bg-blue-700 text-xs"
+                          @click="viewUserDetails(user)"
+                        >
+                          View
+                        </button>
+                        <button
+                          class="rounded-md bg-rose-600 px-3 py-1.5 text-white hover:bg-rose-700 text-xs"
+                          @click="confirmDeleteUser(user)"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- RECIPES SECTION -->
+        <section v-show="activeSection === 'recipes'" class="space-y-6">
+          <div>
+            <h2 class="text-2xl font-bold">Recipe Verification</h2>
+            <p class="text-sm text-slate-500">Review and verify food recipes for safety</p>
+          </div>
+
+          <!-- Backend API Notice -->
+          <div class="rounded-xl bg-amber-50 border border-amber-200 p-4">
+            <div class="flex items-start gap-3">
+              <span class="text-2xl">⚠️</span>
+              <div class="flex-1">
+                <h4 class="font-semibold text-amber-900">Backend API Required</h4>
+                <p class="text-sm text-amber-800 mt-1">
+                  Currently showing demonstration with mock data. Backend endpoints available:
+                </p>
+                <ul class="text-sm text-amber-800 mt-2 list-disc list-inside space-y-1">
+                  <li><code class="bg-amber-100 px-1 rounded">GET /api/recipe/</code> - List all recipes (ready to use)</li>
+                  <li><code class="bg-amber-100 px-1 rounded">GET /api/recipe/{id}/</code> - Get recipe details</li>
+                  <li><code class="bg-amber-100 px-1 rounded">DELETE /api/recipe/{id}/delete/</code> - Delete unsafe recipe</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="rounded-xl bg-white p-5 shadow-sm">
+            <div class="mb-4 flex items-center justify-between">
+              <h3 class="text-base font-semibold">Food Recipes</h3>
+              <div class="flex items-center gap-3">
+                <select class="rounded-md border border-slate-200 px-3 py-2 text-sm" v-model="recipeFilterStatus">
+                  <option value="all">All Recipes</option>
+                  <option value="pending">Pending Review</option>
+                  <option value="verified">Verified Safe</option>
+                  <option value="flagged">Flagged</option>
+                </select>
+                <select class="rounded-md border border-slate-200 px-3 py-2 text-sm" v-model="recipeAccessFilter">
+                  <option value="all">All Access Levels</option>
+                  <option value="silver">Silver</option>
+                  <option value="gold">Gold</option>
+                </select>
+              </div>
+            </div>
+
+            <div v-if="loadingRecipes" class="text-center py-8 text-slate-500">
+              Loading recipes...
+            </div>
+
+            <div v-else class="overflow-x-auto">
+              <table class="w-full border-collapse text-sm">
+                <thead class="text-slate-500">
+                  <tr class="border-b border-slate-200">
+                    <th class="px-3 py-2 text-left font-semibold">Recipe</th>
+                    <th class="px-3 py-2 text-left font-semibold">Author</th>
+                    <th class="px-3 py-2 text-left font-semibold">Access Level</th>
+                    <th class="px-3 py-2 text-left font-semibold">Rating</th>
+                    <th class="px-3 py-2 text-left font-semibold">Created</th>
+                    <th class="px-3 py-2 text-left font-semibold">Status</th>
+                    <th class="px-3 py-2 text-left font-semibold">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-if="filteredRecipes.length === 0">
+                    <td colspan="7" class="px-3 py-8 text-center text-slate-500">
+                      No recipes found
+                    </td>
+                  </tr>
+                  <tr
+                    v-for="recipe in filteredRecipes"
+                    :key="recipe.id"
+                    class="border-b border-slate-100 hover:bg-slate-50"
+                  >
+                    <td class="px-3 py-3">
+                      <div class="flex items-center gap-3">
+                        <div v-if="recipe.image" class="h-12 w-12 rounded-md bg-slate-200 overflow-hidden">
+                          <img :src="recipe.image" :alt="recipe.title" class="h-full w-full object-cover" />
+                        </div>
+                        <div v-else class="grid h-12 w-12 place-items-center rounded-md bg-amber-100 text-xl">
+                          🍽️
+                        </div>
+                        <div>
+                          <div class="font-medium">{{ recipe.title }}</div>
+                          <div class="text-xs text-slate-500">{{ getIngredientCount(recipe.ingredients) }} ingredients</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-3 py-3">{{ recipe.author }}</td>
+                    <td class="px-3 py-3">
+                      <span
+                        class="rounded-full px-2 py-0.5 text-[11px] font-medium capitalize"
+                        :class="recipe.access_level === 'gold' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-800'"
+                      >
+                        {{ recipe.access_level }}
+                      </span>
+                    </td>
+                    <td class="px-3 py-3">
+                      <div class="flex items-center gap-1">
+                        <span class="text-amber-500">⭐</span>
+                        <span>{{ recipe.average_rating || 'N/A' }}</span>
+                      </div>
+                    </td>
+                    <td class="px-3 py-3">{{ formatDate(recipe.created_at) }}</td>
+                    <td class="px-3 py-3">
+                      <span
+                        class="rounded-full px-2 py-0.5 text-[11px] font-medium capitalize"
+                        :class="getRecipeStatusClass(recipe.status)"
+                      >
+                        {{ recipe.status }}
+                      </span>
+                    </td>
+                    <td class="px-3 py-3">
+                      <button
+                        class="rounded-md bg-blue-600 px-3 py-1.5 text-white hover:bg-blue-700 text-xs"
+                        @click="viewRecipeDetails(recipe)"
+                      >
+                        Review
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
         <!-- OTHER SECTIONS Placeholders -->
         <section
-          v-for="placeholder in ['dashboard','analytics','users','workouts','recipes','reports','settings','logs']"
+          v-for="placeholder in ['analytics','workouts','reports','settings','logs']"
           :key="placeholder"
           v-show="activeSection === placeholder"
           class="rounded-xl bg-white p-5 shadow-sm"
@@ -221,12 +527,12 @@
       class="fixed inset-0 z-[60] grid place-items-center bg-black/50 p-4"
       role="dialog"
       aria-modal="true"
-      @click.self="closeModal"
+      @click.self="closeCoachModal"
     >
       <div class="w-full max-w-2xl overflow-hidden rounded-xl bg-white shadow-lg">
         <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
           <h3 class="text-lg font-semibold">Coach Certification Review</h3>
-          <button class="text-slate-500 hover:text-slate-700" @click="closeModal">✕</button>
+          <button class="text-slate-500 hover:text-slate-700" @click="closeCoachModal">✕</button>
         </div>
 
         <div class="px-5 py-4 space-y-4 max-h-[70vh] overflow-y-auto">
@@ -304,7 +610,7 @@
           <div class="flex gap-2">
             <button
               class="rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-700 hover:bg-slate-50"
-              @click="closeModal"
+              @click="closeCoachModal"
             >
               Cancel
             </button>
@@ -326,6 +632,203 @@
         </div>
       </div>
     </div>
+
+    <!-- User Details Modal -->
+    <div
+      v-if="userModal.open"
+      class="fixed inset-0 z-[60] grid place-items-center bg-black/50 p-4"
+      role="dialog"
+      aria-modal="true"
+      @click.self="closeUserModal"
+    >
+      <div class="w-full max-w-2xl overflow-hidden rounded-xl bg-white shadow-lg">
+        <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+          <h3 class="text-lg font-semibold">User Profile Details</h3>
+          <button class="text-slate-500 hover:text-slate-700" @click="closeUserModal">✕</button>
+        </div>
+
+        <div class="px-5 py-4 space-y-4 max-h-[70vh] overflow-y-auto">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <div class="text-sm font-medium text-slate-700">Username</div>
+              <div class="text-base">{{ userModal.user?.username }}</div>
+            </div>
+            <div>
+              <div class="text-sm font-medium text-slate-700">Email</div>
+              <div class="text-base">{{ userModal.user?.email || 'N/A' }}</div>
+            </div>
+            <div>
+              <div class="text-sm font-medium text-slate-700">Role</div>
+              <div>
+                <span
+                  class="rounded-full px-2 py-1 text-xs font-medium capitalize"
+                  :class="getRoleClass(userModal.user?.role)"
+                >
+                  {{ userModal.user?.role }}
+                </span>
+              </div>
+            </div>
+            <div>
+              <div class="text-sm font-medium text-slate-700">Level</div>
+              <div class="text-base">{{ userModal.user?.level || 'Bronze' }} ({{ userModal.user?.xp || 0 }} XP)</div>
+            </div>
+            <div>
+              <div class="text-sm font-medium text-slate-700">Gender</div>
+              <div class="text-base">{{ userModal.user?.gender || 'N/A' }}</div>
+            </div>
+            <div>
+              <div class="text-sm font-medium text-slate-700">Age</div>
+              <div class="text-base">{{ userModal.user?.age || 'N/A' }}</div>
+            </div>
+            <div>
+              <div class="text-sm font-medium text-slate-700">Height</div>
+              <div class="text-base">{{ userModal.user?.height ? userModal.user.height + ' cm' : 'N/A' }}</div>
+            </div>
+            <div>
+              <div class="text-sm font-medium text-slate-700">Weight</div>
+              <div class="text-base">{{ userModal.user?.weight ? userModal.user.weight + ' kg' : 'N/A' }}</div>
+            </div>
+            <div>
+              <div class="text-sm font-medium text-slate-700">Location</div>
+              <div class="text-base">{{ userModal.user?.location || 'N/A' }}</div>
+            </div>
+            <div>
+              <div class="text-sm font-medium text-slate-700">Joined Date</div>
+              <div class="text-base">{{ formatDate(userModal.user?.created_at) }}</div>
+            </div>
+          </div>
+
+          <div v-if="userModal.user?.fitness_goals?.length">
+            <div class="text-sm font-medium text-slate-700 mb-2">Fitness Goals</div>
+            <div class="flex flex-wrap gap-2">
+              <span
+                v-for="goal in userModal.user.fitness_goals"
+                :key="goal"
+                class="rounded-full bg-blue-100 px-3 py-1 text-xs text-blue-800"
+              >
+                {{ goal }}
+              </span>
+            </div>
+          </div>
+
+          <div v-if="userModal.user?.achievements?.length">
+            <div class="text-sm font-medium text-slate-700 mb-2">Achievements</div>
+            <div class="space-y-2">
+              <div
+                v-for="achievement in userModal.user.achievements"
+                :key="achievement.title"
+                class="flex items-center gap-2 rounded-md bg-amber-50 p-2"
+              >
+                <span class="text-xl">🏆</span>
+                <div>
+                  <div class="text-sm font-medium">{{ achievement.title }}</div>
+                  <div class="text-xs text-slate-600">+{{ achievement.xp_reward }} XP</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 border-t border-slate-200 px-5 py-4 bg-slate-50">
+          <button
+            class="rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-700 hover:bg-slate-50"
+            @click="closeUserModal"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recipe Review Modal -->
+    <div
+      v-if="recipeModal.open"
+      class="fixed inset-0 z-[60] grid place-items-center bg-black/50 p-4"
+      role="dialog"
+      aria-modal="true"
+      @click.self="closeRecipeModal"
+    >
+      <div class="w-full max-w-3xl overflow-hidden rounded-xl bg-white shadow-lg">
+        <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+          <h3 class="text-lg font-semibold">Recipe Safety Review</h3>
+          <button class="text-slate-500 hover:text-slate-700" @click="closeRecipeModal">✕</button>
+        </div>
+
+        <div class="px-5 py-4 space-y-4 max-h-[70vh] overflow-y-auto">
+          <div v-if="recipeModal.recipe?.image" class="w-full h-48 rounded-lg bg-slate-200 overflow-hidden">
+            <img :src="recipeModal.recipe.image" :alt="recipeModal.recipe.title" class="h-full w-full object-cover" />
+          </div>
+
+          <div>
+            <h4 class="text-xl font-bold">{{ recipeModal.recipe?.title }}</h4>
+            <div class="flex items-center gap-3 mt-2">
+              <span class="text-sm text-slate-600">By {{ recipeModal.recipe?.author }}</span>
+              <span
+                class="rounded-full px-2 py-0.5 text-[11px] font-medium capitalize"
+                :class="recipeModal.recipe?.access_level === 'gold' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-800'"
+              >
+                {{ recipeModal.recipe?.access_level }}
+              </span>
+              <div class="flex items-center gap-1">
+                <span class="text-amber-500">⭐</span>
+                <span class="text-sm">{{ recipeModal.recipe?.average_rating || 'N/A' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="text-sm font-medium text-slate-700 mb-2">Ingredients</div>
+            <div class="text-sm bg-slate-50 p-3 rounded-md whitespace-pre-line">
+              {{ recipeModal.recipe?.ingredients }}
+            </div>
+          </div>
+
+          <div>
+            <div class="text-sm font-medium text-slate-700 mb-2">Instructions</div>
+            <div class="text-sm bg-slate-50 p-3 rounded-md whitespace-pre-line">
+              {{ recipeModal.recipe?.steps }}
+            </div>
+          </div>
+
+          <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
+            <div class="text-sm font-medium text-blue-900 mb-2">Safety Review Checklist</div>
+            <ul class="text-sm text-blue-800 space-y-1">
+              <li>✓ Check for common allergens (nuts, dairy, gluten, etc.)</li>
+              <li>✓ Verify cooking temperatures and food safety</li>
+              <li>✓ Ensure ingredients are safe and appropriate</li>
+              <li>✓ Check for any misleading health claims</li>
+              <li>✓ Verify nutritional information is reasonable</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="flex justify-between items-center gap-3 border-t border-slate-200 px-5 py-4 bg-slate-50">
+          <div class="text-xs text-slate-500">
+            Reviewing: {{ recipeModal.recipe?.title }}
+          </div>
+          <div class="flex gap-2">
+            <button
+              class="rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-700 hover:bg-slate-50"
+              @click="closeRecipeModal"
+            >
+              Close
+            </button>
+            <button
+              class="rounded-md bg-rose-600 px-4 py-2 text-white hover:bg-rose-700"
+              @click="flagRecipe(recipeModal.recipe)"
+            >
+              Flag as Unsafe
+            </button>
+            <button
+              class="rounded-md bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700"
+              @click="verifyRecipe(recipeModal.recipe)"
+            >
+              Verify Safe
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -333,15 +836,49 @@
 import { onMounted, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import { Line, Doughnut } from 'vue-chartjs'
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement
+} from 'chart.js'
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement
+)
 
 const router = useRouter()
 const userStore = useUserStore()
 const sidebarOpen = ref(false)
-const activeSection = ref('coaches')
+const activeSection = ref('dashboard')
 const coachFilter = ref('all')
 const searchQuery = ref('')
 const loading = ref(false)
 const error = ref(null)
+
+// User management state
+const userRoleFilter = ref('all')
+const userSearchQuery = ref('')
+const loadingUsers = ref(false)
+
+// Recipe management state
+const recipeFilterStatus = ref('all')
+const recipeAccessFilter = ref('all')
+const loadingRecipes = ref(false)
 
 // Mock coaches data - In production, this would come from API
 const coaches = ref([
@@ -389,6 +926,276 @@ const coachModal = ref({
   coach: null
 })
 
+// User modal state
+const userModal = ref({
+  open: false,
+  user: null
+})
+
+// Recipe modal state
+const recipeModal = ref({
+  open: false,
+  recipe: null
+})
+
+// Mock users data
+const users = ref([
+  {
+    id: 1,
+    username: 'john_doe',
+    email: 'john@example.com',
+    role: 'normal',
+    level: 'Gold',
+    xp: 1250,
+    gender: 'Male',
+    age: 28,
+    height: 178,
+    weight: 75,
+    location: 'New York, USA',
+    created_at: '2024-08-15T10:30:00Z',
+    fitness_goals: ['Lose Weight', 'Build Muscle'],
+    achievements: [
+      { title: 'First Workout', xp_reward: 100 },
+      { title: 'Week Streak', xp_reward: 250 }
+    ]
+  },
+  {
+    id: 2,
+    username: 'sarah_coach',
+    email: 'sarah.johnson@email.com',
+    role: 'coach',
+    level: 'Platinum',
+    xp: 2800,
+    gender: 'Female',
+    age: 32,
+    height: 165,
+    weight: 58,
+    location: 'Los Angeles, USA',
+    created_at: '2024-07-20T14:20:00Z',
+    fitness_goals: ['Improve Endurance'],
+    achievements: [
+      { title: 'Certified Coach', xp_reward: 500 },
+      { title: 'First Client', xp_reward: 300 }
+    ]
+  },
+  {
+    id: 3,
+    username: 'mike_fit',
+    email: 'mike@example.com',
+    role: 'member',
+    level: 'Silver',
+    xp: 580,
+    gender: 'Male',
+    age: 24,
+    height: 182,
+    weight: 88,
+    location: 'Chicago, USA',
+    created_at: '2024-09-01T08:15:00Z',
+    fitness_goals: ['Build Muscle', 'Improve Strength'],
+    achievements: []
+  },
+  {
+    id: 4,
+    username: 'emma_health',
+    email: 'emma@example.com',
+    role: 'normal',
+    level: 'Bronze',
+    xp: 120,
+    gender: 'Female',
+    age: 26,
+    height: 168,
+    weight: 62,
+    location: 'Seattle, USA',
+    created_at: '2024-10-15T16:45:00Z',
+    fitness_goals: ['Lose Weight'],
+    achievements: [
+      { title: 'First Login', xp_reward: 50 }
+    ]
+  },
+  {
+    id: 5,
+    username: 'alex_runner',
+    email: 'alex@example.com',
+    role: 'normal',
+    level: 'Gold',
+    xp: 1580,
+    gender: 'Other',
+    age: 30,
+    height: 175,
+    weight: 70,
+    location: 'Boston, USA',
+    created_at: '2024-06-10T11:00:00Z',
+    fitness_goals: ['Improve Endurance', 'Marathon Training'],
+    achievements: [
+      { title: '5K Runner', xp_reward: 200 },
+      { title: 'Month Streak', xp_reward: 400 }
+    ]
+  }
+])
+
+// Mock recipes data
+const recipes = ref([
+  {
+    id: 1,
+    title: 'High-Protein Chicken Salad',
+    author: 'Sarah Johnson',
+    ingredients: '2 chicken breasts\n4 cups mixed greens\n1 avocado\n1/4 cup cherry tomatoes\nOlive oil dressing',
+    steps: '1. Grill chicken breasts until fully cooked\n2. Slice chicken into strips\n3. Combine greens, tomatoes, and avocado\n4. Top with chicken and dressing',
+    access_level: 'silver',
+    average_rating: 4.5,
+    image: null,
+    created_at: '2024-09-20T10:30:00Z',
+    status: 'verified'
+  },
+  {
+    id: 2,
+    title: 'Quinoa Power Bowl',
+    author: 'Mike Rodriguez',
+    ingredients: '1 cup quinoa\n1 cup chickpeas\n2 cups kale\n1/2 cup tahini\nLemon juice\nGarlic',
+    steps: '1. Cook quinoa according to package\n2. Roast chickpeas with spices\n3. Massage kale with lemon\n4. Mix tahini dressing\n5. Combine all ingredients',
+    access_level: 'gold',
+    average_rating: 4.8,
+    image: null,
+    created_at: '2024-09-18T14:20:00Z',
+    status: 'verified'
+  },
+  {
+    id: 3,
+    title: 'Berry Protein Smoothie',
+    author: 'Lisa Wang',
+    ingredients: '1 scoop protein powder\n1 cup mixed berries\n1 banana\n1 cup almond milk\n1 tbsp chia seeds',
+    steps: '1. Add all ingredients to blender\n2. Blend until smooth\n3. Serve immediately',
+    access_level: 'silver',
+    average_rating: 4.2,
+    image: null,
+    created_at: '2024-09-15T08:45:00Z',
+    status: 'pending'
+  },
+  {
+    id: 4,
+    title: 'Sweet Potato Buddha Bowl',
+    author: 'James Smith',
+    ingredients: '2 sweet potatoes\n1 cup brown rice\n1 can black beans\nAvocado\nCilantro lime dressing',
+    steps: '1. Roast sweet potatoes at 400°F for 25 minutes\n2. Cook brown rice\n3. Heat black beans\n4. Assemble bowl with all ingredients\n5. Drizzle with dressing',
+    access_level: 'gold',
+    average_rating: 4.6,
+    image: null,
+    created_at: '2024-09-10T16:30:00Z',
+    status: 'pending'
+  }
+])
+
+// Stats data
+const userStats = ref({
+  total: 1247,
+  newThisMonth: 89,
+  coaches: 34,
+  pendingCoaches: 0
+})
+
+const recipeStats = ref({
+  total: 156,
+  pendingReview: 12
+})
+
+const memberStats = ref({
+  total: 423,
+  pending: 15
+})
+
+// Chart data
+const chartData = computed(() => ({
+  labels: ['June', 'July', 'August', 'September', 'October', 'November'],
+  datasets: [
+    {
+      label: 'New Users',
+      data: [45, 67, 82, 95, 108, 89],
+      borderColor: 'rgb(59, 130, 246)',
+      backgroundColor: 'rgba(59, 130, 246, 0.1)',
+      tension: 0.4,
+      fill: true
+    },
+    {
+      label: 'Active Users',
+      data: [320, 385, 456, 523, 612, 687],
+      borderColor: 'rgb(16, 185, 129)',
+      backgroundColor: 'rgba(16, 185, 129, 0.1)',
+      tension: 0.4,
+      fill: true
+    }
+  ]
+}))
+
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      position: 'top'
+    },
+    title: {
+      display: false
+    }
+  },
+  scales: {
+    y: {
+      beginAtZero: true
+    }
+  }
+}
+
+const roleChartData = computed(() => ({
+  labels: ['Normal Users', 'Coaches', 'Members', 'Admin'],
+  datasets: [
+    {
+      data: [892, 34, 320, 1],
+      backgroundColor: [
+        'rgba(59, 130, 246, 0.8)',
+        'rgba(16, 185, 129, 0.8)',
+        'rgba(139, 92, 246, 0.8)',
+        'rgba(245, 158, 11, 0.8)'
+      ],
+      borderColor: [
+        'rgb(59, 130, 246)',
+        'rgb(16, 185, 129)',
+        'rgb(139, 92, 246)',
+        'rgb(245, 158, 11)'
+      ],
+      borderWidth: 2
+    }
+  ]
+}))
+
+const genderChartData = computed(() => ({
+  labels: ['Male', 'Female', 'Other/Prefer not to say'],
+  datasets: [
+    {
+      data: [612, 578, 57],
+      backgroundColor: [
+        'rgba(59, 130, 246, 0.8)',
+        'rgba(236, 72, 153, 0.8)',
+        'rgba(139, 92, 246, 0.8)'
+      ],
+      borderColor: [
+        'rgb(59, 130, 246)',
+        'rgb(236, 72, 153)',
+        'rgb(139, 92, 246)'
+      ],
+      borderWidth: 2
+    }
+  ]
+}))
+
+const doughnutOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      position: 'bottom'
+    }
+  }
+}
+
 const filteredCoaches = computed(() => {
   let result = coaches.value
 
@@ -405,6 +1212,42 @@ const filteredCoaches = computed(() => {
       c.email?.toLowerCase().includes(query) ||
       c.bio?.toLowerCase().includes(query)
     )
+  }
+
+  return result
+})
+
+const filteredUsers = computed(() => {
+  let result = users.value
+
+  // Filter by role
+  if (userRoleFilter.value !== 'all') {
+    result = result.filter(u => u.role === userRoleFilter.value)
+  }
+
+  // Filter by search query
+  if (userSearchQuery.value) {
+    const query = userSearchQuery.value.toLowerCase()
+    result = result.filter(u =>
+      u.username.toLowerCase().includes(query) ||
+      u.email?.toLowerCase().includes(query)
+    )
+  }
+
+  return result
+})
+
+const filteredRecipes = computed(() => {
+  let result = recipes.value
+
+  // Filter by status
+  if (recipeFilterStatus.value !== 'all') {
+    result = result.filter(r => r.status === recipeFilterStatus.value)
+  }
+
+  // Filter by access level
+  if (recipeAccessFilter.value !== 'all') {
+    result = result.filter(r => r.access_level === recipeAccessFilter.value)
   }
 
   return result
@@ -497,7 +1340,7 @@ function viewCoachDetails(coach) {
   }
 }
 
-function closeModal() {
+function closeCoachModal() {
   coachModal.value = {
     open: false,
     coach: null
@@ -519,7 +1362,7 @@ function approveCoach(coach) {
 
   alert(`✓ Coach "${coach.name}" has been approved!\n\nIn production, this would:\n1. Update the database\n2. Send approval email to coach\n3. Grant coach permissions\n4. Log the action in audit trail`)
 
-  closeModal()
+  closeCoachModal()
 }
 
 function rejectCoach(coach) {
@@ -540,7 +1383,131 @@ function rejectCoach(coach) {
 
   alert(`✗ Coach "${coach.name}" has been rejected.\n\nIn production, this would:\n1. Update the database\n2. Send rejection email to coach\n3. Log the action in audit trail\n4. Allow coach to resubmit`)
 
-  closeModal()
+  closeCoachModal()
+}
+
+// User management functions
+function viewUserDetails(user) {
+  userModal.value = {
+    open: true,
+    user: user
+  }
+}
+
+function closeUserModal() {
+  userModal.value = {
+    open: false,
+    user: null
+  }
+}
+
+function confirmDeleteUser(user) {
+  const confirmed = confirm(
+    `Are you sure you want to delete user "${user.username}"?\n\nThis action cannot be undone and will:\n1. Remove all user data\n2. Delete their recipes and workouts\n3. Remove achievement progress\n4. Cancel any active memberships`
+  )
+
+  if (confirmed) {
+    deleteUser(user)
+  }
+}
+
+function deleteUser(user) {
+  // In production, this would make an API call to delete the user
+  // DELETE /api/user/{user.id}/
+
+  console.log('Deleting user:', user)
+
+  // Update local state (demo only)
+  const index = users.value.findIndex(u => u.id === user.id)
+  if (index !== -1) {
+    users.value.splice(index, 1)
+    userStats.value.total -= 1
+  }
+
+  alert(`✓ User "${user.username}" has been deleted.\n\nIn production, this would:\n1. Delete user from database\n2. Remove all associated data\n3. Log the deletion in audit trail\n4. Send confirmation email`)
+}
+
+function getRoleClass(role) {
+  switch (role) {
+    case 'coach':
+      return 'bg-emerald-100 text-emerald-800'
+    case 'member':
+      return 'bg-purple-100 text-purple-800'
+    case 'admin':
+      return 'bg-amber-100 text-amber-800'
+    default:
+      return 'bg-blue-100 text-blue-800'
+  }
+}
+
+// Recipe management functions
+function viewRecipeDetails(recipe) {
+  recipeModal.value = {
+    open: true,
+    recipe: recipe
+  }
+}
+
+function closeRecipeModal() {
+  recipeModal.value = {
+    open: false,
+    recipe: null
+  }
+}
+
+function verifyRecipe(recipe) {
+  // In production, this would make an API call to mark recipe as verified
+  console.log('Verifying recipe as safe:', recipe)
+
+  // Update local state (demo only)
+  const index = recipes.value.findIndex(r => r.id === recipe.id)
+  if (index !== -1) {
+    recipes.value[index].status = 'verified'
+  }
+
+  alert(`✓ Recipe "${recipe.title}" has been verified as safe!\n\nIn production, this would:\n1. Update recipe status in database\n2. Make recipe visible to all users\n3. Notify the author\n4. Log the verification in audit trail`)
+
+  closeRecipeModal()
+}
+
+function flagRecipe(recipe) {
+  const reason = prompt('Please provide a reason for flagging this recipe as unsafe:')
+
+  if (!reason) {
+    return
+  }
+
+  // In production, this would make an API call to flag the recipe
+  console.log('Flagging recipe:', recipe, 'Reason:', reason)
+
+  // Update local state (demo only)
+  const index = recipes.value.findIndex(r => r.id === recipe.id)
+  if (index !== -1) {
+    recipes.value[index].status = 'flagged'
+    recipes.value[index].flag_reason = reason
+  }
+
+  alert(`⚠ Recipe "${recipe.title}" has been flagged as unsafe.\n\nIn production, this would:\n1. Hide recipe from users\n2. Notify the author with reason\n3. Log the flag in audit trail\n4. Allow author to appeal or fix issues`)
+
+  closeRecipeModal()
+}
+
+function getIngredientCount(ingredients) {
+  if (!ingredients) return 0
+  return ingredients.split('\n').filter(line => line.trim()).length
+}
+
+function getRecipeStatusClass(status) {
+  switch (status) {
+    case 'verified':
+      return 'bg-emerald-100 text-emerald-800'
+    case 'pending':
+      return 'bg-amber-100 text-amber-800'
+    case 'flagged':
+      return 'bg-rose-100 text-rose-800'
+    default:
+      return 'bg-slate-100 text-slate-800'
+  }
 }
 
 function exportCoachList() {
@@ -552,8 +1519,11 @@ function showNotifications() {
 }
 
 onMounted(() => {
-  // In production, fetch coaches from API here
+  // In production, fetch data from API here
   // fetchCoaches()
-  console.log('AdminDashboard mounted. Ready to verify coach certifications.')
+  // fetchUsers()
+  // fetchRecipes()
+  // fetchStats()
+  console.log('AdminDashboard mounted with all features: Dashboard, Users, Recipes, and Coaches.')
 })
 </script>
