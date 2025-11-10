@@ -55,7 +55,6 @@ INSTALLED_APPS = [
     "coach",
     "member",
     "recipe",
-    "workout_assignment",
     "moderation",
 ]
 

@@ -5,7 +5,7 @@ from rest_framework import status
 from django.utils import timezone
 from coach.models import Coach
 from .models import Admin, AdminModeration
-from recipe.models import Recipe
+
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
@@ -54,12 +54,11 @@ def reject_coach(request, coach_id):
 
     return Response({"message": f"Coach {coach.user.user.username} rejected."})
 
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def list_coaches_for_admin(request):
-    try:
-        admin = Admin.objects.get(user=request.user)
-    except Admin.DoesNotExist:
+    if not Admin.objects.filter(user=request.user).exists():
         return Response({"error": "You are not an admin"}, status=403)
 
     status_filter = request.query_params.get("status")
@@ -73,7 +72,9 @@ def list_coaches_for_admin(request):
             "name": coach.user.user.get_full_name() or coach.user.user.username,
             "email": coach.user.user.email,
             "bio": getattr(coach, "bio", ""),
-            "certification_doc": coach.certification_doc.url if coach.certification_doc else None,
+            "certification_doc": (
+                coach.certification_doc.url if coach.certification_doc else None
+            ),
             "status_approval": coach.status_approval,
             "created_at": coach.created_at,
         }
