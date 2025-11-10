@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 
 
 class Admin(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, 
+    user = models.OneToOneField(User, on_delete=models.CASCADE,
                                 related_name="admin_profile")
 
     def __str__(self):
@@ -25,7 +25,7 @@ class AdminModeration(models.Model):
         ("reject_certification", "Reject Coach Certification"),
     ]
 
-    admin = models.ForeignKey(Admin, on_delete=models.CASCADE, 
+    admin = models.ForeignKey(Admin, on_delete=models.CASCADE,
                               related_name="moderations")
     content_type = models.CharField(max_length=30, choices=CONTENT_TYPE_CHOICES)
     content_id = models.PositiveIntegerField()

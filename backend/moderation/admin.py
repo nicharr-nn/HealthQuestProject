@@ -10,7 +10,7 @@ class AdminProfileAdmin(admin.ModelAdmin):
 
 @admin.register(AdminModeration)
 class AdminModerationAdmin(admin.ModelAdmin):
-    list_display = ['id', 'admin', 'content_type', 'content_id', 
+    list_display = ['id', 'admin', 'content_type', 'content_id',
                     'action', 'reason', 'moderated_at']
     list_filter = ['action', 'content_type', 'moderated_at']
     search_fields = ['admin__user__username', 'reason']
