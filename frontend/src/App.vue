@@ -7,7 +7,7 @@
         v-if="userStore.profile_complete
           && (userStore.role === 'coach' || userStore.profile?.role === 'coach')"
       />
-      <DashboardNavbar v-else-if="userStore.profile_complete" />
+      <SignNavbar v-else-if="userStore.profile_complete" />
       <UnsignNavbar v-else />
     </template>
 
@@ -21,9 +21,9 @@ import { onMounted, computed } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { useRoute } from 'vue-router'
 
-import DashboardNavbar from '@/components/DashboardNavbar.vue'
 import UnsignNavbar from '@/components/UnsignNavBar.vue'
 import CoachNavbar from '@/components/CoachNavBar.vue'
+import SignNavbar from './components/SignNavbar.vue'
 
 const userStore = useUserStore()
 const route = useRoute()
