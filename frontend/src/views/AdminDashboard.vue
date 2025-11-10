@@ -150,7 +150,7 @@
                     </td>
                     <td class="px-3 py-3">
                       <button
-                        class="rounded-md bg-blue-600 px-3 py-1.5 text-white font-semibold hover:bg-blue-700"
+                        class="rounded-md bg-blue-500 px-3 py-1.5 text-white font-semibold hover:bg-blue-600"
                         @click="viewCoachDetails(coach)"
                       >
                         Review
@@ -224,7 +224,7 @@
                 <a
                   :href="getDocumentUrl(coachModal.coach.certification_doc)"
                   target="_blank"
-                  class="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700 font-bold"
+                  class="rounded-md bg-blue-500 px-3 py-1.5 text-sm text-white hover:bg-blue-600 font-bold"
                 >
                   View PDF
                 </a>
@@ -371,7 +371,6 @@ async function rejectCoach(coach) {
   }
 }
 
-function exportCoachList() { alert('Exporting CSV (to implement backend endpoint)') }
 function showNotifications() { alert(`${pendingCount.value} pending coach applications`) }
 
 onMounted(async () => {

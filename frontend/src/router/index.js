@@ -50,8 +50,6 @@ const router = createRouter({
   routes,
 })
 
-const ONBOARDING_PAGES = new Set(['/select-role', '/about-you'])
-
 router.beforeEach(async (to, from, next) => {
   const userStore = useUserStore()
 
