@@ -11,7 +11,7 @@ from .models import Admin, AdminModeration
 @permission_classes([IsAuthenticated])
 def approve_coach(request, coach_id):
     try:
-        coach = Coach.objects.get(pk=coach_id)
+        coach = Coach.objects.get(coach_id=coach_id)
     except Coach.DoesNotExist:
         return Response({"error": "Coach not found"}, status=status.HTTP_404_NOT_FOUND)
 

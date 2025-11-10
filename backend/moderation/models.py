@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from coach.models import Coach
 
 
 class Admin(models.Model):
@@ -27,8 +28,10 @@ class AdminModeration(models.Model):
 
     admin = models.ForeignKey(Admin, on_delete=models.CASCADE,
                               related_name="moderations")
+    coach = models.ForeignKey(Coach, on_delete=models.CASCADE,
+                              null=True, blank=True)
     content_type = models.CharField(max_length=30, choices=CONTENT_TYPE_CHOICES)
-    content_id = models.PositiveIntegerField()
+    content_id = models.PositiveIntegerField(null=True, blank=True)
     action = models.CharField(max_length=30, choices=ACTION_CHOICES)
     reason = models.TextField()
     moderated_at = models.DateTimeField(auto_now_add=True)
@@ -39,3 +42,4 @@ class AdminModeration(models.Model):
             f"{self.get_action_display()} "
             f"(ID {self.content_id})"
             )
+    
