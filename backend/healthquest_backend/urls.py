@@ -53,7 +53,6 @@ urlpatterns = [
     path("api/coach/", include("coach.urls")),
     path("api/member/", include("member.urls")),
     path("api/recipe/", include("recipe.urls")),
-    path("api/workout-assignment/", include("workout_assignment.urls")),
     path("api/moderation/", include("moderation.urls")),
 ]
 
