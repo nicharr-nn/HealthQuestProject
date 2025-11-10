@@ -33,15 +33,15 @@ class Coach(models.Model):
             # First save to get coach_id if this is a new object
             if not self.coach_id:
                 super().save(*args, **kwargs)
-            
+
             # Generate public_id
             self.public_id = f"C-{self.coach_id:05d}"
-            
+
             # Set approved_date if not set
             if not self.approved_date:
                 from django.utils import timezone
                 self.approved_date = timezone.now()
-        
+
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -50,4 +50,3 @@ class Coach(models.Model):
             f"Coach: {self.user.user.username} ({public_id_display}) "
             f"- Status: {self.status_approval}"
         )
-    

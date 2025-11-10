@@ -42,4 +42,3 @@ class AdminModeration(models.Model):
             f"{self.get_action_display()} "
             f"(ID {self.content_id})"
             )
-    

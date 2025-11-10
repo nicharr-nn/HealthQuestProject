@@ -32,4 +32,3 @@ class CoachSerializer(serializers.ModelSerializer):
             "status_approval",
             "approved_date",
         ]
-        
