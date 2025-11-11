@@ -20,7 +20,9 @@ const MemberConnect = () => import('../views/MemberConnect.vue')
 const FoodRecipe = () => import('../views/FoodRecipe.vue')
 const FoodPost = () => import('../views/FoodPost.vue')
 const FoodDiary = () => import('../views/FoodDiary.vue')
-const AdminDashboard = () => import('../views/AdminDashboard.vue')
+const CertificationManagement = () => import('../views/admin/CertificationManagement.vue')
+const RecipeManagement = () => import('../views/admin/RecipeManagement.vue')
+const WorkoutManagement = () => import('../views/admin/WorkoutManagement.vue')
 
 const routes = [
   { path: '/', name: 'LandingPage', component: LandingPage },
@@ -32,7 +34,6 @@ const routes = [
   { path: '/select-goal', name: 'SelectGoal', component: SelectGoal },
   { path: '/coach-portal', name: 'CoachPortal', component: CoachPortal },
   { path: '/coach-dashboard', name: 'CoachDashboard', component: CoachDashboard, meta: { requiresCoach: true } },
-  { path: '/admin', name: 'AdminDashboard', component: AdminDashboard, meta: { requiresAdmin: true } },
   { path: '/workout', name: 'Workout', component: Workout },
   { path: '/workout/:id', name: 'Program', component: Program, props: true },
   { path: '/view-member', name: 'ViewMember', component: MemberManagement, meta: { requiresCoach: true } },
@@ -43,6 +44,9 @@ const routes = [
   { path: '/food-post', name: 'FoodPost', component: FoodPost, props: true },
   { path: '/food-diary', name: 'MyFoodDiary', component: FoodDiary },
   { path: '/food-diary/:memberId', name: 'FoodDiary', component: FoodDiary, props: true, meta: { requiresCoach: true } },
+  { path: '/admin-certification', name: 'CertificationManagement', component: CertificationManagement, meta: { requiresAdmin: true } },
+  { path: '/admin-recipe', name: 'RecipeManagement', component: RecipeManagement, meta: { requiresAdmin: true } },
+  { path: '/admin-workout', name: 'WorkoutManagement', component: WorkoutManagement, meta: { requiresAdmin: true } },
 ]
 
 const router = createRouter({
