@@ -967,8 +967,8 @@ async function submitProgram() {
   }
 
   const url = editingProgramId.value
-    ? `http://127.0.0.1:8000/api/workout/programs/${editingProgramId.value}/`
-    : 'http://127.0.0.1:8000/api/workout/programs/'
+    ? `http://127.0.0.1:8000/api/workout/programs/${editingProgramId.value}/update/`
+    : 'http://127.0.0.1:8000/api/workout/programs/create/'
 
   try {
     const response = await fetch(url, {

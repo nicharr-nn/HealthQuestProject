@@ -79,7 +79,7 @@ class WorkoutProgramTests(TestCase):
         """Test coach can create workout program"""
         self.client.force_login(self.coach_user)
 
-        url = reverse("workout-programs")
+        url = reverse("create-workout-programs")
         data = {
             "title": "New Program",
             "description": "New program description",
@@ -106,7 +106,7 @@ class WorkoutProgramTests(TestCase):
 
     def test_create_workout_program_as_normal_user(self):
         """Test normal user cannot create workout program"""
-        url = reverse("workout-programs")
+        url = reverse("create-workout-programs")
         data = {
             "title": "Normal user Program",
             "description": "Should not work",
@@ -131,7 +131,7 @@ class WorkoutProgramTests(TestCase):
         """Test coach can update their workout program"""
         self.client.force_login(self.coach_user)
 
-        url = reverse("workout-program-detail", kwargs={"id": self.program.id})
+        url = reverse("update-workout-program", kwargs={"id": self.program.id})
         data = {
             "title": "Updated Program Title",
             "description": "Updated description",
@@ -146,7 +146,7 @@ class WorkoutProgramTests(TestCase):
 
     def test_update_workout_program_as_normal(self):
         """Test normal cannot update workout program"""
-        url = reverse("workout-program-detail", kwargs={"id": self.program.id})
+        url = reverse("update-workout-program", kwargs={"id": self.program.id})
         data = {"title": "Unauthorized Update"}
         response = self.client.put(url, data, format="json")
 
@@ -156,7 +156,7 @@ class WorkoutProgramTests(TestCase):
         """Test coach can delete their workout program"""
         self.client.force_login(self.coach_user)
 
-        url = reverse("workout-program-detail", kwargs={"id": self.program.id})
+        url = reverse("delete-workout-program", kwargs={"id": self.program.id})
         response = self.client.delete(url)
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
@@ -164,7 +164,7 @@ class WorkoutProgramTests(TestCase):
 
     def test_delete_workout_program_as_normal(self):
         """Test normal cannot delete workout program"""
-        url = reverse("workout-program-detail", kwargs={"id": self.program.id})
+        url = reverse("delete-workout-program", kwargs={"id": self.program.id})
         response = self.client.delete(url)
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

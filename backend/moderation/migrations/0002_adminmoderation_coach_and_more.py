@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("coach", "0003_alter_coach_public_id"),
         ("moderation", "0001_initial"),

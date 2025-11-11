@@ -26,19 +26,31 @@ def user_info(request):
         else:
             return Response({"isAuthenticated": False, "user": None})
 
+
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def delete_account(request):
     """Delete user account"""
     user = request.user
 
-    # DELETE → Allow account deletion
     if request.method == "DELETE":
-        if not user.is_authenticated:
-            return Response({"detail": "Authentication required."}, status=401)
-        else:
-            user.delete()
-            return Response({"message": "Account deleted permanently"})
+        # require user_id for security
+        user_id = request.data.get("user_id")
+
+        if user_id is None:
+            return Response(
+                {"detail": "User ID is required for account deletion."}, status=400
+            )
+
+        # Verify it matches authenticated user
+        if str(user.id) != str(user_id):
+            return Response(
+                {"detail": "You can only delete your own account."}, status=403
+            )
+
+        # User is authenticated and owns the account
+        user.delete()
+        return Response({"message": "Account deleted permanently"})
 
 
 @api_view(["POST"])
@@ -100,6 +112,7 @@ def upload_photo(request):
         }
     )
 
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def set_goal(request):
@@ -136,6 +149,7 @@ def set_goal(request):
 
     except Exception as e:
         return Response({"status": "error", "message": str(e)}, status=400)
+
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])

@@ -29,11 +29,20 @@ class UserDeletionTests(TestCase):
 
     def test_user_deletion_via_api(self):
         """User DELETE request should delete the user account permanently"""
-        self.client.force_authenticate(user=self.user)
-        response = self.client.delete("/api/user-info/")
+        self.client.force_login(user=self.user)
+        url = reverse("delete-account")
+        response = self.client.delete(
+            url, data={"user_id": self.user.id}, format="json"
+        )
 
         self.assertEqual(response.status_code, 200, response.data)
         self.assertEqual(response.data["message"], "Account deleted permanently")
+
+    def test_unauthenticated_cannot_delete(self):
+        """Unauthenticated users cannot deactivate accounts"""
+        url = reverse("delete-account")
+        response = self.client.delete(url)
+        self.assertIn(response.status_code, [401, 403])
 
     def test_cannot_delete_other_users(self):
         """Users cannot deactivate other accounts"""
@@ -47,12 +56,12 @@ class UserDeletionTests(TestCase):
             defaults={"age": 30, "gender": "F", "location": "O"},
         )
 
-        self.client.force_authenticate(user=self.user)
-        response = self.client.delete(f"/api/user/{other_user.id}/")
-        self.assertEqual(response.status_code, 403)
+        self.client.force_login(user=self.user)
+        url = reverse("delete-account")
 
-    def test_unauthenticated_cannot_delete(self):
-        """Unauthenticated users cannot deactivate accounts"""
-        url = reverse("user-info")
-        response = self.client.delete(url)
-        self.assertIn(response.status_code, [401, 403])
+        response = self.client.delete(
+            url, data={"user_id": other_user.id}, format="json"
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertIn("You can only delete your own account", response.data["detail"])

@@ -40,6 +40,7 @@ class Coach(models.Model):
             # Set approved_date if not set
             if not self.approved_date:
                 from django.utils import timezone
+
                 self.approved_date = timezone.now()
 
         super().save(*args, **kwargs)

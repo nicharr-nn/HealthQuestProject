@@ -5,9 +5,24 @@ from . import views
 urlpatterns = [
     path("programs/", views.workout_programs, name="workout-programs"),
     path(
+        "programs/create/",
+        views.create_workout_programs,
+        name="create-workout-programs",
+    ),
+    path(
         "programs/<int:id>/",
         views.workout_program_detail,
         name="workout-program-detail",
+    ),
+    path(
+        "programs/<int:id>/update/",
+        views.update_workout_program,
+        name="update-workout-program",
+    ),
+    path(
+        "programs/<int:id>/delete/",
+        views.delete_workout_program,
+        name="delete-workout-program",
     ),
     path("analytics/", views.user_analytics, name="user-analytics"),
     path(

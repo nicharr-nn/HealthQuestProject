@@ -31,6 +31,7 @@ def workout_programs(request):
     if request.method == "GET":
         user_profile = request.user.userprofile
         user_level = user_profile.get_current_level()
+
         # Build query based on user's level
         level_filters = models.Q(level_access="all")
         if user_level.level_rank >= 1:  # Bronze and above
@@ -39,17 +40,51 @@ def workout_programs(request):
             level_filters |= models.Q(level_access="silver")
         if user_level.level_rank >= 3:  # Gold and above
             level_filters |= models.Q(level_access="gold")
-        # Apply filters and get public programs or programs by user's coach
-        programs = WorkoutProgram.objects.filter(
-            (
-                models.Q(is_public=True)
-                | models.Q(coach=user_profile)  # Users can see their private programs
+
+        # Role-based filtering
+        if user_profile.role == "coach":
+            programs = WorkoutProgram.objects.filter(
+                models.Q(coach=user_profile)
+                | (models.Q(is_public=True) & level_filters)
+            ).distinct()
+
+        elif user_profile.role == "member":
+            # Members see: public programs matching their level + assigned programs
+            member_obj = getattr(user_profile, "member_profile", None)
+
+            if member_obj:
+                # Get assigned program IDs
+                assigned_program_ids = WorkoutAssignment.objects.filter(
+                    member=member_obj
+                ).values_list("program_id", flat=True)
+
+                programs = WorkoutProgram.objects.filter(
+                    (models.Q(is_public=True) & level_filters)
+                    | models.Q(id__in=assigned_program_ids)
+                ).distinct()
+            else:
+                # No member profile, only show public programs by level
+                programs = (
+                    WorkoutProgram.objects.filter(is_public=True)
+                    .filter(level_filters)
+                    .distinct()
+                )
+
+        else:  # Normal users
+            programs = (
+                WorkoutProgram.objects.filter(is_public=True)
+                .filter(level_filters)
+                .distinct()
             )
-        ).distinct()
+
         serializer = WorkoutProgramSerializer(programs, many=True)
         return Response(serializer.data)
 
-    elif request.method == "POST":
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def create_workout_programs(request):
+    if request.method == "POST":
         user_profile = request.user.userprofile
 
         if user_profile.role != "coach":
@@ -75,7 +110,7 @@ def workout_programs(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(["GET", "PUT", "PATCH", "DELETE"])
+@api_view(["GET", "DELETE"])
 @permission_classes([IsAuthenticated])
 def workout_program_detail(request, id):
     """
@@ -84,13 +119,19 @@ def workout_program_detail(request, id):
     DELETE: Delete a workout program
     """
     program = get_object_or_404(WorkoutProgram, pk=id)
-    user_profile = request.user.userprofile
 
     if request.method == "GET":
         serializer = WorkoutProgramSerializer(program)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    elif request.method in ["PUT", "PATCH"]:
+
+@api_view(["PUT", "PATCH"])
+@permission_classes([IsAuthenticated])
+def update_workout_program(request, id):
+    program = get_object_or_404(WorkoutProgram, pk=id)
+    user_profile = request.user.userprofile
+
+    if request.method in ["PUT", "PATCH"]:
         # Only the coach who created it can update
         if program.coach != user_profile:
             return Response(
@@ -134,7 +175,13 @@ def workout_program_detail(request, id):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    elif request.method == "DELETE":
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def delete_workout_program(request, id):
+    program = get_object_or_404(WorkoutProgram, pk=id)
+    user_profile = request.user.userprofile
+    if request.method == "DELETE":
         # Only the coach who created it can delete
         if program.coach != user_profile:
             return Response(
@@ -257,6 +304,9 @@ def _calculate_current_streak(completions, today):
         current_day -= timedelta(days=1)
 
     return streak
+
+
+# Analytics
 
 
 @api_view(["GET"])

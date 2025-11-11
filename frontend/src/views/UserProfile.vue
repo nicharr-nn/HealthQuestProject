@@ -566,13 +566,19 @@ function cancelEdit() {
 
 async function deleteAccount() {
   if (!confirm('Are you sure you want to deactivate your account?')) return
-
+  const userId = userStore.id
+  if (!userId) {
+    alert('User ID not found. Cannot delete account.')
+    return
+  }
   const res = await fetch(`http://127.0.0.1:8000/api/delete-account/`, {
     method: 'DELETE',
     credentials: 'include',
     headers: {
+      'Content-Type': 'application/json',
       'X-CSRFToken': getCsrfToken(),
     },
+    body: JSON.stringify({ user_id: userId }),
   })
 
   if (res.ok) {

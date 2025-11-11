@@ -4,8 +4,9 @@ from coach.models import Coach
 
 
 class Admin(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE,
-                                related_name="admin_profile")
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="admin_profile"
+    )
 
     def __str__(self):
         return f"Moderator: {self.user.username}"
@@ -26,10 +27,10 @@ class AdminModeration(models.Model):
         ("reject_certification", "Reject Coach Certification"),
     ]
 
-    admin = models.ForeignKey(Admin, on_delete=models.CASCADE,
-                              related_name="moderations")
-    coach = models.ForeignKey(Coach, on_delete=models.CASCADE,
-                              null=True, blank=True)
+    admin = models.ForeignKey(
+        Admin, on_delete=models.CASCADE, related_name="moderations"
+    )
+    coach = models.ForeignKey(Coach, on_delete=models.CASCADE, null=True, blank=True)
     content_type = models.CharField(max_length=30, choices=CONTENT_TYPE_CHOICES)
     content_id = models.PositiveIntegerField(null=True, blank=True)
     action = models.CharField(max_length=30, choices=ACTION_CHOICES)
@@ -41,4 +42,4 @@ class AdminModeration(models.Model):
             f"{self.admin.user.username} "
             f"{self.get_action_display()} "
             f"(ID {self.content_id})"
-            )
+        )

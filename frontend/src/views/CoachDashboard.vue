@@ -258,7 +258,7 @@ async function editProgram(programId: number) {
 
 async function deleteProgram(programId: number) {
   try {
-    const res = await fetch(`${API_BASE}${programId}/`, {
+    const res = await fetch(`${API_BASE}${programId}/delete/`, {
       method: 'DELETE',
       credentials: 'include',
     })

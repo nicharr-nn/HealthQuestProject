@@ -57,6 +57,7 @@ export const useUserStore = defineStore('user', {
         const data = await res.json()
 
         // Basic user info
+        this.id = data.user?.id || null
         this.isAuthenticated = data.isAuthenticated
         this.user = data.user || null
         this.profile_complete = data.user?.profile_complete === true
