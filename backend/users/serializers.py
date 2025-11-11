@@ -47,6 +47,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "fitness_goals",
             "current_goal",
             "current_level",
+            "created_at",
         ]
         read_only_fields = ["role"]
 
@@ -64,8 +65,11 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    profile = UserProfileSerializer(source="userprofile")
+    profile = UserProfileSerializer(source="userprofile",
+                                    required=False,
+                                    allow_null=True)
     is_admin = serializers.SerializerMethodField()
+    is_staff = serializers.BooleanField(read_only=True)
     profile_complete = serializers.SerializerMethodField()
 
     class Meta:
@@ -78,11 +82,12 @@ class UserSerializer(serializers.ModelSerializer):
             "last_name",
             "profile",
             "is_admin",
+            "is_staff",
             "profile_complete",
         ]
 
     def get_is_admin(self, obj):
-        return obj.is_superuser or (
+        return obj.is_superuser or obj.is_staff or (
             hasattr(obj, "userprofile") and obj.userprofile.role == "admin"
         )
 

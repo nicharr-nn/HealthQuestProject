@@ -6,7 +6,6 @@ from .models import Recipe
 
 class RecipeTests(TestCase):
     def setUp(self):
-
         self.client = APIClient()
         self.coach = User.objects.create_user(
             username="coachuser", password="coachpass", email="testcoach@example.com"

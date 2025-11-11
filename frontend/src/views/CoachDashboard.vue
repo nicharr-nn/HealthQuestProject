@@ -113,7 +113,7 @@
             <div class="program-meta">
               <div class="meta-item">
                 <span class="meta-label">Duration:</span>
-                <span class="meta-value">{{ program.duration }} days</span>
+                <span class="meta-value">{{ program.duration }} day{{ program.duration === 1 ? '' : 's' }}</span>
               </div>
               <div class="meta-item">
                 <span class="meta-label">Category:</span>

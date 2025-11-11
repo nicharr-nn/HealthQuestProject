@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("member", "0005_remove_coachmemberrelationship_relationship_id_and_more"),
     ]
