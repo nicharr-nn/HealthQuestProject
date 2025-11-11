@@ -1617,8 +1617,8 @@ async function fetchRecipes() {
   loadingRecipes.value = true
   try {
     const response = await fetch('http://127.0.0.1:8000/api/recipe/', {
+      credentials: 'include',
       headers: {
-        'Authorization': `Token ${userStore.token}`,
         'Content-Type': 'application/json'
       }
     })
@@ -1659,8 +1659,8 @@ async function deleteRecipe(recipe) {
   try {
     const response = await fetch(`http://127.0.0.1:8000/api/recipe/${recipe.id}/delete/`, {
       method: 'DELETE',
+      credentials: 'include',
       headers: {
-        'Authorization': `Token ${userStore.token}`,
         'Content-Type': 'application/json'
       }
     })
@@ -1697,8 +1697,8 @@ async function fetchWorkouts() {
   loadingWorkouts.value = true
   try {
     const response = await fetch('http://127.0.0.1:8000/api/workout/programs/', {
+      credentials: 'include',
       headers: {
-        'Authorization': `Token ${userStore.token}`,
         'Content-Type': 'application/json'
       }
     })
@@ -1710,30 +1710,20 @@ async function fetchWorkouts() {
     const data = await response.json()
 
     // Transform data to include coach name
-    workouts.value = await Promise.all(data.map(async workout => {
-      // Fetch coach information
+    workouts.value = data.map(workout => {
+      // Get coach name from workout data
       let coachName = 'Unknown Coach'
-      try {
-        const coachResponse = await fetch(`http://127.0.0.1:8000/api/user-info/`, {
-          headers: {
-            'Authorization': `Token ${userStore.token}`,
-            'Content-Type': 'application/json'
-          }
-        })
-        if (coachResponse.ok) {
-          const coachData = await coachResponse.json()
-          // Find coach by workout.coach id
-          coachName = `Coach ${workout.coach}`
-        }
-      } catch (err) {
-        console.error('Error fetching coach info:', err)
+      if (workout.coach_name) {
+        coachName = workout.coach_name
+      } else if (workout.coach) {
+        coachName = `Coach ${workout.coach}`
       }
 
       return {
         ...workout,
         coach_name: coachName
       }
-    }))
+    })
   } catch (err) {
     console.error('Error fetching workouts:', err)
     error.value = 'Failed to load workouts'

@@ -4,6 +4,7 @@ from rest_framework import permissions
 class CanViewRecipe(permissions.BasePermission):
     """
     Allow:
+    - Admins
     - Gold or Silver level users
     - Coaches
     """
@@ -12,7 +13,15 @@ class CanViewRecipe(permissions.BasePermission):
         if not request.user.is_authenticated:
             return False
 
+        # Allow admins and staff
+        if request.user.is_staff or request.user.is_superuser:
+            return True
+
         profile = request.user.userprofile
+
+        # Allow admin role
+        if profile.role == "admin":
+            return True
 
         if profile.role == "coach":
             return True
