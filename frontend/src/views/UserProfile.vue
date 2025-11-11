@@ -445,8 +445,8 @@ async function saveChanges() {
     }
 
     // Update profile info
-    const profileResponse = await fetch('http://127.0.0.1:8000/api/user-info/', {
-      method: 'PATCH',
+    const profileResponse = await fetch('http://127.0.0.1:8000/api/update-profile/', {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'X-CSRFToken': getCsrfToken()
@@ -567,7 +567,7 @@ function cancelEdit() {
 async function deleteAccount() {
   if (!confirm('Are you sure you want to deactivate your account?')) return
 
-  const res = await fetch(`http://127.0.0.1:8000/api/user-info/`, {
+  const res = await fetch(`http://127.0.0.1:8000/api/delete-account/`, {
     method: 'DELETE',
     credentials: 'include',
     headers: {

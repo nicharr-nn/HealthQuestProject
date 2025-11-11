@@ -988,7 +988,8 @@ async function submitProgram() {
     } catch {
       body = text
     }
-
+    console.log('Save program response body:', body)
+    
     if (!response.ok) {
       console.error('Save program failed:', response.status, body)
       const message = body?.detail || body?.errors || body || `HTTP ${response.status}`

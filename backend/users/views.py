@@ -1,20 +1,18 @@
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
-from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from django.apps import apps
 
-from .models import Achievement, UserAchievement
 from .serializers import UserProfileSerializer, UserSerializer
 
 User = get_user_model()
 
 
-@api_view(["GET", "PUT", "PATCH", "DELETE"])
-@permission_classes([AllowAny])  # allow GET without auth, require auth for PUT/PATCH
+@api_view(["GET"])
+@permission_classes([AllowAny])  # allow GET without auth
 def user_info(request):
     """
     Return user info and authentication status.
@@ -28,20 +26,14 @@ def user_info(request):
         else:
             return Response({"isAuthenticated": False, "user": None})
 
-    # 3. PUT/PATCH → Update profile
-    elif request.method in ["PUT", "PATCH"]:
-        profile = request.user.userprofile
-        if not profile:
-            return Response({"error": "Profile not found"}, status=404)
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def delete_account(request):
+    """Delete user account"""
+    user = request.user
 
-        serializer = UserProfileSerializer(profile, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=400)
-
-    # 4. DELETE → Allow account deletion
-    elif request.method == "DELETE":
+    # DELETE → Allow account deletion
+    if request.method == "DELETE":
         if not user.is_authenticated:
             return Response({"detail": "Authentication required."}, status=401)
         else:
@@ -108,35 +100,6 @@ def upload_photo(request):
         }
     )
 
-
-@api_view(["GET", "PUT", "PATCH", "DELETE"])
-@permission_classes([IsAdminUser])
-def user_detail(request, id):
-    """Retrieve, update, or deactivate user account"""
-    if request.user.id != id:
-        return Response({"detail": "Not authorized."}, status=403)
-
-    user = get_object_or_404(User, pk=id)
-
-    if request.method == "GET":
-        return Response(UserSerializer(user).data)
-
-    elif request.method in ["PUT", "PATCH"]:
-        profile = getattr(user, "userprofile", None)
-        if not profile:
-            return Response({"error": "Profile not found"}, status=404)
-
-        serializer = UserProfileSerializer(profile, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=400)
-
-    elif request.method == "DELETE":
-        user.delete()
-        return Response({"message": "Account deleted permanently"})
-
-
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def set_goal(request):
@@ -173,35 +136,6 @@ def set_goal(request):
 
     except Exception as e:
         return Response({"status": "error", "message": str(e)}, status=400)
-
-
-@api_view(["GET"])
-@permission_classes([IsAuthenticated])
-def achievements(request):
-    """List all achievements"""
-    data = Achievement.objects.all().values("id", "title", "description", "xp_reward")
-    return Response(list(data))
-
-
-@api_view(["GET, DELETE"])
-@permission_classes([IsAuthenticated])
-def user_achievements(request):
-    """get or remove an achievement for the authenticated user"""
-    profile = request.user.userprofile
-
-    if request.method == "GET":
-        achievements = UserAchievement.objects.filter(
-            user_profile=profile
-        ).select_related("achievement")
-        data = [{"id": ua.id, "date_earned": ua.date_earned} for ua in achievements]
-        return Response(data)
-
-    elif request.method == "DELETE":
-        ach_id = request.data.get("achievement_id")
-        ua = get_object_or_404(UserAchievement, pk=ach_id, user_profile=profile)
-        ua.delete()
-        return Response({"message": "Achievement removed", "achievement_id": ach_id})
-
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])

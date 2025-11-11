@@ -8,8 +8,5 @@ urlpatterns = [
     path("select-goal/", views.set_goal, name="select-goal"),
     path("update-profile/", views.update_profile, name="update-profile"),
     path("upload-photo/", views.upload_photo, name="upload-photo"),
-    path("user/<int:id>/", views.user_detail, name="user_detail"),
-    # Levels & Achievements
-    path("achievements/", views.achievements, name="all-achievements"),
-    path("user/achievements/", views.user_achievements, name="user-achievements"),
+    path("delete-account/", views.delete_account, name="delete-account"),
 ]

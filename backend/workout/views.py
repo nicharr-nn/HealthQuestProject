@@ -41,8 +41,7 @@ def workout_programs(request):
             level_filters |= models.Q(level_access="gold")
         # Apply filters and get public programs or programs by user's coach
         programs = WorkoutProgram.objects.filter(
-            level_filters
-            & (
+            (
                 models.Q(is_public=True)
                 | models.Q(coach=user_profile)  # Users can see their private programs
             )
