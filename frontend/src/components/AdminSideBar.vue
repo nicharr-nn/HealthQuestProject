@@ -56,13 +56,12 @@ const nav = [
     title: 'Overview',
     items: [
       { id: 'dashboard', label: 'Dashboard', icon: '📊', path: '/admin-dashboard' },
-      { id: 'analytics', label: 'Analytics', icon: '📈', path: '/admin-analytics' }
     ]
   },
   {
     title: 'User Management',
     items: [
-      { id: 'users', label: 'Users', icon: '👥', path: '/admin-users' },
+      { id: 'users', label: 'Users', icon: '👥', path: '/admin-user' },
       { id: 'coaches', label: 'Coaches', icon: '🏃', path: '/admin-certification' }
     ]
   },
@@ -72,16 +71,8 @@ const nav = [
       { id: 'workouts', label: 'Workouts', icon: '💪', path: '/admin-workout' },
       { id: 'recipes', label: 'Recipes', icon: '🍽️', path: '/admin-recipe' },
       { id: 'certifications', label: 'Certifications', icon: '🎓', path: '/admin-certification' },
-      { id: 'reports', label: 'Reports', icon: '⚠️', path: '/admin-reports' }
     ]
   },
-  {
-    title: 'System',
-    items: [
-      { id: 'settings', label: 'Settings', icon: '⚙️', path: '/admin-settings' },
-      { id: 'logs', label: 'Audit Logs', icon: '📋', path: '/admin-logs' }
-    ]
-  }
 ]
 
 </script>
