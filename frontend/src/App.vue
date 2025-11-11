@@ -1,12 +1,13 @@
 <template>
   <Toast />
   <div v-if="userStore.loading" class="min-h-screen bg-white"></div>
-
   <template v-else>
     <template v-if="showNavbar">
       <CoachNavbar
         v-if="userStore.profile_complete
           && (userStore.role === 'coach' || userStore.profile?.role === 'coach')"
+      />
+      <AdminSideBar v-else-if="userStore.role === 'admin'"
       />
       <SignNavbar v-else-if="userStore.profile_complete" />
       <UnsignNavbar v-else />
@@ -25,6 +26,7 @@ import { useRoute } from 'vue-router'
 import UnsignNavbar from '@/components/UnsignNavBar.vue'
 import CoachNavbar from '@/components/CoachNavBar.vue'
 import SignNavbar from './components/SignNavbar.vue'
+import AdminSideBar from './components/AdminSideBar.vue'
 import Toast from '@/components/Toast.vue'
 
 const userStore = useUserStore()

@@ -21,6 +21,7 @@ const FoodRecipe = () => import('../views/FoodRecipe.vue')
 const FoodPost = () => import('../views/FoodPost.vue')
 const FoodDiary = () => import('../views/FoodDiary.vue')
 const AdminDashboard = () => import('../views/AdminDashboard.vue')
+const AdminUser = () => import('../views/AdminUser.vue')
 
 const routes = [
   { path: '/', name: 'LandingPage', component: LandingPage },
@@ -33,6 +34,7 @@ const routes = [
   { path: '/coach-portal', name: 'CoachPortal', component: CoachPortal },
   { path: '/coach-dashboard', name: 'CoachDashboard', component: CoachDashboard, meta: { requiresCoach: true } },
   { path: '/admin', name: 'AdminDashboard', component: AdminDashboard, meta: { requiresAdmin: true } },
+  { path: '/admin-user', name: 'AdminUser', component: AdminUser, meta: { requiresAdmin: true } },
   { path: '/workout', name: 'Workout', component: Workout },
   { path: '/workout/:id', name: 'Program', component: Program, props: true },
   { path: '/view-member', name: 'ViewMember', component: MemberManagement, meta: { requiresCoach: true } },
