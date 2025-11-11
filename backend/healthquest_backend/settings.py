@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "coach",
     "member",
     "recipe",
+    "moderation",
 ]
 
 MIDDLEWARE = [
@@ -181,7 +182,7 @@ SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
 
 ACCOUNT_EMAIL_VERIFICATION = "none"
 
-SOCIALACCOUNT_ADAPTER = "allauth.socialaccount.adapter.DefaultSocialAccountAdapter"
+SOCIALACCOUNT_ADAPTER = "users.adapters.CustomSocialAccountAdapter"
 
 LOGIN_REDIRECT_URL = "http://127.0.0.1:5173/select-role"
 
