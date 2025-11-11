@@ -11,7 +11,7 @@ class Coach(models.Model):
     ]
 
     coach_id = models.AutoField(primary_key=True)
-    public_id = models.CharField(max_length=20, unique=True, blank=True)
+    public_id = models.CharField(max_length=20, unique=True, blank=True, null=True)
     user = models.OneToOneField(
         UserProfile, on_delete=models.CASCADE, related_name="coach_profile"
     )
@@ -28,12 +28,25 @@ class Coach(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-        if not self.public_id:
+        # Check if status is being changed to "approved" and public_id doesn't exist
+        if self.status_approval == "approved" and not self.public_id:
+            # First save to get coach_id if this is a new object
+            if not self.coach_id:
+                super().save(*args, **kwargs)
+
+            # Generate public_id
             self.public_id = f"C-{self.coach_id:05d}"
+
+            # Set approved_date if not set
+            if not self.approved_date:
+                from django.utils import timezone
+                self.approved_date = timezone.now()
+
         super().save(*args, **kwargs)
 
     def __str__(self):
+        public_id_display = self.public_id if self.public_id else "No ID"
         return (
-            f"Coach: {self.user.user.username} ({self.public_id}) "
+            f"Coach: {self.user.user.username} ({public_id_display}) "
             f"- Status: {self.status_approval}"
         )

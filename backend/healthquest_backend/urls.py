@@ -53,6 +53,7 @@ urlpatterns = [
     path("api/coach/", include("coach.urls")),
     path("api/member/", include("member.urls")),
     path("api/recipe/", include("recipe.urls")),
+    path("api/moderation/", include("moderation.urls")),
 ]
 
 if settings.DEBUG:

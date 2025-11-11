@@ -31,5 +31,4 @@ class CoachSerializer(serializers.ModelSerializer):
         read_only_fields = [
             "status_approval",
             "approved_date",
-            "certification_doc",
         ]
