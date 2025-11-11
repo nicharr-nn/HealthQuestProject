@@ -387,23 +387,22 @@
         <!-- RECIPES SECTION -->
         <section v-show="activeSection === 'recipes'" class="space-y-6">
           <div>
-            <h2 class="text-2xl font-bold">Recipe Verification</h2>
-            <p class="text-sm text-slate-500">Review and verify food recipes for safety</p>
+            <h2 class="text-2xl font-bold">Recipe Management</h2>
+            <p class="text-sm text-slate-500">View and manage all recipes posted on the platform</p>
           </div>
 
-          <!-- Backend API Notice -->
-          <div class="rounded-xl bg-amber-50 border border-amber-200 p-4">
+          <!-- Backend API Connected Notice -->
+          <div class="rounded-xl bg-emerald-50 border border-emerald-200 p-4">
             <div class="flex items-start gap-3">
-              <span class="text-2xl">⚠️</span>
+              <span class="text-2xl">✓</span>
               <div class="flex-1">
-                <h4 class="font-semibold text-amber-900">Backend API Required</h4>
-                <p class="text-sm text-amber-800 mt-1">
-                  Currently showing demonstration with mock data. Backend endpoints available:
+                <h4 class="font-semibold text-emerald-900">Connected to Backend API</h4>
+                <p class="text-sm text-emerald-800 mt-1">
+                  Recipe management is now connected to the live backend API.
                 </p>
-                <ul class="text-sm text-amber-800 mt-2 list-disc list-inside space-y-1">
-                  <li><code class="bg-amber-100 px-1 rounded">GET /api/recipe/</code> - List all recipes (ready to use)</li>
-                  <li><code class="bg-amber-100 px-1 rounded">GET /api/recipe/{id}/</code> - Get recipe details</li>
-                  <li><code class="bg-amber-100 px-1 rounded">DELETE /api/recipe/{id}/delete/</code> - Delete unsafe recipe</li>
+                <ul class="text-sm text-emerald-800 mt-2 list-disc list-inside space-y-1">
+                  <li><code class="bg-emerald-100 px-1 rounded">GET /api/recipe/</code> - List all recipes</li>
+                  <li><code class="bg-emerald-100 px-1 rounded">DELETE /api/recipe/{id}/delete/</code> - Delete recipe</li>
                 </ul>
               </div>
             </div>
@@ -411,14 +410,8 @@
 
           <div class="rounded-xl bg-white p-5 shadow-sm">
             <div class="mb-4 flex items-center justify-between">
-              <h3 class="text-base font-semibold">Food Recipes</h3>
+              <h3 class="text-base font-semibold">All Recipes ({{ recipes.length }})</h3>
               <div class="flex items-center gap-3">
-                <select class="rounded-md border border-slate-200 px-3 py-2 text-sm" v-model="recipeFilterStatus">
-                  <option value="all">All Recipes</option>
-                  <option value="pending">Pending Review</option>
-                  <option value="verified">Verified Safe</option>
-                  <option value="flagged">Flagged</option>
-                </select>
                 <select class="rounded-md border border-slate-200 px-3 py-2 text-sm" v-model="recipeAccessFilter">
                   <option value="all">All Access Levels</option>
                   <option value="silver">Silver</option>
@@ -438,15 +431,13 @@
                     <th class="px-3 py-2 text-left font-semibold">Recipe</th>
                     <th class="px-3 py-2 text-left font-semibold">Author</th>
                     <th class="px-3 py-2 text-left font-semibold">Access Level</th>
-                    <th class="px-3 py-2 text-left font-semibold">Rating</th>
                     <th class="px-3 py-2 text-left font-semibold">Created</th>
-                    <th class="px-3 py-2 text-left font-semibold">Status</th>
                     <th class="px-3 py-2 text-left font-semibold">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-if="filteredRecipes.length === 0">
-                    <td colspan="7" class="px-3 py-8 text-center text-slate-500">
+                    <td colspan="5" class="px-3 py-8 text-center text-slate-500">
                       No recipes found
                     </td>
                   </tr>
@@ -478,28 +469,22 @@
                         {{ recipe.access_level }}
                       </span>
                     </td>
-                    <td class="px-3 py-3">
-                      <div class="flex items-center gap-1">
-                        <span class="text-amber-500">⭐</span>
-                        <span>{{ recipe.average_rating || 'N/A' }}</span>
-                      </div>
-                    </td>
                     <td class="px-3 py-3">{{ formatDate(recipe.created_at) }}</td>
                     <td class="px-3 py-3">
-                      <span
-                        class="rounded-full px-2 py-0.5 text-[11px] font-medium capitalize"
-                        :class="getRecipeStatusClass(recipe.status)"
-                      >
-                        {{ recipe.status }}
-                      </span>
-                    </td>
-                    <td class="px-3 py-3">
-                      <button
-                        class="rounded-md bg-blue-600 px-3 py-1.5 text-white hover:bg-blue-700 text-xs"
-                        @click="viewRecipeDetails(recipe)"
-                      >
-                        Review
-                      </button>
+                      <div class="flex gap-2">
+                        <button
+                          class="rounded-md bg-blue-600 px-3 py-1.5 text-white hover:bg-blue-700 text-xs"
+                          @click="viewRecipeDetails(recipe)"
+                        >
+                          View
+                        </button>
+                        <button
+                          class="rounded-md bg-rose-600 px-3 py-1.5 text-white hover:bg-rose-700 text-xs"
+                          @click="deleteRecipe(recipe)"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 </tbody>
@@ -508,13 +493,129 @@
           </div>
         </section>
 
-        <!-- OTHER SECTIONS Placeholders -->
-        <section
-          v-show="activeSection === 'workouts'"
-          class="rounded-xl bg-white p-5 shadow-sm"
-        >
-          <h2 class="text-xl font-semibold capitalize">Workouts</h2>
-          <p class="mt-2 text-sm text-slate-600">Content for workouts will be added here.</p>
+        <!-- WORKOUTS SECTION -->
+        <section v-show="activeSection === 'workouts'" class="space-y-6">
+          <div>
+            <h2 class="text-2xl font-bold">Workout Management</h2>
+            <p class="text-sm text-slate-500">View all workout programs and their associated coaches</p>
+          </div>
+
+          <!-- Backend API Connected Notice -->
+          <div class="rounded-xl bg-emerald-50 border border-emerald-200 p-4">
+            <div class="flex items-start gap-3">
+              <span class="text-2xl">✓</span>
+              <div class="flex-1">
+                <h4 class="font-semibold text-emerald-900">Connected to Backend API</h4>
+                <p class="text-sm text-emerald-800 mt-1">
+                  Workout management is now connected to the live backend API.
+                </p>
+                <ul class="text-sm text-emerald-800 mt-2 list-disc list-inside space-y-1">
+                  <li><code class="bg-emerald-100 px-1 rounded">GET /api/workout/programs/</code> - List all workout programs</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="rounded-xl bg-white p-5 shadow-sm">
+            <div class="mb-4 flex items-center justify-between">
+              <h3 class="text-base font-semibold">All Workout Programs ({{ workouts.length }})</h3>
+              <div class="flex items-center gap-3">
+                <select class="rounded-md border border-slate-200 px-3 py-2 text-sm" v-model="workoutCategoryFilter">
+                  <option value="all">All Categories</option>
+                  <option value="strength_training">Strength Training</option>
+                  <option value="cardio">Cardio</option>
+                  <option value="weight_loss">Weight Loss</option>
+                  <option value="muscle_building">Muscle Building</option>
+                  <option value="endurance">Endurance</option>
+                  <option value="flexibility">Flexibility</option>
+                  <option value="full_body">Full Body</option>
+                </select>
+                <select class="rounded-md border border-slate-200 px-3 py-2 text-sm" v-model="workoutDifficultyFilter">
+                  <option value="all">All Difficulties</option>
+                  <option value="easy">Easy</option>
+                  <option value="medium">Medium</option>
+                  <option value="hard">Hard</option>
+                </select>
+              </div>
+            </div>
+
+            <div v-if="loadingWorkouts" class="text-center py-8 text-slate-500">
+              Loading workouts...
+            </div>
+
+            <div v-else class="overflow-x-auto">
+              <table class="w-full border-collapse text-sm">
+                <thead class="text-slate-500">
+                  <tr class="border-b border-slate-200">
+                    <th class="px-3 py-2 text-left font-semibold">Program Title</th>
+                    <th class="px-3 py-2 text-left font-semibold">Coach</th>
+                    <th class="px-3 py-2 text-left font-semibold">Category</th>
+                    <th class="px-3 py-2 text-left font-semibold">Difficulty</th>
+                    <th class="px-3 py-2 text-left font-semibold">Duration</th>
+                    <th class="px-3 py-2 text-left font-semibold">Days</th>
+                    <th class="px-3 py-2 text-left font-semibold">Created</th>
+                    <th class="px-3 py-2 text-left font-semibold">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-if="filteredWorkouts.length === 0">
+                    <td colspan="8" class="px-3 py-8 text-center text-slate-500">
+                      No workout programs found
+                    </td>
+                  </tr>
+                  <tr
+                    v-for="workout in filteredWorkouts"
+                    :key="workout.id"
+                    class="border-b border-slate-100 hover:bg-slate-50"
+                  >
+                    <td class="px-3 py-3">
+                      <div class="flex items-center gap-2">
+                        <div class="grid h-8 w-8 place-items-center rounded-md bg-blue-100 text-lg">
+                          💪
+                        </div>
+                        <div>
+                          <div class="font-medium">{{ workout.title }}</div>
+                          <div class="text-xs text-slate-500 truncate max-w-xs">{{ workout.description }}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-3 py-3">
+                      <div class="flex items-center gap-2">
+                        <div class="grid h-6 w-6 place-items-center rounded-full bg-emerald-500 text-xs font-bold text-white">
+                          {{ getInitials(workout.coach_name) }}
+                        </div>
+                        <span>{{ workout.coach_name }}</span>
+                      </div>
+                    </td>
+                    <td class="px-3 py-3">
+                      <span class="rounded-full px-2 py-0.5 text-[11px] font-medium capitalize bg-purple-100 text-purple-800">
+                        {{ formatCategory(workout.category) }}
+                      </span>
+                    </td>
+                    <td class="px-3 py-3">
+                      <span
+                        class="rounded-full px-2 py-0.5 text-[11px] font-medium capitalize"
+                        :class="getDifficultyClass(workout.difficulty_level)"
+                      >
+                        {{ workout.difficulty_level }}
+                      </span>
+                    </td>
+                    <td class="px-3 py-3">{{ workout.duration }} days</td>
+                    <td class="px-3 py-3">{{ workout.days?.length || 0 }} days</td>
+                    <td class="px-3 py-3">{{ formatDate(workout.created_at) }}</td>
+                    <td class="px-3 py-3">
+                      <button
+                        class="rounded-md bg-blue-600 px-3 py-1.5 text-white hover:bg-blue-700 text-xs"
+                        @click="viewWorkoutDetails(workout)"
+                      >
+                        View
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </section>
       </main>
     </div>
@@ -788,15 +889,18 @@
             </div>
           </div>
 
-          <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
-            <div class="text-sm font-medium text-blue-900 mb-2">Safety Review Checklist</div>
-            <ul class="text-sm text-blue-800 space-y-1">
-              <li>✓ Check for common allergens (nuts, dairy, gluten, etc.)</li>
-              <li>✓ Verify cooking temperatures and food safety</li>
-              <li>✓ Ensure ingredients are safe and appropriate</li>
-              <li>✓ Check for any misleading health claims</li>
-              <li>✓ Verify nutritional information is reasonable</li>
-            </ul>
+          <div>
+            <div class="text-sm font-medium text-slate-700 mb-2">Recipe Details</div>
+            <div class="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span class="text-slate-600">Access Level:</span>
+                <span class="ml-2 capitalize font-medium">{{ recipeModal.recipe?.access_level }}</span>
+              </div>
+              <div>
+                <span class="text-slate-600">Created:</span>
+                <span class="ml-2 font-medium">{{ formatDate(recipeModal.recipe?.created_at) }}</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -813,17 +917,103 @@
             </button>
             <button
               class="rounded-md bg-rose-600 px-4 py-2 text-white hover:bg-rose-700"
-              @click="flagRecipe(recipeModal.recipe)"
+              @click="deleteRecipe(recipeModal.recipe)"
             >
-              Flag as Unsafe
-            </button>
-            <button
-              class="rounded-md bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700"
-              @click="verifyRecipe(recipeModal.recipe)"
-            >
-              Verify Safe
+              Delete Recipe
             </button>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Workout Details Modal -->
+    <div
+      v-if="workoutModal.open"
+      class="fixed inset-0 z-[60] grid place-items-center bg-black/50 p-4"
+      role="dialog"
+      aria-modal="true"
+      @click.self="closeWorkoutModal"
+    >
+      <div class="w-full max-w-3xl overflow-hidden rounded-xl bg-white shadow-lg">
+        <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+          <h3 class="text-lg font-semibold">Workout Program Details</h3>
+          <button class="text-slate-500 hover:text-slate-700" @click="closeWorkoutModal">✕</button>
+        </div>
+
+        <div class="px-5 py-4 space-y-4 max-h-[70vh] overflow-y-auto">
+          <div>
+            <h4 class="text-xl font-bold">{{ workoutModal.workout?.title }}</h4>
+            <p class="text-sm text-slate-600 mt-2">{{ workoutModal.workout?.description }}</p>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <div class="text-sm font-medium text-slate-700">Coach</div>
+              <div class="flex items-center gap-2 mt-1">
+                <div class="grid h-8 w-8 place-items-center rounded-full bg-emerald-500 text-xs font-bold text-white">
+                  {{ getInitials(workoutModal.workout?.coach_name) }}
+                </div>
+                <span class="text-base">{{ workoutModal.workout?.coach_name }}</span>
+              </div>
+            </div>
+            <div>
+              <div class="text-sm font-medium text-slate-700">Category</div>
+              <div class="text-base capitalize mt-1">{{ formatCategory(workoutModal.workout?.category) }}</div>
+            </div>
+            <div>
+              <div class="text-sm font-medium text-slate-700">Difficulty Level</div>
+              <div class="mt-1">
+                <span
+                  class="rounded-full px-2 py-1 text-xs font-medium capitalize"
+                  :class="getDifficultyClass(workoutModal.workout?.difficulty_level)"
+                >
+                  {{ workoutModal.workout?.difficulty_level }}
+                </span>
+              </div>
+            </div>
+            <div>
+              <div class="text-sm font-medium text-slate-700">Duration</div>
+              <div class="text-base mt-1">{{ workoutModal.workout?.duration }} days</div>
+            </div>
+            <div>
+              <div class="text-sm font-medium text-slate-700">Level Access</div>
+              <div class="text-base capitalize mt-1">{{ workoutModal.workout?.level_access }}</div>
+            </div>
+            <div>
+              <div class="text-sm font-medium text-slate-700">Created</div>
+              <div class="text-base mt-1">{{ formatDate(workoutModal.workout?.created_at) }}</div>
+            </div>
+          </div>
+
+          <div v-if="workoutModal.workout?.days?.length">
+            <div class="text-sm font-medium text-slate-700 mb-2">Workout Days ({{ workoutModal.workout.days.length }})</div>
+            <div class="space-y-2 max-h-60 overflow-y-auto">
+              <div
+                v-for="day in workoutModal.workout.days"
+                :key="day.id"
+                class="flex items-center justify-between rounded-md bg-slate-50 p-3"
+              >
+                <div class="flex items-center gap-3">
+                  <div class="grid h-8 w-8 place-items-center rounded-full bg-blue-500 text-xs font-bold text-white">
+                    {{ day.day_number }}
+                  </div>
+                  <div>
+                    <div class="text-sm font-medium">{{ day.title || `Day ${day.day_number}` }}</div>
+                    <div class="text-xs text-slate-500">{{ day.duration }} minutes • {{ day.video_links?.length || 0 }} videos</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 border-t border-slate-200 px-5 py-4 bg-slate-50">
+          <button
+            class="rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-700 hover:bg-slate-50"
+            @click="closeWorkoutModal"
+          >
+            Close
+          </button>
         </div>
       </div>
     </div>
@@ -874,9 +1064,14 @@ const userSearchQuery = ref('')
 const loadingUsers = ref(false)
 
 // Recipe management state
-const recipeFilterStatus = ref('all')
 const recipeAccessFilter = ref('all')
 const loadingRecipes = ref(false)
+
+// Workout management state
+const workoutCategoryFilter = ref('all')
+const workoutDifficultyFilter = ref('all')
+const loadingWorkouts = ref(false)
+const workouts = ref([])
 
 // Mock coaches data - In production, this would come from API
 const coaches = ref([
@@ -934,6 +1129,12 @@ const userModal = ref({
 const recipeModal = ref({
   open: false,
   recipe: null
+})
+
+// Workout modal state
+const workoutModal = ref({
+  open: false,
+  workout: null
 })
 
 // Mock users data
@@ -1031,57 +1232,8 @@ const users = ref([
   }
 ])
 
-// Mock recipes data
-const recipes = ref([
-  {
-    id: 1,
-    title: 'High-Protein Chicken Salad',
-    author: 'Sarah Johnson',
-    ingredients: '2 chicken breasts\n4 cups mixed greens\n1 avocado\n1/4 cup cherry tomatoes\nOlive oil dressing',
-    steps: '1. Grill chicken breasts until fully cooked\n2. Slice chicken into strips\n3. Combine greens, tomatoes, and avocado\n4. Top with chicken and dressing',
-    access_level: 'silver',
-    average_rating: 4.5,
-    image: null,
-    created_at: '2024-09-20T10:30:00Z',
-    status: 'verified'
-  },
-  {
-    id: 2,
-    title: 'Quinoa Power Bowl',
-    author: 'Mike Rodriguez',
-    ingredients: '1 cup quinoa\n1 cup chickpeas\n2 cups kale\n1/2 cup tahini\nLemon juice\nGarlic',
-    steps: '1. Cook quinoa according to package\n2. Roast chickpeas with spices\n3. Massage kale with lemon\n4. Mix tahini dressing\n5. Combine all ingredients',
-    access_level: 'gold',
-    average_rating: 4.8,
-    image: null,
-    created_at: '2024-09-18T14:20:00Z',
-    status: 'verified'
-  },
-  {
-    id: 3,
-    title: 'Berry Protein Smoothie',
-    author: 'Lisa Wang',
-    ingredients: '1 scoop protein powder\n1 cup mixed berries\n1 banana\n1 cup almond milk\n1 tbsp chia seeds',
-    steps: '1. Add all ingredients to blender\n2. Blend until smooth\n3. Serve immediately',
-    access_level: 'silver',
-    average_rating: 4.2,
-    image: null,
-    created_at: '2024-09-15T08:45:00Z',
-    status: 'pending'
-  },
-  {
-    id: 4,
-    title: 'Sweet Potato Buddha Bowl',
-    author: 'James Smith',
-    ingredients: '2 sweet potatoes\n1 cup brown rice\n1 can black beans\nAvocado\nCilantro lime dressing',
-    steps: '1. Roast sweet potatoes at 400°F for 25 minutes\n2. Cook brown rice\n3. Heat black beans\n4. Assemble bowl with all ingredients\n5. Drizzle with dressing',
-    access_level: 'gold',
-    average_rating: 4.6,
-    image: null,
-    created_at: '2024-09-10T16:30:00Z',
-    status: 'pending'
-  }
-])
+// Recipes data - fetched from API
+const recipes = ref([])
 
 // Stats data
 const userStats = ref({
@@ -1238,14 +1390,25 @@ const filteredUsers = computed(() => {
 const filteredRecipes = computed(() => {
   let result = recipes.value
 
-  // Filter by status
-  if (recipeFilterStatus.value !== 'all') {
-    result = result.filter(r => r.status === recipeFilterStatus.value)
-  }
-
   // Filter by access level
   if (recipeAccessFilter.value !== 'all') {
     result = result.filter(r => r.access_level === recipeAccessFilter.value)
+  }
+
+  return result
+})
+
+const filteredWorkouts = computed(() => {
+  let result = workouts.value
+
+  // Filter by category
+  if (workoutCategoryFilter.value !== 'all') {
+    result = result.filter(w => w.category === workoutCategoryFilter.value)
+  }
+
+  // Filter by difficulty
+  if (workoutDifficultyFilter.value !== 'all') {
+    result = result.filter(w => w.difficulty_level === workoutDifficultyFilter.value)
   }
 
   return result
@@ -1444,58 +1607,80 @@ function closeRecipeModal() {
   }
 }
 
-function verifyRecipe(recipe) {
-  // In production, this would make an API call to mark recipe as verified
-  console.log('Verifying recipe as safe:', recipe)
-
-  // Update local state (demo only)
-  const index = recipes.value.findIndex(r => r.id === recipe.id)
-  if (index !== -1) {
-    recipes.value[index].status = 'verified'
-  }
-
-  alert(`✓ Recipe "${recipe.title}" has been verified as safe!\n\nIn production, this would:\n1. Update recipe status in database\n2. Make recipe visible to all users\n3. Notify the author\n4. Log the verification in audit trail`)
-
-  closeRecipeModal()
-}
-
-function flagRecipe(recipe) {
-  const reason = prompt('Please provide a reason for flagging this recipe as unsafe:')
-
-  if (!reason) {
-    return
-  }
-
-  // In production, this would make an API call to flag the recipe
-  console.log('Flagging recipe:', recipe, 'Reason:', reason)
-
-  // Update local state (demo only)
-  const index = recipes.value.findIndex(r => r.id === recipe.id)
-  if (index !== -1) {
-    recipes.value[index].status = 'flagged'
-    recipes.value[index].flag_reason = reason
-  }
-
-  alert(`⚠ Recipe "${recipe.title}" has been flagged as unsafe.\n\nIn production, this would:\n1. Hide recipe from users\n2. Notify the author with reason\n3. Log the flag in audit trail\n4. Allow author to appeal or fix issues`)
-
-  closeRecipeModal()
-}
-
 function getIngredientCount(ingredients) {
   if (!ingredients) return 0
   return ingredients.split('\n').filter(line => line.trim()).length
 }
 
-function getRecipeStatusClass(status) {
-  switch (status) {
-    case 'verified':
-      return 'bg-emerald-100 text-emerald-800'
-    case 'pending':
-      return 'bg-amber-100 text-amber-800'
-    case 'flagged':
-      return 'bg-rose-100 text-rose-800'
-    default:
-      return 'bg-slate-100 text-slate-800'
+// Fetch recipes from API
+async function fetchRecipes() {
+  loadingRecipes.value = true
+  try {
+    const response = await fetch('http://127.0.0.1:8000/api/recipe/', {
+      headers: {
+        'Authorization': `Token ${userStore.token}`,
+        'Content-Type': 'application/json'
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch recipes')
+    }
+
+    const data = await response.json()
+
+    // Transform data to include author name from user_profile
+    recipes.value = data.map(recipe => ({
+      ...recipe,
+      author: recipe.user_profile || 'Unknown',
+      status: 'verified', // Default status since backend doesn't have status field
+      average_rating: recipe.average_rating || 'N/A'
+    }))
+
+    // Update recipe stats
+    recipeStats.value.total = recipes.value.length
+    recipeStats.value.pendingReview = recipes.value.filter(r => r.status === 'pending').length
+  } catch (err) {
+    console.error('Error fetching recipes:', err)
+    error.value = 'Failed to load recipes'
+  } finally {
+    loadingRecipes.value = false
+  }
+}
+
+// Delete recipe function
+async function deleteRecipe(recipe) {
+  const confirmed = confirm(
+    `Are you sure you want to delete recipe "${recipe.title}"?\n\nThis action cannot be undone.`
+  )
+
+  if (!confirmed) return
+
+  try {
+    const response = await fetch(`http://127.0.0.1:8000/api/recipe/${recipe.id}/delete/`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Token ${userStore.token}`,
+        'Content-Type': 'application/json'
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to delete recipe')
+    }
+
+    // Remove from local state
+    const index = recipes.value.findIndex(r => r.id === recipe.id)
+    if (index !== -1) {
+      recipes.value.splice(index, 1)
+      recipeStats.value.total -= 1
+    }
+
+    alert(`✓ Recipe "${recipe.title}" has been deleted successfully.`)
+    closeRecipeModal()
+  } catch (err) {
+    console.error('Error deleting recipe:', err)
+    alert('Failed to delete recipe. Please try again.')
   }
 }
 
@@ -1507,12 +1692,92 @@ function showNotifications() {
   alert(`${pendingCount.value} pending coach applications require review`)
 }
 
+// Workout management functions
+async function fetchWorkouts() {
+  loadingWorkouts.value = true
+  try {
+    const response = await fetch('http://127.0.0.1:8000/api/workout/programs/', {
+      headers: {
+        'Authorization': `Token ${userStore.token}`,
+        'Content-Type': 'application/json'
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch workouts')
+    }
+
+    const data = await response.json()
+
+    // Transform data to include coach name
+    workouts.value = await Promise.all(data.map(async workout => {
+      // Fetch coach information
+      let coachName = 'Unknown Coach'
+      try {
+        const coachResponse = await fetch(`http://127.0.0.1:8000/api/user-info/`, {
+          headers: {
+            'Authorization': `Token ${userStore.token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+        if (coachResponse.ok) {
+          const coachData = await coachResponse.json()
+          // Find coach by workout.coach id
+          coachName = `Coach ${workout.coach}`
+        }
+      } catch (err) {
+        console.error('Error fetching coach info:', err)
+      }
+
+      return {
+        ...workout,
+        coach_name: coachName
+      }
+    }))
+  } catch (err) {
+    console.error('Error fetching workouts:', err)
+    error.value = 'Failed to load workouts'
+  } finally {
+    loadingWorkouts.value = false
+  }
+}
+
+function viewWorkoutDetails(workout) {
+  workoutModal.value = {
+    open: true,
+    workout: workout
+  }
+}
+
+function closeWorkoutModal() {
+  workoutModal.value = {
+    open: false,
+    workout: null
+  }
+}
+
+function formatCategory(category) {
+  if (!category) return 'N/A'
+  return category.replace(/_/g, ' ')
+}
+
+function getDifficultyClass(difficulty) {
+  switch (difficulty) {
+    case 'easy':
+      return 'bg-emerald-100 text-emerald-800'
+    case 'medium':
+      return 'bg-amber-100 text-amber-800'
+    case 'hard':
+      return 'bg-rose-100 text-rose-800'
+    default:
+      return 'bg-slate-100 text-slate-800'
+  }
+}
+
 onMounted(() => {
-  // In production, fetch data from API here
-  // fetchCoaches()
-  // fetchUsers()
-  // fetchRecipes()
-  // fetchStats()
-  console.log('AdminDashboard mounted with all features: Dashboard, Users, Recipes, and Coaches.')
+  // Fetch data from API
+  fetchRecipes()
+  fetchWorkouts()
+  console.log('AdminDashboard mounted with all features: Dashboard, Users, Recipes, Workouts, and Coaches.')
 })
 </script>
