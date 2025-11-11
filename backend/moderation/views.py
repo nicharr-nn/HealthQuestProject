@@ -5,6 +5,10 @@ from rest_framework import status
 from django.utils import timezone
 from coach.models import Coach
 from .models import Admin, AdminModeration
+from member.models import Member
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 @api_view(["POST"])
@@ -81,3 +85,42 @@ def list_coaches_for_admin(request):
         for coach in coaches
     ]
     return Response(data)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def list_all_users(request):
+    # Check admin permission
+    if not Admin.objects.filter(user=request.user).exists():
+        return Response({"error": "You are not an admin"}, status=403)
+
+    users = User.objects.all().order_by("-date_joined")
+
+    data = [
+        {
+            "id": u.id,
+            "username": u.username,
+            "email": u.email,
+            "full_name": u.get_full_name(),
+            "role": getattr(u.userprofile, "role", None),
+            "date_joined": u.date_joined,
+            "is_active": u.is_active,
+        }
+        for u in users
+    ]
+
+    return Response(data)
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def delete_user(request, user_id):
+    if not Admin.objects.filter(user=request.user).exists():
+        return Response({"error": "Unauthorized"}, status=403)
+
+    try:
+        user = User.objects.get(pk=user_id)
+    except User.DoesNotExist:
+        return Response({"error": "User not found"}, status=404)
+
+    user.delete()
+    return Response({"message": "User deleted"}, status=200)
