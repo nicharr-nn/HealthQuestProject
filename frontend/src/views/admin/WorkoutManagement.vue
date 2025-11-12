@@ -32,7 +32,7 @@
             <div class="relative hidden md:block">
               <input
                 type="text"
-                placeholder="Search coaches..."
+                placeholder="Search workouts..."
                 v-model="searchQuery"
                 class="w-80 rounded-md border border-slate-200 pl-5 pr-3 py-2 text-sm font-subtitle placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
               />
@@ -78,16 +78,16 @@
       <!-- Page content -->
       <div class="p-5 space-y-4">
         <div>
-          <h2 class="text-2xl font-bold">Workout Management</h2>
-          <p class="text-sm text-slate-500">View all workout programs and their associated coaches</p>
+          <h2 class="text-2xl font-subtitle">Workout Management</h2>
+          <p class="text-sm text-slate-500 font-subtitle">View all workout programs and their associated coaches</p>
         </div>
 
         <!-- Workouts Table -->
         <div class="rounded-xl bg-white p-5 shadow-sm">
           <div class="mb-4 flex items-center justify-between">
-            <h3 class="text-base font-semibold">All Workout Programs ({{ workouts.length }})</h3>
+            <h3 class="text-base font-semibold font-subtitle">All Workout Programs ({{ workouts.length }})</h3>
             <div class="flex items-center gap-3">
-              <select class="rounded-md border border-slate-200 px-3 py-2 text-sm" v-model="workoutCategoryFilter">
+              <select class="rounded-md border border-slate-200 px-3 py-2 text-sm font-subtitle" v-model="workoutCategoryFilter">
                 <option value="all">All Categories</option>
                 <option value="strength_training">Strength Training</option>
                 <option value="cardio">Cardio</option>
@@ -97,7 +97,7 @@
                 <option value="flexibility">Flexibility</option>
                 <option value="full_body">Full Body</option>
               </select>
-              <select class="rounded-md border border-slate-200 px-3 py-2 text-sm" v-model="workoutDifficultyFilter">
+              <select class="rounded-md border border-slate-200 px-3 py-2 text-sm font-subtitle" v-model="workoutDifficultyFilter">
                 <option value="all">All Difficulties</option>
                 <option value="easy">Easy</option>
                 <option value="medium">Medium</option>
@@ -110,28 +110,27 @@
 
           <div v-else class="overflow-x-auto">
             <table class="w-full border-collapse text-sm">
-              <thead class="text-slate-500">
+              <thead class="text-slate-500 font-subtitle">
                 <tr class="border-b border-slate-200">
                   <th class="px-3 py-2 text-left font-semibold">Program Title</th>
                   <th class="px-3 py-2 text-left font-semibold">Coach</th>
                   <th class="px-3 py-2 text-left font-semibold">Category</th>
                   <th class="px-3 py-2 text-left font-semibold">Difficulty</th>
                   <th class="px-3 py-2 text-left font-semibold">Duration</th>
-                  <th class="px-3 py-2 text-left font-semibold">Days</th>
                   <th class="px-3 py-2 text-left font-semibold">Created</th>
                   <th class="px-3 py-2 text-left font-semibold">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-if="filteredWorkouts.length === 0">
-                  <td colspan="8" class="px-3 py-8 text-center text-slate-500">
+                  <td colspan="8" class="px-3 py-8 text-center text-slate-500 font-semibold">
                     No workout programs found
                   </td>
                 </tr>
                 <tr v-for="workout in filteredWorkouts" :key="workout.id" class="border-b border-slate-100 hover:bg-slate-50">
                   <td class="px-3 py-3">
                     <div class="flex items-center gap-2">
-                      <div class="font-medium">{{ workout.title }}</div>
+                      <div class="font-semibold">{{ workout.title }}</div>
                     </div>
                   </td>
                   <td class="px-3 py-3">
@@ -139,31 +138,36 @@
                       <div class="grid h-6 w-6 place-items-center rounded-full bg-emerald-500 text-xs font-bold text-white">
                         {{ getInitials(workout.coach_name) }}
                       </div>
-                      <span>{{ workout.coach_name }}</span>
+                      <span class="font-semibold">{{ workout.coach_name }}</span>
                     </div>
                   </td>
                   <td class="px-3 py-3">
-                    <span class="rounded-full px-2 py-0.5 text-[11px] font-medium capitalize bg-purple-100 text-purple-800">
+                    <span class="rounded-full px-2 py-0.5 text-[11px] font-semibold capitalize bg-purple-100 text-purple-800">
                       {{ formatCategory(workout.category) }}
                     </span>
                   </td>
                   <td class="px-3 py-3">
                     <span
-                      class="rounded-full px-2 py-0.5 text-[11px] font-medium capitalize"
+                      class="rounded-full px-2 py-0.5 text-[11px] font-semibold capitalize"
                       :class="getDifficultyClass(workout.difficulty_level)"
                     >
                       {{ workout.difficulty_level }}
                     </span>
                   </td>
-                  <td class="px-3 py-3">{{ workout.duration }} days</td>
-                  <td class="px-3 py-3">{{ workout.days?.length || 0 }} days</td>
-                  <td class="px-3 py-3">{{ formatDate(workout.created_at) }}</td>
-                  <td class="px-3 py-3">
+                  <td class="px-3 py-3 font-semibold">{{ workout.duration }} days</td>
+                  <td class="px-3 py-3 font-semibold">{{ formatDate(workout.created_at) }}</td>
+                  <td class="px-3 py-3 flex gap-2">
                     <button
-                      class="rounded-md bg-blue-600 px-3 py-1.5 text-white hover:bg-blue-700 text-xs"
+                      class="rounded-md bg-blue-600 px-3 py-1.5 text-white hover:bg-blue-700 text-xs font-bold"
                       @click="viewWorkoutDetails(workout)"
                     >
                       View
+                    </button>
+                    <button
+                      class="rounded-md bg-red-600 px-3 py-1.5 text-white hover:bg-red-700 text-xs font-bold"
+                      @click="deleteWorkout(workout.id)"
+                    >
+                      Delete
                     </button>
                   </td>
                 </tr>
@@ -182,32 +186,32 @@
         >
           <div class="w-full max-w-3xl overflow-hidden rounded-xl bg-white shadow-lg">
             <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-              <h3 class="text-lg font-semibold">Workout Program Details</h3>
+              <h3 class="text-lg font-subtitle">Workout Program Details</h3>
               <button class="text-slate-500 hover:text-slate-700" @click="closeWorkoutModal">✕</button>
             </div>
 
             <div class="px-5 py-4 space-y-4 max-h-[70vh] overflow-y-auto">
               <div>
-                <h4 class="text-xl font-bold">{{ workoutModal.workout?.title }}</h4>
-                <p class="text-sm text-slate-600 mt-2">{{ workoutModal.workout?.description }}</p>
+                <h4 class="text-xl font-subtitle">{{ workoutModal.workout?.title }}</h4>
+                <p class="text-sm text-slate-600 mt-2 font-medium ">{{ workoutModal.workout?.description }}</p>
               </div>
 
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <div class="text-sm font-medium text-slate-700">Coach</div>
+                  <div class="text-sm font-subtitle text-slate-700">Coach</div>
                   <div class="flex items-center gap-2 mt-1">
                     <div class="grid h-8 w-8 place-items-center rounded-full bg-emerald-500 text-xs font-bold text-white">
                       {{ getInitials(workoutModal.workout?.coach_name) }}
                     </div>
-                    <span class="text-base">{{ workoutModal.workout?.coach_name }}</span>
+                    <span class="text-base font-medium ">{{ workoutModal.workout?.coach_name }}</span>
                   </div>
                 </div>
                 <div>
-                  <div class="text-sm font-medium text-slate-700">Category</div>
-                  <div class="text-base capitalize mt-1">{{ formatCategory(workoutModal.workout?.category) }}</div>
+                  <div class="text-sm font-subtitle text-slate-700">Category</div>
+                  <div class="text-base capitalize mt-1 font-medium ">{{ formatCategory(workoutModal.workout?.category) }}</div>
                 </div>
                 <div>
-                  <div class="text-sm font-medium text-slate-700">Difficulty Level</div>
+                  <div class="text-sm font-subtitle text-slate-700">Difficulty Level</div>
                   <div class="mt-1">
                     <span
                       class="rounded-full px-2 py-1 text-xs font-medium capitalize"
@@ -218,19 +222,20 @@
                   </div>
                 </div>
                 <div>
-                  <div class="text-sm font-medium text-slate-700">Duration</div>
-                  <div class="text-base mt-1">{{ workoutModal.workout?.duration }} days</div>
+                  <div class="text-sm font-subtitle text-slate-700">Duration</div>
+                  <div class="text-base mt-1 font-medium ">{{ workoutModal.workout?.duration }} days</div>
                 </div>
                 <div>
-                  <div class="text-sm font-medium text-slate-700">Level Access</div>
-                  <div class="text-base capitalize mt-1">{{ workoutModal.workout?.level_access }}</div>
+                  <div class="text-sm font-subtitle text-slate-700">Level Access</div>
+                  <div class="text-base capitalize mt-1 font-medium ">{{ workoutModal.workout?.level_access }}</div>
                 </div>
                 <div>
-                  <div class="text-sm font-medium text-slate-700">Created</div>
-                  <div class="text-base mt-1">{{ formatDate(workoutModal.workout?.created_at) }}</div>
+                  <div class="text-sm font-subtitle text-slate-700">Created</div>
+                  <div class="text-base mt-1 font-medium ">{{ formatDate(workoutModal.workout?.created_at) }}</div>
                 </div>
               </div>
 
+              <div class="text-sm font-subtitle text-slate-700">Workout Schedule</div>
               <div
                 v-for="day in workoutModal.workout.days"
                 :key="day.id"
@@ -249,7 +254,7 @@
                 <!-- Video button -->
                 <button
                   v-if="day.video_links?.length"
-                  class="rounded-md bg-blue-600 px-3 py-1.5 text-white hover:bg-blue-700 text-xs"
+                  class="rounded-md bg-blue-600 px-3 py-1.5 text-white hover:bg-blue-700 text-xs font-bold"
                   @click="openVideo(day.video_links[0])"
                 >
                   Video
@@ -343,17 +348,41 @@ async function fetchWorkouts() {
     if (!res.ok) throw new Error('Failed to fetch workouts')
     const data = await res.json()
 
-    workouts.value = data.map(workout => {
-      let coachName = 'Unknown Coach'
-      if (workout.coach_name) coachName = workout.coach_name
-      else if (workout.coach) coachName = `Coach ${workout.coach}`
-      return { ...workout, coach_name: coachName }
-    })
+    workouts.value = data.map(workout => ({
+      ...workout,
+      coach_name: workout.coach_name || 'Unknown Coach'
+    }))
+
   } catch (err) {
     console.error('Error fetching workouts:', err)
     error.value = 'Failed to load workouts'
   } finally {
     loadingWorkouts.value = false
+  }
+}
+
+async function deleteWorkout(id) {
+  if (!confirm("Are you sure you want to delete this workout program?")) return;
+
+  try {
+    const res = await fetch(`${API_URL}/api/workout/programs/${id}/`, {
+      method: "DELETE",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      alert(err.error || "Failed to delete workout");
+      return;
+    }
+
+    // Remove from local list
+    workouts.value = workouts.value.filter(w => w.id !== id);
+    alert("Workout program deleted successfully");
+  } catch (err) {
+    console.error("Delete workout error:", err);
+    alert("Failed to delete workout");
   }
 }
 
