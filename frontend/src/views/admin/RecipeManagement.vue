@@ -129,34 +129,34 @@
                       🍽️
                     </div>
                     <div>
-                      <div class="font-medium">{{ recipe.title }}</div>
+                      <div class="font-semibold">{{ recipe.title }}</div>
                       <div class="text-xs text-slate-500">{{ getIngredientCount(recipe.ingredients) }} ingredients</div>
                     </div>
                   </td>
-                  <td class="px-3 py-3">{{ recipe.user_profile }}</td>
-                  <td class="px-3 py-3">
+                  <td class="px-3 py-3 font-semibold">{{ recipe.user_profile }}</td>
+                  <td class="px-3 py-3 font-semibold">
                     <span
-                      class="rounded-full px-2 py-0.5 text-[11px] font-medium capitalize"
+                      class="rounded-full px-2 py-0.5 text-[11px] font-semibold capitalize"
                       :class="recipe.access_level === 'gold' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-800'"
                     >
                       {{ recipe.access_level }}
                     </span>
                   </td>
-                  <td class="px-3 py-3">{{ formatDate(recipe.created_at) }}</td>
-                  <td class="px-3 py-3">
+                  <td class="px-3 py-3 font-semibold">{{ formatDate(recipe.created_at) }}</td>
+                  <td class="px-3 py-3 font-semibold">
                     <div class="flex gap-2">
-                    <button
-                      class="rounded-md bg-blue-600 px-3 py-1.5 text-white hover:bg-blue-700 text-xs"
-                      @click="viewRecipeDetails(recipe)"
-                    >
-                      View
-                    </button>
-                    <button
-                      class="rounded-md bg-rose-600 px-3 py-1.5 text-white hover:bg-rose-700 text-xs"
-                      @click="deleteRecipe(recipe)"
-                    >
-                      Delete
-                    </button>
+                      <button
+                        class="rounded-md bg-blue-500 px-3 py-1.5 text-white font-semibold hover:bg-blue-600"
+                        @click="viewRecipeDetails(recipe)"
+                      >
+                        View
+                      </button>
+                      <button
+                        class="rounded-md bg-rose-600 px-3 py-1.5 text-white font-semibold hover:bg-rose-700"
+                        @click="deleteRecipe(recipe.id)"
+                      >
+                        Delete
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -178,7 +178,7 @@
       <div class="w-full max-w-3xl overflow-hidden rounded-xl bg-white shadow-lg">
         <!-- Header -->
         <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-          <h3 class="text-lg font-semibold">Recipe Details</h3>
+          <h3 class="text-lg font-subtitle">Recipe Details</h3>
           <button class="text-slate-500 hover:text-slate-700" @click="closeRecipeModal">✕</button>
         </div>
 
@@ -189,7 +189,7 @@
           </div>
 
           <div>
-            <h4 class="text-xl font-bold">{{ recipeModal.recipe?.title }}</h4>
+            <h4 class="text-xl font-subtitle">{{ recipeModal.recipe?.title }}</h4>
             <div class="flex items-center gap-3 mt-2">
               <span class="text-sm text-slate-600">By {{ recipeModal.recipe?.user_profile.split(' ')[0].toUpperCase() }}</span>
               <span
@@ -206,14 +206,14 @@
           </div>
 
           <div>
-            <div class="text-sm font-medium text-slate-700 mb-2">Ingredients</div>
+            <div class="text-sm font-subtitle text-slate-700 mb-2">Ingredients</div>
             <div class="text-sm bg-slate-50 p-3 rounded-md whitespace-pre-line">
               {{ recipeModal.recipe?.ingredients }}
             </div>
           </div>
 
           <div>
-            <div class="text-sm font-medium text-slate-700 mb-2">Steps</div>
+            <div class="text-sm font-subtitle text-slate-700 mb-2">Steps</div>
             <div class="text-sm bg-slate-50 p-3 rounded-md whitespace-pre-line">
               {{ recipeModal.recipe?.steps }}
             </div>
@@ -221,7 +221,7 @@
 
           <div class="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <span class="text-slate-600">Created:</span>
+              <span class="text-slate-600 font-subtitle">Created at</span>
               <span class="ml-2 font-medium">{{ formatDate(recipeModal.recipe?.created_at) }}</span>
             </div>
             <div v-if="recipeModal.recipe?.pdf_file" class="flex justify-end">
@@ -246,7 +246,7 @@
           </button>
           <button
             class="rounded-md bg-rose-600 px-4 py-2 text-white hover:bg-rose-700"
-            @click="deleteRecipe(recipeModal.recipe)"
+            @click="deleteRecipe(recipeModal.recipe.id)"
           >
             Delete Recipe
           </button>
@@ -335,19 +335,28 @@ function closeRecipeModal() {
 }
 
 // Delete recipe
-async function deleteRecipe(recipe) {
+const deleteRecipe = async (id) => {
   if (!confirm('Are you sure you want to delete this recipe?')) return
+
   try {
-    const res = await fetch(`${API_URL}/api/recipe/${recipe.id}/delete/`, {
+    const response = await fetch(`${API_URL}/api/recipe/${id}/delete/`, {
       method: 'DELETE',
-      credentials: 'include'
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
     })
-    if (!res.ok) throw new Error('Failed to delete recipe')
-    recipes.value = recipes.value.filter(r => r.id !== recipe.id)
-    if (recipeModal.value.recipe?.id === recipe.id) closeRecipeModal()
+
+    if (response.status === 204) {
+      alert('✅ Recipe deleted successfully!')
+      // Refresh your recipe list — adjust as needed
+      fetchRecipes?.() || fetchMenus?.(showMine?.value)
+    } else {
+      // Handle API errors
+      const data = await response.json().catch(() => ({}))
+      alert('Delete failed: ' + (data.error || response.statusText))
+    }
   } catch (err) {
     console.error(err)
-    alert('Failed to delete recipe')
+    alert('Error connecting to backend: ' + err.message)
   }
 }
 
