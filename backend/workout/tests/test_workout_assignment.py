@@ -7,6 +7,7 @@ from rest_framework.test import APIClient
 from rest_framework import status
 from workout.models import (
     WorkoutAssignment,
+    WorkoutDayCompletion,
     WorkoutProgram,
     WorkoutDay,
 )
@@ -80,7 +81,7 @@ class WorkoutAssignmentTests(TestCase):
 
         # Create workout assignment
         self.workout_assignment = WorkoutAssignment.objects.create(
-            member=self.member, program=self.program, status="pending"
+            member=self.member, program=self.program, status="assigned"
         )
 
         # Default authentication as member
@@ -95,7 +96,7 @@ class WorkoutAssignmentTests(TestCase):
         self.assertEqual(len(response.data), 1)
         assignment_data = response.data[0]
         self.assertEqual(assignment_data["program"]["title"], self.program.title)
-        self.assertEqual(assignment_data["status"], "pending")
+        self.assertEqual(assignment_data["status"], "assigned")
 
     def test_list_my_assignments_as_coach(self):
         """Test coach can list their assigned programs"""
@@ -121,7 +122,7 @@ class WorkoutAssignmentTests(TestCase):
             is_public=False,
         )
 
-        url = reverse("assign-program-to-member")
+        url = reverse("manage-assignment", kwargs={"program_id": new_program.id})
         data = {
             "program_id": new_program.id,
             "member_id": self.member.member_id,
@@ -145,7 +146,7 @@ class WorkoutAssignmentTests(TestCase):
             duration=7,
         )
 
-        url = reverse("assign-program-to-member")
+        url = reverse("manage-assignment", kwargs={"program_id": new_program.id})
         data = {
             "program_id": new_program.id,
             # Missing member_id
@@ -154,11 +155,11 @@ class WorkoutAssignmentTests(TestCase):
         response = self.client.post(url, data, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("Member ID is required", response.data["error"])
+        self.assertIn("member_id is required", response.data["error"])
 
     def test_assign_program_to_member_as_member(self):
         """Test member cannot assign programs"""
-        url = reverse("assign-program-to-member")
+        url = reverse("manage-assignment", kwargs={"program_id": self.program.id})
         data = {"program_id": self.program.id}
         response = self.client.post(url, data, format="json")
 
@@ -205,17 +206,22 @@ class WorkoutAssignmentTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_update_assignment_status(self):
-        """Test member can update assignment status to completed"""
+        """Test member can update assignment status to in_progress"""
+        WorkoutDayCompletion.objects.create(
+            user_profile=self.member_profile,
+            workout_day=self.workout_day_1,
+            xp_earned=50,
+        )
+
         url = reverse(
             "workout-assignment-update", kwargs={"id": self.workout_assignment.id}
         )
-        response = self.client.patch(url, format="json")
+        response = self.client.patch(url, {"action": "start"}, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.workout_assignment.refresh_from_db()
-        self.assertEqual(self.workout_assignment.status, "completed")
-        self.assertIsNotNone(self.workout_assignment.completed_date)
-        self.assertIn("xp_awarded", response.data)
+        self.assertEqual(self.workout_assignment.status, "in_progress")
+        self.assertEqual(response.data["message"], "Assignment is already in_progress.")
 
     def test_assign_program_without_due_date(self):
         """Test assignment works without due date"""
@@ -282,3 +288,38 @@ class WorkoutAssignmentTests(TestCase):
         response = self.client.post(url, data, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_start_assignment(self):
+        """Test member can start an assignment"""
+        self.workout_assignment.status = "assigned"
+        self.workout_assignment.save()
+        url = reverse(
+            "workout-assignment-update", kwargs={"id": self.workout_assignment.id}
+        )
+        response = self.client.patch(url, {"action": "start"}, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.workout_assignment.refresh_from_db()
+        self.assertEqual(self.workout_assignment.status, "in_progress")
+        self.assertEqual(response.data["status"], "in_progress")
+
+    def test_complete_assignment_without_finishing_workouts(self):
+        """Test cannot complete assignment without finishing all workout days"""
+        # Only complete one workout day
+        self.workout_assignment.status = "assigned"
+        self.workout_assignment.save()
+        WorkoutDayCompletion.objects.create(
+            user_profile=self.member_profile,
+            workout_day=self.workout_day_1,
+            xp_earned=50,
+        )
+
+        url = reverse(
+            "workout-assignment-update", kwargs={"id": self.workout_assignment.id}
+        )
+        response = self.client.patch(url, {"action": "complete"}, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error", response.data)
+        self.workout_assignment.refresh_from_db()
+        self.assertIn(self.workout_assignment.status, ["assigned", "in_progress"])

@@ -1,5 +1,6 @@
 from django.db import models
 
+
 from users.models import UserProfile
 from member.models import Member
 from django.utils import timezone
@@ -109,7 +110,7 @@ class WorkoutDayCompletion(models.Model):
 
 class WorkoutAssignment(models.Model):
     STATUS_CHOICES = [
-        ("pending", "Pending"),
+        ("assigned", "Assigned"),
         ("in_progress", "In Progress"),
         ("completed", "Completed"),
         ("paused", "Paused"),
@@ -131,7 +132,7 @@ class WorkoutAssignment(models.Model):
     )
     assigned_date = models.DateField(auto_now_add=True)
     due_date = models.DateField(null=True, blank=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="assigned")
     completed_date = models.DateField(null=True, blank=True)
 
     class Meta:
@@ -140,7 +141,6 @@ class WorkoutAssignment(models.Model):
 
     def __str__(self):
         return f"{self.member.user.user.username} → {self.program.title}"
-    
 
     def check_completion(self):
         """Check if all day_numbers are completed."""
@@ -160,3 +160,39 @@ class WorkoutAssignment(models.Model):
             self.save(update_fields=["status", "completed_date"])
             return True
         return False
+
+    def get_status(self):
+        """
+        Dynamically determine current status of the assignment:
+        - completed: all days done
+        - overdue: due date passed, not completed
+        - in_progress: some days done, not overdue
+        """
+        today = timezone.now().date()
+
+        # Completed check (uses your existing logic)
+        total_days = self.program.days.values("day_number").distinct().count()
+        completed_days = (
+            WorkoutDayCompletion.objects.filter(
+                user_profile=self.member.user,
+                workout_day__program=self.program,
+            )
+            .values("workout_day__day_number")
+            .distinct()
+            .count()
+        )
+
+        # Check completed
+        if completed_days >= total_days and total_days > 0:
+            return "completed"
+
+        # Check overdue
+        if self.due_date and self.due_date < today:
+            return "overdue"
+
+        # Check in progress
+        if completed_days > 0:
+            return "in_progress"
+
+        # Default pending
+        return "assigned"
