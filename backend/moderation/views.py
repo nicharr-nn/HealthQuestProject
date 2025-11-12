@@ -3,11 +3,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from django.utils import timezone
+from coach.models import Coach
+from .models import Admin, AdminModeration
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.conf import settings
-from coach.models import Coach
-from .models import Admin, AdminModeration
 
 User = get_user_model()
 
@@ -15,11 +15,13 @@ User = get_user_model()
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def approve_coach(request, coach_id):
-    """Approve a coach certification request."""
     try:
         coach = Coach.objects.get(coach_id=coach_id)
     except Coach.DoesNotExist:
-        return Response({"error": "Coach not found"}, status=status.HTTP_404_NOT_FOUND)
+        return Response(
+            {"error": "Coach not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )
 
     admin = Admin.objects.get(user=request.user)
 
@@ -35,22 +37,23 @@ def approve_coach(request, coach_id):
     )
 
     return Response(
-        {"message": f"Coach {coach.user.user.username} approved."},
-        status=status.HTTP_200_OK,
+        {"message": f"Coach {coach.user.user.username} approved."}
     )
 
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def reject_coach(request, coach_id):
-    """Reject a coach certification request."""
     try:
         coach = Coach.objects.get(pk=coach_id)
     except Coach.DoesNotExist:
-        return Response({"error": "Coach not found"}, status=status.HTTP_404_NOT_FOUND)
+        return Response(
+            {"error": "Coach not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )
 
     admin = Admin.objects.get(user=request.user)
-    reason = request.data.get("reason", "Certification rejected")
+    reason = request.data.get("reason", "")
 
     coach.status_approval = "rejected"
     coach.save()
@@ -59,52 +62,56 @@ def reject_coach(request, coach_id):
         admin=admin,
         coach=coach,
         action="reject_certification",
-        reason=reason,
+        reason=reason or "Certification rejected",
     )
 
     return Response(
-        {"message": f"Coach {coach.user.user.username} rejected."},
-        status=status.HTTP_200_OK,
+        {"message": f"Coach {coach.user.user.username} rejected."}
     )
 
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def list_coaches_for_admin(request):
-    """List all coaches with optional status filter for admin."""
     if not Admin.objects.filter(user=request.user).exists():
-        return Response({"error": "You are not an admin"}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"error": "You are not an admin"}, status=403)
 
     status_filter = request.query_params.get("status")
     coaches = Coach.objects.all().select_related("user__user")
-
     if status_filter in ["pending", "approved", "rejected"]:
         coaches = coaches.filter(status_approval=status_filter)
 
     data = [
         {
             "coach_id": coach.coach_id,
-            "name": coach.user.user.get_full_name() or coach.user.user.username,
+            "name": (
+                coach.user.user.get_full_name() or
+                coach.user.user.username
+            ),
             "email": coach.user.user.email,
             "bio": getattr(coach, "bio", ""),
-            "certification_doc": coach.certification_doc.url if coach.certification_doc else None,
+            "certification_doc": (
+                coach.certification_doc.url
+                if coach.certification_doc
+                else None
+            ),
             "status_approval": coach.status_approval,
             "created_at": coach.created_at,
         }
         for coach in coaches
     ]
-
-    return Response(data, status=status.HTTP_200_OK)
+    return Response(data)
 
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def list_all_users(request):
-    """List all users (excluding admins) for admin view."""
+    # Check admin permission
     if not Admin.objects.filter(user=request.user).exists():
-        return Response({"error": "You are not an admin"}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"error": "You are not an admin"}, status=403)
 
     users = User.objects.all().order_by("-date_joined")
+
     data = [
         {
             "id": u.id,
@@ -115,31 +122,36 @@ def list_all_users(request):
             "date_joined": u.date_joined,
             "is_active": u.is_active,
         }
-        for u in users if getattr(u.userprofile, "role", None) != "admin"
+        for u in users if u.userprofile.role != "admin"
     ]
 
-    return Response(data, status=status.HTTP_200_OK)
+    return Response(data)
 
 
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def delete_user(request, user_id):
-    """Delete a user account, send email, and log moderation action."""
     try:
         admin = Admin.objects.get(user=request.user)
     except Admin.DoesNotExist:
-        return Response({"error": "You are not an admin"}, status=status.HTTP_403_FORBIDDEN)
+        return Response(
+            {"error": "You are not an admin"},
+            status=status.HTTP_403_FORBIDDEN
+        )
 
     try:
         user = User.objects.get(pk=user_id)
     except User.DoesNotExist:
-        return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+        return Response(
+            {"error": "User not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )
 
-    # Send deletion email
     subject = "Account Deletion Notification"
     message = (
         f"Dear {user.username},\n\n"
-        "Your HealthQuest account has been permanently deleted by an administrator.\n\n"
+        "Your HealthQuest account has been "
+        "permanently deleted by an administrator.\n\n\n"
         "Thank you,\n"
         "HealthQuest Team"
     )
@@ -152,19 +164,22 @@ def delete_user(request, user_id):
         fail_silently=False,
     )
 
-    # Log moderation
     AdminModeration.objects.create(
         admin=admin,
         content_type="user",
         content_id=user.id,
         action="delete_user",
-        reason="Account deleted by admin",
     )
 
     username = user.username
     user.delete()
 
     return Response(
-        {"message": f"User '{username}' deleted, email sent, and action logged."},
+        {
+            "message": (
+                f"User '{username}' deleted, "
+                "email sent and action logged."
+            )
+        },
         status=status.HTTP_200_OK,
     )
