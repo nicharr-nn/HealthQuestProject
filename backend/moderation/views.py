@@ -5,7 +5,6 @@ from rest_framework import status
 from django.utils import timezone
 from coach.models import Coach
 from .models import Admin, AdminModeration
-from member.models import Member
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.conf import settings
@@ -113,23 +112,27 @@ def list_all_users(request):
 
     return Response(data)
 
+
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def delete_user(request, user_id):
     try:
         admin = Admin.objects.get(user=request.user)
     except Admin.DoesNotExist:
-        return Response({"error": "You are not an admin"}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"error": "You are not an admin"}, 
+                        status=status.HTTP_403_FORBIDDEN)
 
     try:
         user = User.objects.get(pk=user_id)
     except User.DoesNotExist:
-        return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"error": "User not found"}, 
+                        status=status.HTTP_404_NOT_FOUND)
 
     subject = "Account Deletion Notification"
     message = (
         f"Dear {user.username},\n\n"
-        "Your HealthQuest account has been permanently deleted by an administrator.\n\n\n"
+        "Your HealthQuest account has been"
+        "permanently deleted by an administrator.\n\n\n"
         "Thank you,\n"
         "HealthQuest Team"
     )
@@ -156,4 +159,3 @@ def delete_user(request, user_id):
         {"message": f"User '{username}' deleted, email sent and action logged."},
         status=status.HTTP_200_OK,
     )
-
