@@ -136,9 +136,9 @@
                   <td class="px-3 py-3">
                     <div class="flex items-center gap-2">
                       <div class="grid h-6 w-6 place-items-center rounded-full bg-emerald-500 text-xs font-bold text-white">
-                        {{ getInitials(workout.coach_name) }}
+                        {{ getInitials(workout.coach_display || workout.coach_name) }}
                       </div>
-                      <span class="font-semibold">{{ workout.coach_name }}</span>
+                      <span class="font-semibold">{{ workout.coach_display || workout.coach_name }}</span>
                     </div>
                   </td>
                   <td class="px-3 py-3">
@@ -201,9 +201,9 @@
                   <div class="text-sm font-subtitle text-slate-700">Coach</div>
                   <div class="flex items-center gap-2 mt-1">
                     <div class="grid h-8 w-8 place-items-center rounded-full bg-emerald-500 text-xs font-bold text-white">
-                      {{ getInitials(workoutModal.workout?.coach_name) }}
+                      {{ getInitials(workoutModal.workout?.coach_display || workoutModal.workout?.coach_name) }}
                     </div>
-                    <span class="text-base font-medium ">{{ workoutModal.workout?.coach_name }}</span>
+                    <span class="text-base font-medium ">{{ workoutModal.workout?.coach_display || workoutModal.workout?.coach_name }}</span>
                   </div>
                 </div>
                 <div>
@@ -348,10 +348,58 @@ async function fetchWorkouts() {
     if (!res.ok) throw new Error('Failed to fetch workouts')
     const data = await res.json()
 
-    workouts.value = data.map(workout => ({
-      ...workout,
-      coach_name: workout.coach_name || 'Unknown Coach'
-    }))
+    if (import.meta.env.DEV) {
+      try { console.debug('Admin Workouts payload sample', Array.isArray(data) ? data.slice(0, 2) : data) } catch {}
+    }
+
+    const base = data.map(w => {
+      const nameCandidate = w.coach?.name || w.coach?.username || w.coach_name || w.coach_username || null
+      const idCandidate = (typeof w.coach === 'number' || typeof w.coach === 'string') ? w.coach : (w.coach?.id || w.coach_id || w.coach?.public_id)
+      const display = nameCandidate || (idCandidate ? `Coach ${idCandidate}` : 'Unknown Coach')
+      return {
+        ...w,
+        coach_name: nameCandidate || null,
+        coach_display: display,
+      }
+    })
+
+    const numericCoachIds = Array.from(new Set(base
+      .map(w => w.coach)
+      .filter(id => typeof id === 'number')
+    ))
+
+    if (numericCoachIds.length > 0) {
+      try {
+        const coachRes = await fetch(`${API_URL}/api/moderation/admin/coaches/`, { credentials: 'include' })
+        if (coachRes.ok) {
+          const list = await coachRes.json()
+          const idToName = {}
+          for (const c of Array.isArray(list) ? list : []) {
+            const candidates = [
+              c.profile_id,
+              c.user_profile_id,
+              c?.user_profile?.id,
+              c?.user?.profile?.id,
+              typeof c.id === 'number' ? c.id : null,
+            ].filter(v => typeof v === 'number')
+            for (const cid of candidates) {
+              if (numericCoachIds.includes(cid)) {
+                idToName[cid] = c.name || c.username || (c.email ? String(c.email).split('@')[0] : null)
+              }
+            }
+          }
+          base.forEach(w => {
+            if (typeof w.coach === 'number' && idToName[w.coach]) {
+              w.coach_display = idToName[w.coach]
+            }
+          })
+        }
+      } catch (e) {
+        // silent best-effort
+      }
+    }
+
+    workouts.value = base
 
   } catch (err) {
     console.error('Error fetching workouts:', err)
@@ -361,6 +409,11 @@ async function fetchWorkouts() {
   }
 }
 
+function getCsrfToken() {
+  const match = document.cookie.match(new RegExp('(^| )csrftoken=([^;]+)'))
+  return match ? match[2] : ''
+}
+
 async function deleteWorkout(id) {
   if (!confirm("Are you sure you want to delete this workout program?")) return;
 
@@ -368,12 +421,21 @@ async function deleteWorkout(id) {
     const res = await fetch(`${API_URL}/api/workout/programs/${id}/`, {
       method: "DELETE",
       credentials: "include",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCsrfToken(),
+      },
     });
 
     if (!res.ok) {
-      const err = await res.json();
-      alert(err.error || "Failed to delete workout");
+      const text = await res.text()
+      let body = text
+      try { body = JSON.parse(text) } catch {}
+      if (res.status === 403) {
+        alert((body && (body.detail || body.error)) || "You don't have permission to delete this program")
+      } else {
+        alert((body && (body.error || body.detail)) || "Failed to delete workout")
+      }
       return;
     }
 
@@ -429,7 +491,7 @@ function openVideo(link) {
   window.open(link, '_blank')
 }
 
-// Optional: format dates
+// format dates
 function formatDate(dateString) {
   if (!dateString) return 'N/A'
   return new Date(dateString).toLocaleDateString('en-US', {
