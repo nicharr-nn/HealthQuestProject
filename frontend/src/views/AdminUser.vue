@@ -29,7 +29,7 @@
         <option value="">All Roles</option>
         <option value="member">Member</option>
         <option value="coach">Coach</option>
-        <option value="admin">Admin</option>
+        <option value="normal">Normal</option>
       </select>
     </div>
 
