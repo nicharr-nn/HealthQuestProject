@@ -5,6 +5,8 @@ from rest_framework import status
 from django.utils import timezone
 from coach.models import Coach
 from .models import Admin, AdminModeration
+from recipe.models import Recipe
+from django.shortcuts import get_object_or_404
 
 
 @api_view(["POST"])
@@ -81,3 +83,39 @@ def list_coaches_for_admin(request):
         for coach in coaches
     ]
     return Response(data)
+
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def delete_recipe(request, id):
+    recipe = get_object_or_404(Recipe, pk=id)
+    user_profile = request.user.userprofile
+    is_admin = hasattr(request.user, "admin")
+
+    if recipe.user_profile != user_profile and not is_admin:
+        return Response(
+            {"detail": "Permission denied. You can only delete your own recipes."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    recipe.delete()
+    return Response({"detail": "Recipe deleted successfully."}, status=200)
+
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def delete_workout(request, id):
+    from workout.models import WorkoutProgram
+
+    workout = get_object_or_404(WorkoutProgram, pk=id)
+    user_profile = request.user.userprofile
+    is_admin = hasattr(request.user, "admin")
+
+    if workout.coach.user != user_profile and not is_admin:
+        return Response(
+            {"detail": "Permission denied. You can only delete your own workouts."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    workout.delete()
+    return Response({"detail": "Workout deleted successfully."}, status=200)
