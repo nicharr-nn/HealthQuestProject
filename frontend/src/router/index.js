@@ -74,12 +74,6 @@ router.beforeEach(async (to, from, next) => {
     })
   }
 
-  if (!userStore.user || !userStore.profile_complete) {
-    if (to.path === '/' || to.path === '/about') {
-      return next()
-    }
-  }
-
   const isAdmin = userStore.isAdmin
   const isCoach = userStore.role === 'coach' || userStore.profile?.role === 'coach'
   const isApproved = userStore.approved === true
