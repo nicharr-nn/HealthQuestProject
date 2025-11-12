@@ -187,20 +187,95 @@
               <label class="block text-sm font-medium text-gray-700 mb-1.5" for="memberID">
                 Member ID
               </label>
-              <input
+              <select
                 id="memberID"
                 v-model="workoutAssignment.member_id"
-                type="text"
-                class="w-full border border-gray-300 rounded-lg px-3.5 py-3 text-sm outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
-                placeholder="e.g., M-00001"
-                pattern="M-\d+"
-                title="Format: M- followed by numbers (e.g., M-00001)"
+                class="w-full border border-gray-300 rounded-lg px-3.5 py-3 mb-2 text-sm outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                :disabled="isLoadingMembers"
                 required
-              />
-              <p class="text-xs text-gray-600 mt-1">
-                Enter the member's ID exactly as shown in your accepted members list
+              >
+                <option value="" disabled>Select a member</option>
+                <option
+                  v-for="member in coachMembers"
+                  :key="member.member_id"
+                  :value="member.member_id"
+                >
+                  {{ member.display_name }}
+                </option>
+              </select>
+
+              <p v-if="isLoadingMembers" class="text-xs text-gray-500 mt-1 italic">
+                Loading members...
               </p>
+              <p
+                v-if="!isLoadingMembers && coachMembers.length === 0"
+                class="text-xs text-gray-500 mt-1 italic"
+              >
+                No accepted members found.
+              </p>
+            <!-- Due Date Input -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2" for="dueDate">
+                Due Date (Optional)
+              </label>
+              <div class="relative">
+                <input
+                  id="dueDate"
+                  v-model="workoutAssignment.due_date"
+                  type="date"
+                  :min="minDueDate"
+                  class="w-full border border-gray-300 rounded-lg px-3.5 py-3 text-sm outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                  :class="dueDateError ? 'border-red-500' : ''"
+                  @change="validateDueDate"
+                />
+              </div>
+
+              <!-- Due Date Validation Messages -->
+              <div v-if="dueDateError" class="text-xs text-red-500 mt-1">
+                {{ dueDateError }}
+              </div>
+              <div v-else-if="workoutAssignment.due_date" class="text-xs text-green-600 mt-1">
+                Program due on {{ formatDisplayDate(workoutAssignment.due_date) }}
+              </div>
+              <div v-else class="text-xs text-gray-500 mt-1">
+                Leave empty if no specific due date is required
+              </div>
+
+              <!-- Due Date Suggestions -->
+              <div v-if="!workoutAssignment.due_date" class="mt-2 flex gap-2 flex-wrap">
+                <button
+                  v-for="suggestion in dueDateSuggestions"
+                  :key="suggestion.days"
+                  type="button"
+                  class="text-xs bg-white border border-gray-300 rounded-full px-3 py-1 hover:bg-gray-50 transition-colors"
+                  @click="setSuggestedDueDate(suggestion.days)"
+                >
+                  {{ suggestion.label }}
+                </button>
+              </div>
             </div>
+
+            <!-- Assignment Summary -->
+            <div
+              v-if="workoutAssignment.member_id || workoutAssignment.due_date"
+              class="mt-3 p-3 bg-white rounded-lg border border-gray-200"
+            >
+              <h4 class="text-xs font-semibold text-gray-700 mb-2">Assignment Summary</h4>
+              <div class="space-y-1 text-xs text-gray-600">
+                <div v-if="workoutAssignment.member_id">
+                  <span class="font-medium">Member:</span>
+                  {{ getMemberDisplayName(workoutAssignment.member_id) }}
+                </div>
+                <div v-if="workoutAssignment.due_date">
+                  <span class="font-medium">Due Date:</span>
+                  {{ formatDisplayDate(workoutAssignment.due_date) }}
+                  <span class="text-blue-600 ml-1">
+                    ({{ calculateDaysRemaining(workoutAssignment.due_date) }})
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
           </div>
         </form>
       </div>
@@ -487,6 +562,104 @@ const backupProgramData = ref<WorkoutProgram | null>(null)
 const descriptionError = ref('')
 const descriptionLength = computed(() => workoutProgram.description.length)
 
+const workoutAssignment = reactive({
+  member_id: '',
+  due_date: ''
+})
+
+// Due date validation and suggestions
+const dueDateError = ref('')
+const minDueDate = computed(() => {
+  const tomorrow = new Date()
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  return tomorrow.toISOString().split('T')[0]
+})
+
+const dueDateSuggestions = [
+  { days: 7, label: '1 week' },
+  { days: 14, label: '2 weeks' },
+  { days: 30, label: '1 month' },
+  { days: 60, label: '2 months' }
+]
+
+interface CoachMember {
+  display_name: string
+  member_id: string
+}
+
+const coachMembers = ref<CoachMember[]>([])
+const isLoadingMembers = ref(false)
+
+// Due Date Validation
+function validateDueDate() {
+  dueDateError.value = ''
+  
+  if (!workoutAssignment.due_date) {
+    return true // Due date is optional
+  }
+
+  const selectedDate = new Date(workoutAssignment.due_date)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  if (selectedDate <= today) {
+    dueDateError.value = 'Due date must be in the future'
+    return false
+  }
+
+  // Optional: Add maximum date limit (1 year from now)
+  const maxDate = new Date()
+  maxDate.setFullYear(maxDate.getFullYear() + 1)
+  
+  if (selectedDate > maxDate) {
+    dueDateError.value = 'Due date cannot be more than 1 year from now'
+    return false
+  }
+
+  return true
+}
+
+// Helper Functions
+function formatDisplayDate(dateString: string): string {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-US', { 
+    weekday: 'short', 
+    year: 'numeric', 
+    month: 'short', 
+    day: 'numeric' 
+  })
+}
+
+function calculateDaysRemaining(dateString: string): string {
+  if (!dateString) return ''
+  
+  const dueDate = new Date(dateString)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  
+  const diffTime = dueDate.getTime() - today.getTime()
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  
+  if (diffDays === 0) return 'Due today'
+  if (diffDays === 1) return 'Due tomorrow'
+  if (diffDays < 0) return 'Overdue'
+  
+  return `${diffDays} days remaining`
+}
+
+function setSuggestedDueDate(days: number) {
+  const futureDate = new Date()
+  futureDate.setDate(futureDate.getDate() + days)
+  workoutAssignment.due_date = futureDate.toISOString().split('T')[0]
+  validateDueDate()
+}
+
+function getMemberDisplayName(memberId: string): string {
+  const member = coachMembers.value.find(m => m.member_id === memberId)
+  return member ? member.display_name : 'Unknown Member'
+}
+
 function validateDescription() {
   if (workoutProgram.description.length > 180) {
     descriptionError.value = 'Description cannot exceed 180 characters'
@@ -497,6 +670,7 @@ function validateDescription() {
 
 onMounted(async () => {
   const editId = route.query.edit as string
+  await fetchCoachMembers()
 
   if (editId) {
     editingProgramId.value = parseInt(editId)
@@ -512,6 +686,7 @@ onMounted(async () => {
       level_access: workoutProgram.level_access,
       WorkoutDays: JSON.parse(JSON.stringify(workoutProgram.WorkoutDays)),
       member_id: workoutAssignment.member_id || '',
+      due_date: workoutAssignment.due_date || '',
     }
   }
 
@@ -543,6 +718,45 @@ async function fetchUserProfileId() {
     }
   } catch (error) {
     console.error('Failed to fetch user profile:', error)
+  }
+}
+
+async function fetchCoachMembers() {
+  isLoadingMembers.value = true
+  try {
+    // Use the consolidated endpoint
+    const response = await fetch('http://127.0.0.1:8000/api/member/accepted/', {
+      credentials: 'include',
+    })
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`)
+    }
+
+    const data = await response.json()
+    console.log('Raw API response:', data)
+
+    const membersArray = Array.isArray(data) ? data : data.members || []
+
+    // Map to the format we need for the dropdown
+    coachMembers.value = membersArray
+      .filter((m: any) => m.memberId)
+      .map((m: any) => ({
+        display_name: `${m.name} (${m.memberId})`,
+        member_id: m.memberId,
+      }))
+
+    console.log('Processed coach members:', coachMembers.value)
+
+    if (coachMembers.value.length === 0) {
+      console.warn('No accepted members found')
+    }
+  } catch (error) {
+    console.error('Failed to fetch coach members:', error)
+    alert('Failed to load members. Please try again.')
+    coachMembers.value = []
+  } finally {
+    isLoadingMembers.value = false
   }
 }
 
@@ -597,6 +811,7 @@ interface WorkoutProgram {
   level_access: string
   WorkoutDays: Record<number, WorkoutDay[]>
   member_id?: string
+  due_date?: string
 }
 
 const workoutProgram = reactive<WorkoutProgram>({
@@ -625,48 +840,21 @@ const youtubeError = ref('')
 const youtubeRegex =
   /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)[a-zA-Z0-9_-]{11}/
 
-const workoutAssignment = reactive({
-  member_id: '',
-})
-
-async function createAssignment(programId: number) {
-  try {
-    const payload = {
-      program_id: programId,
-      member_id: workoutAssignment.member_id,
-    }
-
-    const res = await fetch(`http://127.0.0.1:8000/api/member/assign/`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCsrfToken(),
-      },
-      body: JSON.stringify(payload),
-    })
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => null)
-      alert('Failed to create assignment: ' + (err?.error || err?.detail || `HTTP ${res.status}`))
-      return null
-    }
-    return await res.json()
-  } catch (err) {
-    console.error('Assignment create error', err)
-    alert('Network error while creating assignment')
-    return null
-  }
-}
 
 const canSubmitProgram = computed(() => {
-  return (
+  const baseValidation = (
     workoutProgram.title &&
     workoutProgram.difficulty_level &&
     workoutProgram.duration &&
     Object.keys(workoutProgram.WorkoutDays).length > 0 &&
     !descriptionError.value
   )
+
+  if (workoutProgram.is_public === false) {
+    return baseValidation && workoutAssignment.member_id && !dueDateError.value
+  }
+
+  return baseValidation
 })
 
 const durationError = ref('')
@@ -858,6 +1046,11 @@ async function loadExistingProgram(programId: number) {
     workoutAssignment.member_id =
       programData.assignment?.member?.member_id || programData.assignment?.member_id || ''
 
+      // Load due date from assignment if available
+      if (programData.assignment?.due_date) {
+        workoutAssignment.due_date = programData.assignment.due_date
+      }
+
     if (programData.days && Array.isArray(programData.days)) {
       workoutProgram.WorkoutDays = {}
 
@@ -904,115 +1097,6 @@ async function loadExistingProgram(programId: number) {
   }
 }
 
-async function submitProgram() {
-  if (!canSubmitProgram.value) {
-    alert('Please fill in all required fields and add at least one daily workout')
-    return
-  }
-
-  if (descriptionError.value) {
-    alert('Please fix the description error before submitting')
-    return
-  }
-
-  if (!coachUserProfileId.value) {
-    try {
-      const response = await fetch('http://127.0.0.1:8000/api/user-info/', {
-        credentials: 'include',
-      })
-      if (response.ok) {
-        const data = await response.json()
-        coachUserProfileId.value = data.user?.profile?.id
-      }
-    } catch (e) {
-      console.error('UserProfile fetch retry failed', e)
-    }
-  }
-
-  if (!coachUserProfileId.value) {
-    alert(
-      'Coach profile not found. Please create or confirm your coach profile before creating a program.',
-    )
-    return
-  }
-
-  const days = Object.entries(workoutProgram.WorkoutDays).flatMap(([day, workouts]) => {
-    return workouts.map((workout) => ({
-      day_number: Number(day),
-      title: workout.title,
-      type: workout.type || '',
-      video_links: [workout.video_link].filter(Boolean), // Single video per workout
-      duration: workout.duration,
-    }))
-  })
-
-  const payload = {
-    coach: coachUserProfileId.value,
-    title: workoutProgram.title,
-    description: workoutProgram.description,
-    difficulty_level: workoutProgram.difficulty_level,
-    level_access: workoutProgram.level_access || 'all',
-    is_public: workoutProgram.is_public ?? true,
-    duration: workoutProgram.duration,
-    category: workoutProgram.category || 'full_body',
-    days: days.map((day) => ({
-      day_number: day.day_number,
-      title: day.title,
-      type: day.type || '',
-      video_links: Array.isArray(day.video_links)
-        ? day.video_links
-        : [day.video_links].filter(Boolean),
-      duration: day.duration,
-    })),
-  }
-
-  const url = editingProgramId.value
-    ? `http://127.0.0.1:8000/api/workout/programs/${editingProgramId.value}/update/`
-    : 'http://127.0.0.1:8000/api/workout/programs/create/'
-
-  try {
-    const response = await fetch(url, {
-      method: editingProgramId.value ? 'PUT' : 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCsrfToken(),
-      },
-      body: JSON.stringify(payload),
-    })
-
-    const text = await response.text()
-    let body = null
-    try {
-      body = JSON.parse(text)
-    } catch {
-      body = text
-    }
-    console.log('Save program response body:', body)
-    
-    if (!response.ok) {
-      console.error('Save program failed:', response.status, body)
-      const message = body?.detail || body?.errors || body || `HTTP ${response.status}`
-      alert('Failed to save program: ' + JSON.stringify(message))
-      return
-    }
-
-    if (workoutProgram.is_public === false && workoutAssignment.member_id) {
-      const assignment = await createAssignment(body.id)
-      if (!assignment) {
-        alert('Program saved but failed to create assignment for member.')
-      }
-    }
-
-    emit('programCreated', body)
-    alert('Program saved successfully!')
-    router.push('/coach-dashboard')
-  } catch (error) {
-    console.error('Error saving program:', error)
-    alert('Failed to save program: ' + error.message)
-  }
-}
-
 function getCsrfToken() {
   const match = document.cookie.match(new RegExp('(^| )csrftoken=([^;]+)'))
   return match ? match[2] : ''
@@ -1030,10 +1114,19 @@ function resetProgram() {
   editingProgramId.value = null
   backupProgramData.value = null
   workoutAssignment.member_id = ''
+  workoutAssignment.due_date = ''
   descriptionError.value = ''
 
   resetCurrentWorkout()
 }
+
+watch(() => workoutAssignment.due_date, (newDueDate) => {
+  if (newDueDate) {
+    validateDueDate()
+  } else {
+    dueDateError.value = ''
+  }
+})
 
 watch(
   () => props.existingProgram,
@@ -1054,4 +1147,270 @@ watch(
   },
   { immediate: true },
 )
+
+async function handleAssignment(programId: number, isUpdate: boolean) {
+  const assignmentPayload = {
+    member_id: workoutAssignment.member_id,
+    due_date: workoutAssignment.due_date || null
+  }
+
+  // Check if assignment exists (for updates)
+  const checkAssignmentExists = async (): Promise<boolean> => {
+    if (!isUpdate) return false
+    
+    try {
+      const checkResponse = await fetch(
+        `http://127.0.0.1:8000/api/workout/programs/${programId}/`,
+        {
+          credentials: 'include',
+        }
+      )
+      
+      if (checkResponse.ok) {
+        const programData = await checkResponse.json()
+        return !!programData.assignment
+      }
+    } catch (error) {
+      console.error('Failed to check assignment:', error)
+    }
+    return false
+  }
+
+  const assignmentExists = await checkAssignmentExists()
+  console.log('Assignment exists:', assignmentExists)
+  
+  // Determine method: POST if creating or no assignment exists, PATCH if updating existing
+  const method = (isUpdate && assignmentExists) ? 'PATCH' : 'POST'
+  const url = `http://127.0.0.1:8000/api/workout/assignment-manage/${programId}`
+
+  try {
+    const response = await fetch(url, {
+      method,
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCsrfToken(),
+      },
+      body: JSON.stringify(assignmentPayload),
+    })
+
+    if (!response.ok) {
+      const error = await response.json()
+      console.error('Assignment error:', error)
+      
+      // If assignment already exists and we tried POST, retry with PATCH
+      if (error.error?.includes('already exists') && method === 'POST') {
+        console.log('Assignment exists, retrying with PATCH...')
+        // Direct retry with PATCH (not recursive call)
+        const retryResponse = await fetch(url, {
+          method: 'PATCH',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken(),
+          },
+          body: JSON.stringify(assignmentPayload),
+        })
+        
+        if (!retryResponse.ok) {
+          const retryError = await retryResponse.json()
+          alert(`Failed to update assignment: ${retryError.error || 'Unknown error'}`)
+          return null
+        }
+        
+        const retryData = await retryResponse.json()
+        console.log('Assignment updated successfully:', retryData.message)
+        return retryData.assignment
+      }
+      
+      // If no assignment exists and we tried PATCH, retry with POST
+      if (error.error?.includes('No assignment exists') && method === 'PATCH') {
+        console.log('No assignment found, retrying with POST...')
+               const retryResponse = await fetch(url, {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken(),
+          },
+          body: JSON.stringify(assignmentPayload),
+        })
+        
+        if (!retryResponse.ok) {
+          const retryError = await retryResponse.json()
+          alert(`Failed to create assignment: ${retryError.error || 'Unknown error'}`)
+          return null
+        }
+        
+        const retryData = await retryResponse.json()
+        console.log('Assignment created successfully:', retryData.message)
+        return retryData.assignment
+      }
+      
+      alert(`Program saved, but assignment failed: ${error.error || 'Unknown error'}`)
+      return null
+    }
+
+    const data = await response.json()
+    console.log(`Assignment ${method === 'POST' ? 'created' : 'updated'}:`, data.message)
+    return data.assignment
+  } catch (error) {
+    console.error('Assignment request failed:', error)
+    alert('Program saved, but assignment request failed')
+    return null
+  }
+}
+
+async function deleteAssignmentIfExists(programId: number) {
+  try {
+    const response = await fetch(
+      `http://127.0.0.1:8000/api/workout/assignment-delete/${programId}`,
+      {
+        method: 'DELETE',
+        credentials: 'include',
+        headers: {
+          'X-CSRFToken': getCsrfToken(),
+        },
+      }
+    )
+
+    if (response.ok || response.status === 404) {
+      console.log('Assignment deleted or not found (program is now public)')
+      return true
+    }
+    
+    const error = await response.json()
+    console.error('Failed to delete assignment:', error)
+    return false
+  } catch (error) {
+    console.error('Failed to delete assignment:', error)
+    return false
+  }
+}
+
+async function submitProgram() {
+  if (!canSubmitProgram.value) {
+    alert('Please fill in all required fields and add at least one daily workout')
+    return
+  }
+
+  if (descriptionError.value) {
+    alert('Please fix the description error before submitting')
+    return
+  }
+
+  if (!workoutProgram.is_public && !workoutAssignment.member_id) {
+    alert('Please select a member for private programs')
+    return
+  }
+
+  if (workoutAssignment.due_date && !validateDueDate()) {
+    alert('Please fix the due date error')
+    return
+  }
+
+  if (!coachUserProfileId.value) {
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/user-info/', {
+        credentials: 'include',
+      })
+      if (response.ok) {
+        const data = await response.json()
+        coachUserProfileId.value = data.user?.id
+      }
+    } catch (e) {
+      console.error('UserProfile fetch failed', e)
+    }
+  }
+
+  if (!coachUserProfileId.value) {
+    alert('Coach profile not found. Please confirm your coach profile.')
+    return
+  }
+
+  const days = Object.entries(workoutProgram.WorkoutDays).flatMap(([day, workouts]) => {
+    return workouts.map((workout) => ({
+      day_number: Number(day),
+      title: workout.title,
+      type: workout.type || '',
+      video_links: [workout.video_link].filter(Boolean),
+      duration: workout.duration,
+    }))
+  })
+
+  // Program payload (NO assignment data)
+  const programPayload = {
+    coach: coachUserProfileId.value,
+    title: workoutProgram.title,
+    description: workoutProgram.description,
+    difficulty_level: workoutProgram.difficulty_level,
+    level_access: workoutProgram.level_access || 'all',
+    is_public: workoutProgram.is_public ?? true,
+    duration: workoutProgram.duration,
+    category: workoutProgram.category || 'full_body',
+    days: days.map((day) => ({
+      day_number: day.day_number,
+      title: day.title,
+      type: day.type || '',
+      video_links: Array.isArray(day.video_links)
+        ? day.video_links
+        : [day.video_links].filter(Boolean),
+      duration: day.duration,
+    })),
+  }
+
+  const programUrl = editingProgramId.value
+    ? `http://127.0.0.1:8000/api/workout/programs/${editingProgramId.value}/update/`
+    : 'http://127.0.0.1:8000/api/workout/programs/create/'
+
+  try {
+    // Step 1: Save/update program
+    const programResponse = await fetch(programUrl, {
+      method: editingProgramId.value ? 'PUT' : 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCsrfToken(),
+      },
+      body: JSON.stringify(programPayload),
+    })
+
+    if (!programResponse.ok) {
+      const error = await programResponse.json()
+      alert('Failed to save program: ' + JSON.stringify(error))
+      return
+    }
+
+    const programData = await programResponse.json()
+    const programId = programData.id
+
+    // Step 2: Handle assignment separately
+    if (!workoutProgram.is_public) {
+      // Private program - create/update assignment
+      if (workoutAssignment.member_id) {
+        await handleAssignment(programId, editingProgramId.value !== null)
+      }
+    } else {
+      // Public program - delete assignment if exists
+      if (editingProgramId.value) {
+        await deleteAssignmentIfExists(programId)
+      }
+    }
+
+    emit('programCreated', programData)
+    
+    const action = editingProgramId.value ? 'updated' : 'created'
+    const assignmentMsg = !workoutProgram.is_public && workoutAssignment.member_id
+      ? ` Assignment ${editingProgramId.value ? 'updated' : 'created'} for member.`
+      : ''
+    
+    alert(`Program ${action} successfully!${assignmentMsg}`)
+    router.push('/coach-dashboard')
+    
+  } catch (error) {
+    console.error('Error saving program:', error)
+    alert('Failed to save program: ' + error.message)
+  }
+}
+
 </script>

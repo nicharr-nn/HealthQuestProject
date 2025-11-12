@@ -140,6 +140,7 @@ class WorkoutAssignment(models.Model):
 
     def __str__(self):
         return f"{self.member.user.user.username} → {self.program.title}"
+    
 
     def check_completion(self):
         """Check if all day_numbers are completed."""

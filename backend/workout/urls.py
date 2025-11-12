@@ -62,4 +62,6 @@ urlpatterns = [
         views.list_my_assignments,
         name="list-my-assignments",
     ),
+    path("assignment-manage/<int:program_id>", views.manage_workout_assignment, name="manage-assignment"),
+    path("assignment-delete/<int:program_id>", views.delete_workout_assignment, name="delete-assignment"),
 ]

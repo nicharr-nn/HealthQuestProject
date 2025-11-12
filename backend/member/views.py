@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -94,7 +95,7 @@ def accepted_members(request):
 
     return Response(members_data, status=status.HTTP_200_OK)
 
-
+# ==================== MEMBER ENDPOINTS ====================
 @api_view(["POST", "PATCH"])
 @permission_classes([IsAuthenticated])
 def apply_as_member(request):
@@ -321,6 +322,20 @@ def assign_program_to_member(request):
 
     # Optional due date
     due_date = request.data.get("due_date")
+    
+    if due_date:
+        try:
+            due_date_obj = datetime.strptime(due_date, "%Y-%m-%d").date()
+            if due_date_obj <= datetime.now().date():
+                return Response(
+                    {"error": "Due date must be in the future"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        except ValueError:
+            return Response(
+                {"error": "Invalid due date format. Use YYYY-MM-DD"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
     # Prevent duplicates
     if WorkoutAssignment.objects.filter(member=member, program=program).exists():
