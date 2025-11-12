@@ -11,7 +11,7 @@ urlpatterns = [
          views.reject_coach, name="admin_reject_coach"),
 
     # Admin User Management
-    path("admin/users/", 
+    path("admin/users/",
          views.list_all_users, name="admin_list_users"),
     path("admin/users/<int:user_id>/delete/",
          views.delete_user, name="admin_delete_user"),
