@@ -1,9 +1,9 @@
 <template>
   <div class="p-6">
     <!-- Page Title -->
-    <div class="mb-6">
-      <h1 class="text-2xl font-bold text-gray-900">User Management</h1>
-      <p class="text-gray-500">View and manage all registered users</p>
+    <div class="mb-6 font-subtitle">
+      <h1 class="text-xl font-bold text-gray-900">User Management</h1>
+      <p class="text-gray-500 text-sm">View and manage all registered users</p>
     </div>
 
     <!-- Search + Filter Row -->
@@ -51,7 +51,7 @@
           <tr
             v-for="u in filtered"
             :key="u.id"
-            class="border-b hover:bg-gray-50 transition"
+            class="border-b hover:bg-gray-50 transition text-xs"
           >
             <!-- User + Icon -->
             <td class="py-4 flex items-center gap-4">
@@ -84,8 +84,8 @@
             <!-- Actions -->
             <td>
               <button
-                @click="deleteUser(u.id)"
-                class="px-4 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+                @click="openDeleteModal(u)"
+                class="px-4 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition cursor-pointer"
               >
                 Delete
               </button>
@@ -97,16 +97,81 @@
 
     </div>
 
+    <!-- Delete Confirmation Modal -->
+    <DeleteModal
+      v-model:show="showDeleteModal"
+      message="Are you sure you want to delete"
+      :item-name="userToDeleteName"
+      cancel-text="Cancel"
+      confirm-text="Yes, Delete"
+      @confirm="confirmDelete"
+      @close="closeDeleteModal"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted} from 'vue'
+import { ref, onMounted } from 'vue'
+import { useUserStore } from '@/stores/user'
+import { useToastStore } from '@/stores/toast'
+import DeleteModal from '@/components/DeleteModal.vue' 
 
 const users = ref([])
 const search = ref("")
 const filterRole = ref("")
 const filtered = ref([])
+
+// Delete modal state
+const showDeleteModal = ref(false)
+const userToDeleteId = ref(null)
+const userToDeleteName = ref('')
+
+const toast = useToastStore()
+
+// Delete modal functions
+const openDeleteModal = (user) => {
+  showDeleteModal.value = true
+  userToDeleteId.value = user.id
+  userToDeleteName.value = user.full_name || user.username
+}
+
+const closeDeleteModal = () => {
+  showDeleteModal.value = false
+  userToDeleteId.value = null
+  userToDeleteName.value = ''
+}
+
+const confirmDelete = async () => {
+  if (!userToDeleteId.value) return
+
+  toast.info("Deleting user...")
+  
+  try {
+    const response = await fetch(`http://127.0.0.1:8000/api/moderation/admin/users/${userToDeleteId.value}/delete/`, {
+      method: "DELETE",
+      credentials: "include"
+    })
+
+    if (response.ok) {
+      toast.success("User deleted successfully")
+      closeDeleteModal()
+      await fetchUsers()
+
+      // Check if the deleted user is the current user
+      const userStore = useUserStore()
+      if (userStore.user && userStore.user.id === userToDeleteId.value) {
+        userStore.logout()
+        window.location.href = '/'
+      }
+    } else {
+      toast.error("Failed to delete user")
+      closeDeleteModal()
+    }
+  } catch (error) {
+    toast.error("Error deleting user: " + error.message)
+    closeDeleteModal()
+  }
+}
 
 function formatDate(date) {
   return new Date(date).toLocaleDateString()
@@ -120,17 +185,21 @@ function getInitials(name) {
 }
 
 function roleClass(role) {
-  if (role === "admin") return "bg-purple-100 text-purple-700"
+  if (role === "normal") return "bg-purple-100 text-purple-700"
   if (role === "coach") return "bg-yellow-100 text-yellow-700"
   return "bg-blue-100 text-blue-700"
 }
 
 async function fetchUsers() {
-  const res = await fetch("http://127.0.0.1:8000/api/moderation/admin/users/", {
-    credentials: "include"
-  })
-  users.value = await res.json()
-  filtered.value = users.value
+  try {
+    const res = await fetch("http://127.0.0.1:8000/api/moderation/admin/users/", {
+      credentials: "include"
+    })
+    users.value = await res.json()
+    filtered.value = users.value
+  } catch (error) {
+    toast.error("Error fetching users: " + error.message)
+  }
 }
 
 function applyFilters() {
@@ -150,16 +219,7 @@ function applyFilters() {
   filtered.value = list
 }
 
-async function deleteUser(id) {
-  if (!confirm("Are you sure you want to delete this user?")) return
 
-  await fetch(`http://127.0.0.1:8000/api/moderation/admin/users/${id}/delete/`, {
-    method: "DELETE",
-    credentials: "include"
-  })
-
-  fetchUsers() // reload list
-}
 
 onMounted(fetchUsers)
 </script>

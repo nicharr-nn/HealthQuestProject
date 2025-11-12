@@ -7,6 +7,8 @@ from coach.models import Coach
 from .models import Admin, AdminModeration
 from member.models import Member
 from django.contrib.auth import get_user_model
+from django.core.mail import send_mail
+from django.conf import settings
 
 User = get_user_model()
 
@@ -106,7 +108,7 @@ def list_all_users(request):
             "date_joined": u.date_joined,
             "is_active": u.is_active,
         }
-        for u in users
+        for u in users if u.userprofile.role != "admin"
     ]
 
     return Response(data)
@@ -114,13 +116,44 @@ def list_all_users(request):
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def delete_user(request, user_id):
-    if not Admin.objects.filter(user=request.user).exists():
-        return Response({"error": "Unauthorized"}, status=403)
+    try:
+        admin = Admin.objects.get(user=request.user)
+    except Admin.DoesNotExist:
+        return Response({"error": "You are not an admin"}, status=status.HTTP_403_FORBIDDEN)
 
     try:
         user = User.objects.get(pk=user_id)
     except User.DoesNotExist:
-        return Response({"error": "User not found"}, status=404)
+        return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
+    subject = "Account Deletion Notification"
+    message = (
+        f"Dear {user.username},\n\n"
+        "Your HealthQuest account has been permanently deleted by an administrator.\n\n\n"
+        "Thank you,\n"
+        "HealthQuest Team"
+    )
+
+    send_mail(
+        subject,
+        message,
+        settings.DEFAULT_FROM_EMAIL,
+        [user.email],
+        fail_silently=False,
+    )
+
+    AdminModeration.objects.create(
+        admin=admin,
+        content_type="user",
+        content_id=user.id,
+        action="delete_user",
+    )
+
+    username = user.username
     user.delete()
-    return Response({"message": "User deleted"}, status=200)
+
+    return Response(
+        {"message": f"User '{username}' deleted, email sent and action logged."},
+        status=status.HTTP_200_OK,
+    )
+

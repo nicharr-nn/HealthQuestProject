@@ -74,6 +74,12 @@ router.beforeEach(async (to, from, next) => {
     })
   }
 
+  if (!userStore.user || !userStore.profile_complete) {
+    if (to.path === '/' || to.path === '/about') {
+      return next()
+    }
+  }
+
   const isAdmin = userStore.isAdmin
   const isCoach = userStore.role === 'coach' || userStore.profile?.role === 'coach'
   const isApproved = userStore.approved === true
@@ -81,6 +87,11 @@ router.beforeEach(async (to, from, next) => {
 
   // --- Redirect admin users away from onboarding pages ---
   if (isAdmin && ['/select-role', '/about-you'].includes(to.path)) {
+    return next('/admin')
+  }
+
+  // --- Redirect admin users away from all non-admin pages ---
+  if (isAdmin && !['/admin', '/admin-user'].includes(to.path)) {
     return next('/admin')
   }
 

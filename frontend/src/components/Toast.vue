@@ -13,7 +13,7 @@
       ]"
     >
       <span class="flex-1">{{ toast.message }}</span>
-      <button @click="removeToast(toast.id)" class="text-black hover:opacity-80 text-xl">×</button>
+      <button @click="removeToast(toast.id)" class="text-black hover:opacity-80 text-xl cursor-pointer">×</button>
     </div>
   </div>
 </template>
