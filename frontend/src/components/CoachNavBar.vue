@@ -59,7 +59,7 @@
           <li class="relative">
             <button
               @click="toggleDropdown"
-              class="font-body flex items-center px-3 py-2 rounded-md transition-colors"
+              class="font-body flex items-center px-3 py-2 rounded-md transition-colors cursor-pointer"
               :class="showDropdown 
                 ? 'bg-[#88ACEA] text-white' 
                 : 'text-white hover:text-[#c7d2fe]'"
