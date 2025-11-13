@@ -24,7 +24,7 @@
           <!-- Program Name -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1.5" for="programName">
-              Program Name *
+              Program Name <span class="text-red-500">*</span>
             </label>
             <input
               id="programName"
@@ -78,7 +78,7 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1.5" for="level">
-                Difficulty Level *
+                Difficulty Level <span class="text-red-500">*</span>
               </label>
               <select
                 id="level"
@@ -95,7 +95,7 @@
 
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1.5" for="duration">
-                Duration (day{{ workoutProgram.duration === 1 ? '' : 's' }}) *
+                Duration (day{{ workoutProgram.duration === 1 ? '' : 's' }}) <span class="text-red-500">*</span>
               </label>
               <input
                 id="duration"
@@ -151,32 +151,44 @@
           <!-- Visibility Toggle -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1.5"> Visibility </label>
-            <div class="flex gap-3">
-              <button
-                type="button"
-                class="flex-1 py-3 rounded-lg font-semibold text-sm transition-all"
-                :class="
-                  workoutProgram.is_public
-                    ? 'bg-blue-500 text-white border-2 border-blue-500'
-                    : 'bg-white text-gray-700 border-2 border-gray-300 hover:bg-gray-50'
-                "
-                @click="workoutProgram.is_public = true"
+
+            <label class="inline-flex items-center cursor-pointer">
+              <span
+                class="select-none text-sm font-semibold transition-colors duration-200"
+                :class="workoutProgram.is_public ? 'text-blue-600' : 'text-gray-400'"
               >
                 Public
-              </button>
-              <button
-                type="button"
-                class="flex-1 py-3 rounded-lg font-semibold text-sm transition-all"
-                :class="
-                  !workoutProgram.is_public
-                    ? 'bg-blue-500 text-white border-2 border-blue-500'
-                    : 'bg-white text-gray-700 border-2 border-gray-300 hover:bg-gray-50'
-                "
-                @click="workoutProgram.is_public = false"
+              </span>
+
+              <input
+                type="checkbox"
+                class="sr-only peer"
+                :checked="!workoutProgram.is_public"
+                @change="workoutProgram.is_public = !workoutProgram.is_public"
+              />
+
+              <div
+                class="relative mx-4 w-14 h-7 bg-blue-200 peer-focus:outline-none rounded-full peer transition-colors duration-300 peer-checked:bg-pink-200"
+              >
+                <div
+                  class="absolute top-0.5 left-0.5 bg-white border-2 rounded-full h-6 w-6 transition-all duration-300 shadow-md"
+                  :class="
+                    workoutProgram.is_public
+                      ? 'translate-x-0 border-blue-500'
+                      : 'translate-x-7 border-pink-500'
+                  "
+                ></div>
+              </div>
+
+              <span
+                class="select-none text-sm font-semibold transition-colors duration-200"
+                :class="!workoutProgram.is_public ? 'text-pink-600' : 'text-gray-400'"
               >
                 Private
-              </button>
-            </div>
+              </span>
+            </label>
+
+            <!-- </div> -->
             <p class="text-xs text-gray-600 italic mt-2">
               Public programs are discoverable by users. Private programs are only visible to your
               assigned clients.
@@ -213,69 +225,69 @@
               >
                 No accepted members found.
               </p>
-            <!-- Due Date Input -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2" for="dueDate">
-                Due Date (Optional)
-              </label>
-              <div class="relative">
-                <input
-                  id="dueDate"
-                  v-model="workoutAssignment.due_date"
-                  type="date"
-                  :min="minDueDate"
-                  class="w-full border border-gray-300 rounded-lg px-3.5 py-3 text-sm outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
-                  :class="dueDateError ? 'border-red-500' : ''"
-                  @change="validateDueDate"
-                />
-              </div>
-
-              <!-- Due Date Validation Messages -->
-              <div v-if="dueDateError" class="text-xs text-red-500 mt-1">
-                {{ dueDateError }}
-              </div>
-              <div v-else-if="workoutAssignment.due_date" class="text-xs text-green-600 mt-1">
-                Program due on {{ formatDisplayDate(workoutAssignment.due_date) }}
-              </div>
-              <div v-else class="text-xs text-gray-500 mt-1">
-                Leave empty if no specific due date is required
-              </div>
-
-              <!-- Due Date Suggestions -->
-              <div v-if="!workoutAssignment.due_date" class="mt-2 flex gap-2 flex-wrap">
-                <button
-                  v-for="suggestion in dueDateSuggestions"
-                  :key="suggestion.days"
-                  type="button"
-                  class="text-xs bg-white border border-gray-300 rounded-full px-3 py-1 hover:bg-gray-50 transition-colors"
-                  @click="setSuggestedDueDate(suggestion.days)"
-                >
-                  {{ suggestion.label }}
-                </button>
-              </div>
-            </div>
-
-            <!-- Assignment Summary -->
-            <div
-              v-if="workoutAssignment.member_id || workoutAssignment.due_date"
-              class="mt-3 p-3 bg-white rounded-lg border border-gray-200"
-            >
-              <h4 class="text-xs font-semibold text-gray-700 mb-2">Assignment Summary</h4>
-              <div class="space-y-1 text-xs text-gray-600">
-                <div v-if="workoutAssignment.member_id">
-                  <span class="font-medium">Member:</span>
-                  {{ getMemberDisplayName(workoutAssignment.member_id) }}
+              <!-- Due Date Input -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2" for="dueDate">
+                  Due Date (Optional)
+                </label>
+                <div class="relative">
+                  <input
+                    id="dueDate"
+                    v-model="workoutAssignment.due_date"
+                    type="date"
+                    :min="minDueDate"
+                    class="w-full border border-gray-300 rounded-lg px-3.5 py-3 text-sm outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                    :class="dueDateError ? 'border-red-500' : ''"
+                    @change="validateDueDate"
+                  />
                 </div>
-                <div v-if="workoutAssignment.due_date">
-                  <span class="font-medium">Due Date:</span>
-                  {{ formatDisplayDate(workoutAssignment.due_date) }}
-                  <span class="text-blue-600 ml-1">
-                    ({{ calculateDaysRemaining(workoutAssignment.due_date) }})
-                  </span>
+
+                <!-- Due Date Validation Messages -->
+                <div v-if="dueDateError" class="text-xs text-red-500 mt-1">
+                  {{ dueDateError }}
+                </div>
+                <div v-else-if="workoutAssignment.due_date" class="text-xs text-green-600 mt-1">
+                  Program due on {{ formatDisplayDate(workoutAssignment.due_date) }}
+                </div>
+                <div v-else class="text-xs text-gray-500 mt-1">
+                  Leave empty if no specific due date is required
+                </div>
+
+                <!-- Due Date Suggestions -->
+                <div v-if="!workoutAssignment.due_date" class="mt-2 flex gap-2 flex-wrap">
+                  <button
+                    v-for="suggestion in dueDateSuggestions"
+                    :key="suggestion.days"
+                    type="button"
+                    class="text-xs bg-white border border-gray-300 rounded-full px-3 py-1 hover:bg-gray-50 transition-colors"
+                    @click="setSuggestedDueDate(suggestion.days)"
+                  >
+                    {{ suggestion.label }}
+                  </button>
                 </div>
               </div>
+
+              <!-- Assignment Summary -->
+              <div
+                v-if="workoutAssignment.member_id || workoutAssignment.due_date"
+                class="mt-3 p-3 bg-white rounded-lg border border-green-600"
+              >
+                <h4 class="text-xs font-semibold text-gray-700 mb-2">Assignment Summary</h4>
+                <div class="space-y-1 text-xs text-gray-600">
+                  <div v-if="workoutAssignment.member_id">
+                    <span class="font-medium">Member:</span>
+                    {{ getMemberDisplayName(workoutAssignment.member_id) }}
+                  </div>
+                  <div v-if="workoutAssignment.due_date">
+                    <span class="font-medium">Due Date:</span>
+                    {{ formatDisplayDate(workoutAssignment.due_date) }}
+                    <span class="text-blue-600 ml-1">
+                      ({{ calculateDaysRemaining(workoutAssignment.due_date) }})
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
           </div>
         </form>
       </div>
@@ -285,7 +297,7 @@
         <div class="text-xl font-semibold text-gray-900 mb-6">Daily Workout Schedule</div>
 
         <!-- Duration Info -->
-        <div class="bg-gray-50 px-4 py-3 rounded-lg border-l-4 border-blue-500 mb-6">
+        <div class="bg-gray-50 px-4 py-3 rounded-lg border-1 border-blue-500 mb-6">
           <span class="text-sm text-gray-700 font-medium">
             Program Duration:
             {{ workoutProgram.duration }} day{{ workoutProgram.duration === 1 ? '' : 's' }}
@@ -548,23 +560,23 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { reactive, ref, computed, watch, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
 const route = useRoute()
 
-const coachUserProfileId = ref<number | null>(null)
-const editingProgramId = ref<number | null>(null)
-const backupProgramData = ref<WorkoutProgram | null>(null)
+const coachUserProfileId = ref(null)
+const editingProgramId = ref(null)
+const backupProgramData = ref(null)
 
 const descriptionError = ref('')
 const descriptionLength = computed(() => workoutProgram.description.length)
 
 const workoutAssignment = reactive({
   member_id: '',
-  due_date: ''
+  due_date: '',
 })
 
 // Due date validation and suggestions
@@ -579,23 +591,18 @@ const dueDateSuggestions = [
   { days: 7, label: '1 week' },
   { days: 14, label: '2 weeks' },
   { days: 30, label: '1 month' },
-  { days: 60, label: '2 months' }
+  { days: 60, label: '2 months' },
 ]
 
-interface CoachMember {
-  display_name: string
-  member_id: string
-}
-
-const coachMembers = ref<CoachMember[]>([])
+const coachMembers = ref([])
 const isLoadingMembers = ref(false)
 
 // Due Date Validation
 function validateDueDate() {
   dueDateError.value = ''
-  
+
   if (!workoutAssignment.due_date) {
-    return true // Due date is optional
+    return true
   }
 
   const selectedDate = new Date(workoutAssignment.due_date)
@@ -607,10 +614,9 @@ function validateDueDate() {
     return false
   }
 
-  // Optional: Add maximum date limit (1 year from now)
   const maxDate = new Date()
   maxDate.setFullYear(maxDate.getFullYear() + 1)
-  
+
   if (selectedDate > maxDate) {
     dueDateError.value = 'Due date cannot be more than 1 year from now'
     return false
@@ -620,43 +626,43 @@ function validateDueDate() {
 }
 
 // Helper Functions
-function formatDisplayDate(dateString: string): string {
+function formatDisplayDate(dateString) {
   if (!dateString) return ''
   const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', { 
-    weekday: 'short', 
-    year: 'numeric', 
-    month: 'short', 
-    day: 'numeric' 
+  return date.toLocaleDateString('en-US', {
+    weekday: 'short',
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
   })
 }
 
-function calculateDaysRemaining(dateString: string): string {
+function calculateDaysRemaining(dateString) {
   if (!dateString) return ''
-  
+
   const dueDate = new Date(dateString)
   const today = new Date()
   today.setHours(0, 0, 0, 0)
-  
+
   const diffTime = dueDate.getTime() - today.getTime()
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-  
+
   if (diffDays === 0) return 'Due today'
   if (diffDays === 1) return 'Due tomorrow'
   if (diffDays < 0) return 'Overdue'
-  
+
   return `${diffDays} days remaining`
 }
 
-function setSuggestedDueDate(days: number) {
+function setSuggestedDueDate(days) {
   const futureDate = new Date()
   futureDate.setDate(futureDate.getDate() + days)
   workoutAssignment.due_date = futureDate.toISOString().split('T')[0]
   validateDueDate()
 }
 
-function getMemberDisplayName(memberId: string): string {
-  const member = coachMembers.value.find(m => m.member_id === memberId)
+function getMemberDisplayName(memberId) {
+  const member = coachMembers.value.find((m) => m.member_id === memberId)
   return member ? member.display_name : 'Unknown Member'
 }
 
@@ -669,7 +675,7 @@ function validateDescription() {
 }
 
 onMounted(async () => {
-  const editId = route.query.edit as string
+  const editId = route.query.edit
   await fetchCoachMembers()
 
   if (editId) {
@@ -724,7 +730,6 @@ async function fetchUserProfileId() {
 async function fetchCoachMembers() {
   isLoadingMembers.value = true
   try {
-    // Use the consolidated endpoint
     const response = await fetch('http://127.0.0.1:8000/api/member/accepted/', {
       credentials: 'include',
     })
@@ -738,10 +743,9 @@ async function fetchCoachMembers() {
 
     const membersArray = Array.isArray(data) ? data : data.members || []
 
-    // Map to the format we need for the dropdown
     coachMembers.value = membersArray
-      .filter((m: any) => m.memberId)
-      .map((m: any) => ({
+      .filter((m) => m.memberId)
+      .map((m) => ({
         display_name: `${m.name} (${m.memberId})`,
         member_id: m.memberId,
       }))
@@ -760,61 +764,22 @@ async function fetchCoachMembers() {
   }
 }
 
-interface Props {
-  existingProgram?: {
-    title: string
-    description: string
-    difficulty_level: string
-    duration: number
-    category: string
-    WorkoutDays: Record<number, WorkoutDay[]>
-  } | null
-}
-
-const props = defineProps<Props>()
+const props = defineProps({
+  existingProgram: {
+    type: Object,
+    default: null
+  }
+})
 
 const isEditing = computed(() => {
   return Boolean(props.existingProgram) || Boolean(editingProgramId.value)
 })
 
-const emit = defineEmits<{
-  programCreated: [
-    program: {
-      title: string
-      description: string
-      difficulty_level: string
-      duration: number
-      category: string
-      WorkoutDays: Record<number, WorkoutDay[]>
-    },
-  ]
-  cancel: []
-}>()
+const emit = defineEmits(['programCreated', 'cancel'])
 
-const backupWorkout = ref<WorkoutDay | null>(null)
+const backupWorkout = ref(null)
 
-interface WorkoutDay {
-  day_number: number
-  title: string
-  duration: number
-  type: string
-  video_link: string
-}
-
-interface WorkoutProgram {
-  title: string
-  description: string
-  difficulty_level: string
-  duration: number
-  category: string
-  is_public: boolean
-  level_access: string
-  WorkoutDays: Record<number, WorkoutDay[]>
-  member_id?: string
-  due_date?: string
-}
-
-const workoutProgram = reactive<WorkoutProgram>({
+const workoutProgram = reactive({
   title: '',
   description: '',
   difficulty_level: '',
@@ -825,7 +790,7 @@ const workoutProgram = reactive<WorkoutProgram>({
   WorkoutDays: {},
 })
 
-const currentWorkout = reactive<WorkoutDay>({
+const currentWorkout = reactive({
   day_number: 1,
   title: '',
   duration: 30,
@@ -833,22 +798,20 @@ const currentWorkout = reactive<WorkoutDay>({
   type: '',
 })
 
-const selectedDay = ref<number | ''>('')
-const editingDay = ref<number | null>(null)
-const editingWorkoutIndex = ref<number | null>(null)
+const selectedDay = ref('')
+const editingDay = ref(null)
+const editingWorkoutIndex = ref(null)
 const youtubeError = ref('')
 const youtubeRegex =
   /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)[a-zA-Z0-9_-]{11}/
 
-
 const canSubmitProgram = computed(() => {
-  const baseValidation = (
+  const baseValidation =
     workoutProgram.title &&
     workoutProgram.difficulty_level &&
     workoutProgram.duration &&
     Object.keys(workoutProgram.WorkoutDays).length > 0 &&
     !descriptionError.value
-  )
 
   if (workoutProgram.is_public === false) {
     return baseValidation && workoutAssignment.member_id && !dueDateError.value
@@ -868,7 +831,7 @@ function validateDuration() {
   }
 
   if (duration < 5) {
-    durationError.value = 'Duration must be at least 5 minutese'
+    durationError.value = 'Duration must be at least 5 minutes'
     return false
   }
 
@@ -885,6 +848,7 @@ function validateDuration() {
   durationError.value = ''
   return true
 }
+
 function validatevideo_link() {
   youtubeError.value = ''
   if (!currentWorkout.video_link || currentWorkout.video_link.trim() === '') {
@@ -921,10 +885,8 @@ function saveDayWorkout() {
     return
   }
 
-  // Ensure duration is integer
   currentWorkout.duration = Math.round(currentWorkout.duration)
 
-  // Validate YouTube URL if provided
   if (currentWorkout.video_link && currentWorkout.video_link.trim() !== '') {
     validatevideo_link()
     if (youtubeError.value) {
@@ -936,9 +898,9 @@ function saveDayWorkout() {
     return
   }
 
-  const targetDay = editingDay.value || (selectedDay.value as number)
+  const targetDay = editingDay.value || selectedDay.value
 
-  const workout: WorkoutDay = {
+  const workout = {
     day_number: targetDay,
     title: currentWorkout.title.trim(),
     duration: currentWorkout.duration,
@@ -958,7 +920,7 @@ function saveDayWorkout() {
   resetCurrentWorkout()
 }
 
-function editWorkout(day: number, workoutIndex: number) {
+function editWorkout(day, workoutIndex) {
   const workout = workoutProgram.WorkoutDays[day]?.[workoutIndex]
   if (workout) {
     editingDay.value = day
@@ -973,7 +935,7 @@ function editWorkout(day: number, workoutIndex: number) {
   }
 }
 
-function removeWorkout(day: number, workoutIndex: number) {
+function removeWorkout(day, workoutIndex) {
   if (workoutProgram.WorkoutDays[day]) {
     workoutProgram.WorkoutDays[day].splice(workoutIndex, 1)
     if (workoutProgram.WorkoutDays[day].length === 0) {
@@ -1023,7 +985,7 @@ function resetCurrentWorkout() {
   youtubeError.value = ''
 }
 
-async function loadExistingProgram(programId: number) {
+async function loadExistingProgram(programId) {
   try {
     const response = await fetch(`http://127.0.0.1:8000/api/workout/programs/${programId}/`, {
       credentials: 'include',
@@ -1046,28 +1008,25 @@ async function loadExistingProgram(programId: number) {
     workoutAssignment.member_id =
       programData.assignment?.member?.member_id || programData.assignment?.member_id || ''
 
-      // Load due date from assignment if available
-      if (programData.assignment?.due_date) {
-        workoutAssignment.due_date = programData.assignment.due_date
-      }
+    if (programData.assignment?.due_date) {
+      workoutAssignment.due_date = programData.assignment.due_date
+    }
 
     if (programData.days && Array.isArray(programData.days)) {
       workoutProgram.WorkoutDays = {}
 
-      programData.days.forEach((day: any) => {
+      programData.days.forEach((day) => {
         const dayNumber = day.day_number
         if (!dayNumber) return
 
-        // Initialize day array if missing
         if (!workoutProgram.WorkoutDays[dayNumber]) {
           workoutProgram.WorkoutDays[dayNumber] = []
         }
 
-        // Handle multiple videos per day entry
         const videoLinks = day.video_links || []
         if (videoLinks.length > 0) {
-          videoLinks.forEach((videoLink: string, index: number) => {
-            const workout: WorkoutDay = {
+          videoLinks.forEach((videoLink, index) => {
+            const workout = {
               title:
                 videoLinks.length > 1
                   ? `${day.title || `Day ${dayNumber}`} - Part ${index + 1}`
@@ -1080,7 +1039,7 @@ async function loadExistingProgram(programId: number) {
             workoutProgram.WorkoutDays[dayNumber].push(workout)
           })
         } else {
-          const workout: WorkoutDay = {
+          const workout = {
             title: day.title || `Day ${dayNumber}`,
             type: day.type || '',
             duration: day.duration || 30,
@@ -1120,13 +1079,16 @@ function resetProgram() {
   resetCurrentWorkout()
 }
 
-watch(() => workoutAssignment.due_date, (newDueDate) => {
-  if (newDueDate) {
-    validateDueDate()
-  } else {
-    dueDateError.value = ''
-  }
-})
+watch(
+  () => workoutAssignment.due_date,
+  (newDueDate) => {
+    if (newDueDate) {
+      validateDueDate()
+    } else {
+      dueDateError.value = ''
+    }
+  },
+)
 
 watch(
   () => props.existingProgram,
@@ -1137,10 +1099,10 @@ watch(
       workoutProgram.difficulty_level = program.difficulty_level
       workoutProgram.duration = program.duration
       workoutProgram.category = program.category
-      workoutProgram.is_public = (program as any).is_public ?? true
-      workoutProgram.level_access = (program as any).level_access ?? 'all'
+      workoutProgram.is_public = program.is_public ?? true
+      workoutProgram.level_access = program.level_access ?? 'all'
       workoutProgram.WorkoutDays = { ...program.WorkoutDays }
-      workoutAssignment.member_id = (program as any).member_id || ''
+      workoutAssignment.member_id = program.member_id || ''
     } else {
       resetProgram()
     }
@@ -1148,24 +1110,23 @@ watch(
   { immediate: true },
 )
 
-async function handleAssignment(programId: number, isUpdate: boolean) {
+async function handleAssignment(programId, isUpdate) {
   const assignmentPayload = {
     member_id: workoutAssignment.member_id,
-    due_date: workoutAssignment.due_date || null
+    due_date: workoutAssignment.due_date || null,
   }
 
-  // Check if assignment exists (for updates)
-  const checkAssignmentExists = async (): Promise<boolean> => {
+  const checkAssignmentExists = async () => {
     if (!isUpdate) return false
-    
+
     try {
       const checkResponse = await fetch(
         `http://127.0.0.1:8000/api/workout/programs/${programId}/`,
         {
           credentials: 'include',
-        }
+        },
       )
-      
+
       if (checkResponse.ok) {
         const programData = await checkResponse.json()
         return !!programData.assignment
@@ -1178,9 +1139,8 @@ async function handleAssignment(programId: number, isUpdate: boolean) {
 
   const assignmentExists = await checkAssignmentExists()
   console.log('Assignment exists:', assignmentExists)
-  
-  // Determine method: POST if creating or no assignment exists, PATCH if updating existing
-  const method = (isUpdate && assignmentExists) ? 'PATCH' : 'POST'
+
+  const method = isUpdate && assignmentExists ? 'PATCH' : 'POST'
   const url = `http://127.0.0.1:8000/api/workout/assignment-manage/${programId}`
 
   try {
@@ -1197,11 +1157,9 @@ async function handleAssignment(programId: number, isUpdate: boolean) {
     if (!response.ok) {
       const error = await response.json()
       console.error('Assignment error:', error)
-      
-      // If assignment already exists and we tried POST, retry with PATCH
+
       if (error.error?.includes('already exists') && method === 'POST') {
         console.log('Assignment exists, retrying with PATCH...')
-        // Direct retry with PATCH (not recursive call)
         const retryResponse = await fetch(url, {
           method: 'PATCH',
           credentials: 'include',
@@ -1211,22 +1169,21 @@ async function handleAssignment(programId: number, isUpdate: boolean) {
           },
           body: JSON.stringify(assignmentPayload),
         })
-        
+
         if (!retryResponse.ok) {
           const retryError = await retryResponse.json()
           alert(`Failed to update assignment: ${retryError.error || 'Unknown error'}`)
           return null
         }
-        
+
         const retryData = await retryResponse.json()
         console.log('Assignment updated successfully:', retryData.message)
         return retryData.assignment
       }
-      
-      // If no assignment exists and we tried PATCH, retry with POST
+
       if (error.error?.includes('No assignment exists') && method === 'PATCH') {
         console.log('No assignment found, retrying with POST...')
-               const retryResponse = await fetch(url, {
+        const retryResponse = await fetch(url, {
           method: 'POST',
           credentials: 'include',
           headers: {
@@ -1235,18 +1192,18 @@ async function handleAssignment(programId: number, isUpdate: boolean) {
           },
           body: JSON.stringify(assignmentPayload),
         })
-        
+
         if (!retryResponse.ok) {
           const retryError = await retryResponse.json()
           alert(`Failed to create assignment: ${retryError.error || 'Unknown error'}`)
           return null
         }
-        
+
         const retryData = await retryResponse.json()
         console.log('Assignment created successfully:', retryData.message)
         return retryData.assignment
       }
-      
+
       alert(`Program saved, but assignment failed: ${error.error || 'Unknown error'}`)
       return null
     }
@@ -1261,7 +1218,7 @@ async function handleAssignment(programId: number, isUpdate: boolean) {
   }
 }
 
-async function deleteAssignmentIfExists(programId: number) {
+async function deleteAssignmentIfExists(programId) {
   try {
     const response = await fetch(
       `http://127.0.0.1:8000/api/workout/assignment-delete/${programId}`,
@@ -1271,14 +1228,14 @@ async function deleteAssignmentIfExists(programId: number) {
         headers: {
           'X-CSRFToken': getCsrfToken(),
         },
-      }
+      },
     )
 
     if (response.ok || response.status === 404) {
       console.log('Assignment deleted or not found (program is now public)')
       return true
     }
-    
+
     const error = await response.json()
     console.error('Failed to delete assignment:', error)
     return false
@@ -1338,7 +1295,6 @@ async function submitProgram() {
     }))
   })
 
-  // Program payload (NO assignment data)
   const programPayload = {
     coach: coachUserProfileId.value,
     title: workoutProgram.title,
@@ -1364,7 +1320,6 @@ async function submitProgram() {
     : 'http://127.0.0.1:8000/api/workout/programs/create/'
 
   try {
-    // Step 1: Save/update program
     const programResponse = await fetch(programUrl, {
       method: editingProgramId.value ? 'PUT' : 'POST',
       credentials: 'include',
@@ -1384,33 +1339,29 @@ async function submitProgram() {
     const programData = await programResponse.json()
     const programId = programData.id
 
-    // Step 2: Handle assignment separately
     if (!workoutProgram.is_public) {
-      // Private program - create/update assignment
       if (workoutAssignment.member_id) {
         await handleAssignment(programId, editingProgramId.value !== null)
       }
     } else {
-      // Public program - delete assignment if exists
       if (editingProgramId.value) {
         await deleteAssignmentIfExists(programId)
       }
     }
 
     emit('programCreated', programData)
-    
+
     const action = editingProgramId.value ? 'updated' : 'created'
-    const assignmentMsg = !workoutProgram.is_public && workoutAssignment.member_id
-      ? ` Assignment ${editingProgramId.value ? 'updated' : 'created'} for member.`
-      : ''
-    
+    const assignmentMsg =
+      !workoutProgram.is_public && workoutAssignment.member_id
+        ? ` Assignment ${editingProgramId.value ? 'updated' : 'created'} for member.`
+        : ''
+
     alert(`Program ${action} successfully!${assignmentMsg}`)
     router.push('/coach-dashboard')
-    
   } catch (error) {
     console.error('Error saving program:', error)
     alert('Failed to save program: ' + error.message)
   }
 }
-
 </script>

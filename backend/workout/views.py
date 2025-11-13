@@ -542,24 +542,6 @@ def workout_progress(request, id):
 
 # ========== WORKOUT ASSIGNMENT VIEWS ==========
 
-
-@api_view(["GET"])
-@permission_classes([IsAuthenticated])
-def workout_assignment_detail(request, id):
-    profile = request.user.userprofile
-    assignment = get_object_or_404(WorkoutAssignment, pk=id)
-
-    # Permissions
-    if profile.role == "member" and assignment.member.user != profile:
-        raise PermissionDenied("You cannot access this assignment.")
-    elif profile.role == "coach":
-        if assignment.program.coach != profile:
-            raise PermissionDenied("This assignment is not from your programs.")
-
-    serializer = WorkoutAssignmentSerializer(assignment)
-    return Response(serializer.data, status=200)
-
-
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def list_my_assignments(request):

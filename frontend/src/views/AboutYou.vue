@@ -76,7 +76,7 @@
           <option value="USA">United States</option>
           <option value="UK">United Kingdom</option>
           <option value="JP">Japan</option>
-          <option value="LA">Lao</option>
+          <option value="LA">Laos</option>
           <option value="KR">Korea</option>
           <option value="O">Other</option>
         </select>

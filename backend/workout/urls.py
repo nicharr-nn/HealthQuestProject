@@ -53,11 +53,6 @@ urlpatterns = [
         name="workout-assignment-update",
     ),
     path(
-        "assignment-detail/<int:id>/",
-        views.workout_assignment_detail,
-        name="workout-assignment-detail",
-    ),
-    path(
         "assignments/",
         views.list_my_assignments,
         name="list-my-assignments",

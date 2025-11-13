@@ -73,7 +73,6 @@ interface Member {
   programName: string
   experienceLevel: string
   joinedAt: string
-//  lastActivity: string
 }
 
 const router = useRouter()
