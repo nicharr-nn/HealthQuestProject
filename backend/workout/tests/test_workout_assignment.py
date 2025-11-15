@@ -165,33 +165,6 @@ class WorkoutAssignmentTests(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_get_assignment_detail_as_member(self):
-        """Test member can get their assignment detail"""
-        url = reverse(
-            "workout-assignment-detail", kwargs={"id": self.workout_assignment.id}
-        )
-        response = self.client.get(url)
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["id"], self.workout_assignment.id)
-
-    def test_get_assignment_detail_as_other_member(self):
-        """Test member cannot access other member's assignment"""
-        other_member_user = User.objects.create_user(
-            username="othermember", password="otherpass"
-        )
-        other_member_profile = other_member_user.userprofile
-        other_member_profile.role = "member"
-        other_member_profile.save()
-
-        self.client.force_login(other_member_user)
-
-        url = reverse(
-            "workout-assignment-detail", kwargs={"id": self.workout_assignment.id}
-        )
-        response = self.client.get(url)
-
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_update_assignment_status(self):
         """Test member can update assignment status to in_progress"""

@@ -330,10 +330,10 @@
               />
             </svg>
             <span class="font-semibold text-sm"
-              >Program Duration: {{ duration }} day{{ duration === 1 ? '' : 's' }}
+              >Program Duration: {{ workoutProgram.duration }} day{{ workoutProgram.duration === 1 ? '' : 's' }}
               {{
                 duration > 0
-                  ? `(${Math.ceil(duration / 7)} week${Math.ceil(duration / 7) === 1 ? '' : 's'})`
+                  ? `(${Math.ceil(workoutProgram.duration / 7)} week${Math.ceil(workoutProgram.duration / 7) === 1 ? '' : 's'})`
                   : ''
               }}
             </span>
