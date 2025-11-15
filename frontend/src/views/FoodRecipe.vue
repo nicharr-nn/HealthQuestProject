@@ -37,6 +37,68 @@
       </div>
     </div>
 
+    <!-- Search and Filter Section -->
+    <div class="bg-purple-50 p-4 sm:p-6 rounded-lg max-w-5xl mx-auto mb-4 sm:mb-6 shadow-md">
+      <div class="flex flex-col gap-4">
+        <!-- Search and Rating Filter Row -->
+        <div class="flex flex-col md:flex-row gap-4 items-start md:items-center">
+          <!-- Search Bar -->
+          <div class="flex-1 w-full">
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Search recipes by title..."
+              class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-pink-400 focus:outline-none"
+            />
+          </div>
+
+          <!-- Rating Filter -->
+          <div class="flex items-center gap-2">
+            <label class="text-sm font-medium text-gray-700">Min Rating:</label>
+            <select
+              v-model="minRatingFilter"
+              class="px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-pink-400 focus:outline-none bg-white"
+            >
+              <option value="0">All</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Sort By and Clear Row -->
+        <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+          <!-- Sort By -->
+          <div class="flex items-center gap-2">
+            <label class="text-sm font-medium text-gray-700">Sort By:</label>
+            <select
+              v-model="sortBy"
+              class="px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-pink-400 focus:outline-none bg-white"
+            >
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+              <option value="rating_high">Highest Rating</option>
+              <option value="rating_low">Lowest Rating</option>
+              <option value="title_az">Title (A-Z)</option>
+              <option value="title_za">Title (Z-A)</option>
+            </select>
+          </div>
+
+          <!-- Clear Filters -->
+          <button
+            v-if="searchQuery || minRatingFilter > 0 || sortBy !== 'newest'"
+            @click="clearFilters"
+            class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-sm font-medium transition"
+          >
+            Clear All Filters
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Share Banner -->
     <div
       class="bg-white rounded-xl p-4 sm:p-8 w-full max-w-5xl mx-auto flex 
@@ -77,7 +139,7 @@
           {{ editMode ? 'Edit Recipe' : 'Upload Your Recipe' }}
         </h2>
 
-        <form @submit.prevent="submitRecipe" class="space-y-4">
+        <div class="space-y-4">
           <!-- Title -->
           <div>
             <label class="block text-gray-600 font-medium mb-1 text-sm sm:text-base">Title</label>
@@ -136,7 +198,7 @@
 
           <div class="pt-2">
             <button
-              type="submit"
+              @click="submitRecipe"
               :disabled="uploading"
               class="w-full bg-pink-400 hover:bg-pink-500 text-white 
               font-semibold py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base
@@ -145,7 +207,7 @@
               {{ uploading ? 'Uploading…' : (editMode ? 'Update Recipe' : 'Submit Recipe') }}
             </button>
           </div>
-        </form>
+        </div>
       </div>
     </div>
 
@@ -157,9 +219,29 @@
       @confirm="confirmDelete"
     />
 
+    <!-- Loading State -->
+    <div v-if="loading" class="text-center py-12 text-gray-500 max-w-5xl mx-auto">
+      <p class="text-xl">Loading recipes...</p>
+    </div>
+
+    <!-- No Results Message -->
+    <div
+      v-else-if="filteredMenus.length === 0"
+      class="text-center py-12 text-gray-500 max-w-5xl mx-auto"
+    >
+      <p class="text-xl">No recipes found matching your criteria.</p>
+      <button
+        v-if="searchQuery || minRatingFilter > 0"
+        @click="clearFilters"
+        class="mt-4 px-6 py-2 bg-pink-400 hover:bg-pink-500 text-white rounded-lg font-medium"
+      >
+        Clear Filters
+      </button>
+    </div>
+
     <!-- Recipe Display -->
     <div
-      v-for="menu in menus"
+      v-for="menu in filteredMenus"
       :key="menu.id"
       class="flex flex-col lg:flex-row w-full max-w-5xl mx-auto mt-4 sm:mt-6 lg:h-[300px] text-[#846757] font-body"
     >
@@ -169,6 +251,25 @@
           <h3 class="text-base sm:text-lg lg:text-xl font-bold break-words">
             {{ menu.title.length > 40 ? menu.title.slice(0, 40) + '…' : menu.title }}
           </h3>
+          
+          <!-- Star Rating Display -->
+          <div class="flex items-center justify-center gap-2 mt-2">
+            <div class="flex gap-1">
+              <span
+                v-for="star in 5"
+                :key="star"
+                class="text-xl"
+              >
+                {{ star <= Math.round(menu.average_rating || 0) ? '⭐' : '☆' }}
+              </span>
+            </div>
+            <span class="text-sm text-gray-600">
+              ({{ menu.average_rating ? menu.average_rating.toFixed(1) : '0.0' }})
+            </span>
+            <span class="text-xs text-gray-500">
+              {{ menu.rating_count || 0 }} {{ menu.rating_count === 1 ? 'rating' : 'ratings' }}
+            </span>
+          </div>
         </div>
         <div class="w-full max-w-[350px] h-[180px] sm:h-[200px] lg:h-[180px] rounded-lg overflow-hidden shadow-md">
           <img
@@ -197,6 +298,24 @@
             <p class="whitespace-pre-line text-xs sm:text-sm lg:text-base">
               {{ limitText(menu.steps, 6) }}
             </p>
+
+            <!-- User Rating Section -->
+            <div v-if="!showMine && !isOwner(menu)" class="mt-4 pt-4 border-t border-gray-200">
+              <h4 class="text-sm font-semibold mb-2">Rate this recipe:</h4>
+              <div class="flex gap-1">
+                <button
+                  v-for="star in 5"
+                  :key="star"
+                  @click="rateRecipe(menu.id, star)"
+                  class="text-2xl hover:scale-110 transition-transform cursor-pointer"
+                >
+                  {{ star <= (menu.user_rating || 0) ? '⭐' : '☆' }}
+                </button>
+              </div>
+              <p v-if="menu.user_rating" class="text-xs text-gray-500 mt-1">
+                Your rating: {{ menu.user_rating }} stars
+              </p>
+            </div>
           </div>
         </div>
 
@@ -251,7 +370,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { useToastStore } from '@/stores/toast'
 import DeleteModal from '@/components/DeleteModal.vue'
@@ -274,7 +393,50 @@ const showMine = ref(false)
 
 const showDeleteModal = ref(false)
 const recipeToDeleteId = ref(null)
-const recipeToDeleteTitle = ref('')
+
+const searchQuery = ref('')
+const minRatingFilter = ref(0)
+const sortBy = ref('newest')
+
+const menus = ref([])
+const loading = ref(true)
+
+// Computed property for filtered menus
+const filteredMenus = computed(() => {
+  let filtered = menus.value
+
+  // Filter by search query
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase()
+    filtered = filtered.filter(menu => 
+      menu.title.toLowerCase().includes(query)
+    )
+  }
+
+  // Filter by minimum rating
+  if (minRatingFilter.value > 0) {
+    filtered = filtered.filter(menu => 
+      (menu.average_rating || 0) >= minRatingFilter.value
+    )
+  }
+
+  return filtered
+})
+
+// Watch for sort changes to refetch from backend
+watch(sortBy, () => {
+  fetchMenus(showMine.value)
+})
+
+const clearFilters = () => {
+  searchQuery.value = ''
+  minRatingFilter.value = 0
+  sortBy.value = 'newest'
+}
+
+onMounted(() => {
+  fetchMenus()
+})
 
 const openModal = () => {
   showModal.value = true
@@ -305,7 +467,6 @@ const closeModal = () => {
 const openDeleteModal = (menu) => {
   showDeleteModal.value = true
   recipeToDeleteId.value = menu.id
-  recipeToDeleteTitle.value = menu.title
 }
 
 const confirmDelete = async () => {
@@ -329,13 +490,6 @@ const confirmDelete = async () => {
     toast.error('Error connecting to backend: ' + err.message)
   }
 }
-
-const menus = ref([])
-const loading = ref(true)
-
-onMounted(() => {
-  fetchMenus()
-})
 
 const handleImageUpload = (e) => {
   const file = e.target.files[0]
@@ -394,11 +548,78 @@ const submitRecipe = async () => {
   }
 }
 
-async function fetchMenus(onlyMine = false) {
+const isOwner = (menu) => {
+  return userStore.userId === menu.user_profile_id
+}
+
+const rateRecipe = async (recipeId, rating) => {
   try {
-    const url = onlyMine
+    const response = await fetch(`http://127.0.0.1:8000/api/recipe/${recipeId}/give-rating/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': token ? `Bearer ${token}` : '',
+        'X-CSRFToken': getCsrfToken()
+      },
+      body: JSON.stringify({ rating }),
+      credentials: 'include',
+    })
+
+    if (response.ok) {
+      await response.json()
+      toast.success('Rating submitted successfully!')
+      
+      // Fetch updated rating data
+      await fetchRecipeRating(recipeId)
+    } else {
+      const errText = await response.text()
+      toast.error('Rating failed: ' + errText)
+    }
+  } catch (err) {
+    toast.error('Error submitting rating: ' + err.message)
+  }
+}
+
+const fetchRecipeRating = async (recipeId) => {
+  try {
+    const response = await fetch(`http://127.0.0.1:8000/api/recipe/${recipeId}/get-rating/`, {
+      headers: {
+        'Authorization': token ? `Bearer ${token}` : '',
+      },
+      credentials: 'include',
+    })
+
+    if (response.ok) {
+      const data = await response.json()
+      
+      // Update the menu item with new rating data
+      const menuIndex = menus.value.findIndex(m => m.id === recipeId)
+      if (menuIndex !== -1) {
+        menus.value[menuIndex].average_rating = data.average_rating
+        menus.value[menuIndex].rating_count = data.rating_count
+        
+        // Find user's rating from ratings array
+        const userRating = data.ratings?.find(r => r.user_profile_id === userStore.userId)
+        menus.value[menuIndex].user_rating = userRating?.rating || 0
+      }
+    }
+  } catch (err) {
+    console.error('Error fetching rating:', err)
+  }
+}
+
+async function fetchMenus(onlyMine = false) {
+  loading.value = true
+  try {
+    const baseUrl = onlyMine
       ? 'http://127.0.0.1:8000/api/recipe/my-recipes/'
       : 'http://127.0.0.1:8000/api/recipe'
+
+    // Build query parameters for sorting
+    const params = new URLSearchParams()
+    if (sortBy.value) params.append('sort_by', sortBy.value)
+
+    const url = params.toString() ? `${baseUrl}?${params}` : baseUrl
 
     const response = await fetch(url, {
       headers: { Authorization: token ? `Bearer ${token}` : '' },
@@ -406,7 +627,17 @@ async function fetchMenus(onlyMine = false) {
     })
 
     if (!response.ok) throw new Error(`Failed to fetch: ${response.status}`)
-    menus.value = await response.json()
+    const recipes = await response.json()
+    
+    // Fetch ratings for all recipes
+    menus.value = recipes
+    
+    // Fetch rating data for each recipe
+    await Promise.all(
+      recipes.map(recipe => fetchRecipeRating(recipe.id))
+    )
+  } catch (err) {
+    toast.error('Error loading recipes: ' + err.message)
   } finally {
     loading.value = false
   }
@@ -428,6 +659,4 @@ function getCsrfToken() {
   if (parts.length === 2) return parts.pop().split(';').shift()
   return ''
 }
-
-
 </script>
