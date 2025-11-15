@@ -354,40 +354,40 @@ def user_weekly_activity(request):
     return Response(result)
 
 
-@api_view(["GET", "POST"])
-@permission_classes([IsAuthenticated])
-def workout_day_videos(request, id):
-    """
-    GET: Retrieve all YouTube links for a WorkoutDay
-    POST: Add a new YouTube link (coaches only)
-    """
-    workout_day = get_object_or_404(WorkoutDay, id=id)
+# @api_view(["GET", "POST"])
+# @permission_classes([IsAuthenticated])
+# def workout_day_videos(request, id):
+#     """
+#     GET: Retrieve all YouTube links for a WorkoutDay
+#     POST: Add a new YouTube link (coaches only)
+#     """
+#     workout_day = get_object_or_404(WorkoutDay, id=id)
 
-    if request.method == "GET":
-        return Response({"video_links": workout_day.video_links})
+#     if request.method == "GET":
+#         return Response({"video_links": workout_day.video_links})
 
-    elif request.method == "POST":
-        profile = request.user.userprofile
-        if profile.role != "coach":
-            raise PermissionDenied("Only coaches can add video links")
+#     elif request.method == "POST":
+#         profile = request.user.userprofile
+#         if profile.role != "coach":
+#             raise PermissionDenied("Only coaches can add video links")
 
-        new_link = request.data.get("link")
-        if not new_link:
-            return Response(
-                {"error": "You must provide a YouTube link"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+#         new_link = request.data.get("link")
+#         if not new_link:
+#             return Response(
+#                 {"error": "You must provide a YouTube link"},
+#                 status=status.HTTP_400_BAD_REQUEST,
+#             )
 
-        # Append new link to JSONField
-        workout_day.video_links.append(new_link)
-        workout_day.save(update_fields=["video_links"])
+#         # Append new link to JSONField
+#         workout_day.video_links.append(new_link)
+#         workout_day.save(update_fields=["video_links"])
 
-        return Response(
-            {
-                "message": "Video link added",
-                "video_links": workout_day.video_links,
-            }
-        )
+#         return Response(
+#             {
+#                 "message": "Video link added",
+#                 "video_links": workout_day.video_links,
+#             }
+#         )
 
 
 @api_view(["GET"])
@@ -542,6 +542,7 @@ def workout_progress(request, id):
 
 # ========== WORKOUT ASSIGNMENT VIEWS ==========
 
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def list_my_assignments(request):
@@ -667,6 +668,12 @@ def manage_workout_assignment(request, program_id):
             return Response(
                 {
                     "error": "No assignment exists for this program",
+                    "current_member": existing_assignment.member.member_id,
+                    "current_due_date": (
+                        existing_assignment.due_date.isoformat()
+                        if existing_assignment.due_date
+                        else None
+                    ),
                     "hint": "Use POST to create a new assignment",
                 },
                 status=status.HTTP_404_NOT_FOUND,
@@ -717,9 +724,10 @@ def delete_workout_assignment(request, program_id):
     assignment = WorkoutAssignment.objects.filter(program=program).first()
 
     if not assignment:
+        # Return 204 even if no assignment exists
         return Response(
-            {"message": "No assignment found for this program"},
-            status=status.HTTP_404_NOT_FOUND,
+            {"message": "No assignment to delete (program already public)"},
+            status=status.HTTP_204_NO_CONTENT,
         )
 
     assignment.delete()
@@ -731,7 +739,7 @@ def delete_workout_assignment(request, program_id):
 
 @api_view(["PATCH"])
 @permission_classes([IsAuthenticated])
-def workout_assignment_update(request, id):
+def update_workout_assignment(request, id):
     """
     Update a member’s workout assignment status.
     Supports: start (in_progress), complete (completed),

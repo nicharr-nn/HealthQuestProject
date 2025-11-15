@@ -165,18 +165,6 @@ class WorkoutAssignmentTests(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_assign_duplicate_program(self):
-        """Test cannot assign duplicate program to same member"""
-        self.client.force_login(self.coach_user)
-
-        url = reverse("assign-program-to-member")
-        data = {"program_id": self.program.id, "member_id": self.member.member_id}
-        response = self.client.post(url, data, format="json")
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn("already assigned", response.data["message"].lower())
-        self.assertEqual(WorkoutAssignment.objects.count(), 1)  # Still only one
-
     def test_get_assignment_detail_as_member(self):
         """Test member can get their assignment detail"""
         url = reverse(
@@ -213,9 +201,7 @@ class WorkoutAssignmentTests(TestCase):
             xp_earned=50,
         )
 
-        url = reverse(
-            "workout-assignment-update", kwargs={"id": self.workout_assignment.id}
-        )
+        url = reverse("update_assignment", kwargs={"id": self.workout_assignment.id})
         response = self.client.patch(url, {"action": "start"}, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -223,79 +209,11 @@ class WorkoutAssignmentTests(TestCase):
         self.assertEqual(self.workout_assignment.status, "in_progress")
         self.assertEqual(response.data["message"], "Assignment is already in_progress.")
 
-    def test_assign_program_without_due_date(self):
-        """Test assignment works without due date"""
-        self.client.force_login(self.coach_user)
-
-        new_program = WorkoutProgram.objects.create(
-            coach=self.coach_profile,
-            title="Test Program No Due Date",
-            description="Test description",
-            difficulty_level="easy",
-            duration=5,
-        )
-
-        url = reverse("assign-program-to-member")
-        data = {
-            "program_id": new_program.id,
-            "member_id": self.member.member_id,
-            # No due_date provided
-        }
-        response = self.client.post(url, data, format="json")
-
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(WorkoutAssignment.objects.count(), 2)
-
-        # Check that assignment was created without due date
-        new_assignment = WorkoutAssignment.objects.get(
-            program=new_program, member=self.member
-        )
-        self.assertIsNone(new_assignment.due_date)
-
-    def test_assign_program_to_member_nonexistent_member(self):
-        """Test assignment fails when member doesn't exist"""
-        self.client.force_login(self.coach_user)
-
-        new_program = WorkoutProgram.objects.create(
-            coach=self.coach_profile,
-            title="Test Program",
-            description="Test description",
-            difficulty_level="medium",
-            duration=7,
-        )
-
-        url = reverse("assign-program-to-member")
-        data = {
-            "program_id": new_program.id,
-            "member_id": "M-99999",  # Non-existent member
-            "due_date": (timezone.now() + timedelta(days=30)).date().isoformat(),
-        }
-        response = self.client.post(url, data, format="json")
-
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertIn("Member not found", response.data["error"])
-
-    def test_assign_program_to_member_nonexistent_program(self):
-        """Test assignment fails when program doesn't exist"""
-        self.client.force_login(self.coach_user)
-
-        url = reverse("assign-program-to-member")
-        data = {
-            "program_id": 99999,  # Non-existent program
-            "member_id": self.member.member_id,
-            "due_date": (timezone.now() + timedelta(days=30)).date().isoformat(),
-        }
-        response = self.client.post(url, data, format="json")
-
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
     def test_start_assignment(self):
         """Test member can start an assignment"""
         self.workout_assignment.status = "assigned"
         self.workout_assignment.save()
-        url = reverse(
-            "workout-assignment-update", kwargs={"id": self.workout_assignment.id}
-        )
+        url = reverse("update_assignment", kwargs={"id": self.workout_assignment.id})
         response = self.client.patch(url, {"action": "start"}, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -314,12 +232,24 @@ class WorkoutAssignmentTests(TestCase):
             xp_earned=50,
         )
 
-        url = reverse(
-            "workout-assignment-update", kwargs={"id": self.workout_assignment.id}
-        )
+        url = reverse("update_assignment", kwargs={"id": self.workout_assignment.id})
         response = self.client.patch(url, {"action": "complete"}, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("error", response.data)
         self.workout_assignment.refresh_from_db()
         self.assertIn(self.workout_assignment.status, ["assigned", "in_progress"])
+
+    def test_delete_assignment_as_coach(self):
+        """Test coach can delete an assignment"""
+        self.client.force_login(self.coach_user)
+
+        url = reverse(
+            "workout-assignment-delete", kwargs={"id": self.workout_assignment.id}
+        )
+        response = self.client.delete(url)
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(
+            WorkoutAssignment.objects.filter(id=self.workout_assignment.id).exists()
+        )

@@ -119,9 +119,7 @@ class Recipe(models.Model):
 
 
 class RecipeRating(models.Model):
-    recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE, related_name="ratings"
-    )
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name="ratings")
     user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     rating = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(5)]
@@ -131,11 +129,11 @@ class RecipeRating(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["recipe", "user_profile"],
-                name="one_rating_per_user"
+                fields=["recipe", "user_profile"], name="one_rating_per_user"
             )
         ]
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"{self.user_profile.user.username} rated {self.recipe.title}: {self.rating}"
+        return f"""{self.user_profile.user.username}
+        rated {self.recipe.title}: {self.rating}"""

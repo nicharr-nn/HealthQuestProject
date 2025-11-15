@@ -254,8 +254,6 @@ const fetchMembers = async () => {
 const fetchFoodPosts = async () => {
   loading.value = true
   try {
-    // TODO: Replace with actual API call
-    // For now, this will prepare the structure for backend integration
     const token = localStorage.getItem('access_token') || ''
     const headers = token ? { Authorization: `Bearer ${token}` } : {}
 

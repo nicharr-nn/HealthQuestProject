@@ -771,7 +771,6 @@ async function fetchCoachMembers() {
     }
 
     const data = await response.json()
-    console.log('Raw API response:', data)
 
     const membersArray = Array.isArray(data) ? data : data.members || []
 
@@ -782,7 +781,6 @@ async function fetchCoachMembers() {
         member_id: m.memberId,
       }))
 
-    console.log('Processed coach members:', coachMembers.value)
 
     if (coachMembers.value.length === 0) {
       console.warn('No accepted members found')
@@ -1148,32 +1146,34 @@ async function handleAssignment(programId, isUpdate) {
     due_date: workoutAssignment.due_date || null,
   }
 
-  const checkAssignmentExists = async () => {
-    if (!isUpdate) return false
+  // const checkAssignmentExists = async () => {
+  //   if (!isUpdate) return false
 
-    try {
-      const checkResponse = await fetch(
-        `http://127.0.0.1:8000/api/workout/programs/${programId}/`,
-        {
-          credentials: 'include',
-        },
-      )
+  //   try {
+  //     const checkResponse = await fetch(
+  //       `http://127.0.0.1:8000/api/workout/programs/${programId}/`,
+  //       {
+  //         credentials: 'include',
+  //       },
+  //     )
 
-      if (checkResponse.ok) {
-        const programData = await checkResponse.json()
-        return !!programData.assignment
-      }
-    } catch (error) {
-      console.error('Failed to check assignment:', error)
-    }
-    return false
-  }
+  //     if (checkResponse.ok) {
+  //       const programData = await checkResponse.json()
+  //       return !!programData.assignment
+  //     }
+  //   } catch (error) {
+  //     console.error('Failed to check assignment:', error)
+  //   }
+  //   return false
+  // }
 
-  const assignmentExists = await checkAssignmentExists()
-  console.log('Assignment exists:', assignmentExists)
+  // const assignmentExists = await checkAssignmentExists()
+  // console.log('Assignment exists:', assignmentExists)
 
-  const method = isUpdate && assignmentExists ? 'PATCH' : 'POST'
-  const url = `http://127.0.0.1:8000/api/workout/assignment-manage/${programId}`
+  // const method = isUpdate && assignmentExists ? 'PATCH' : 'POST'
+  const method = isUpdate ? 'PATCH' : 'POST'
+  const url = `http://127.0.0.1:8000/api/workout/assignment-manage/${programId}/`
+  console.log(`Assignment request: ${method} ${url}`, assignmentPayload)
 
   try {
     const response = await fetch(url, {
@@ -1190,51 +1190,51 @@ async function handleAssignment(programId, isUpdate) {
       const error = await response.json()
       console.error('Assignment error:', error)
 
-      if (error.error?.includes('already exists') && method === 'POST') {
-        console.log('Assignment exists, retrying with PATCH...')
-        const retryResponse = await fetch(url, {
-          method: 'PATCH',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCsrfToken(),
-          },
-          body: JSON.stringify(assignmentPayload),
-        })
+      // if (error.error?.includes('already exists') && method === 'POST') {
+      //   console.log('Assignment exists, retrying with PATCH...')
+      //   const retryResponse = await fetch(url, {
+      //     method: 'PATCH',
+      //     credentials: 'include',
+      //     headers: {
+      //       'Content-Type': 'application/json',
+      //       'X-CSRFToken': getCsrfToken(),
+      //     },
+      //     body: JSON.stringify(assignmentPayload),
+      //   })
 
-        if (!retryResponse.ok) {
-          const retryError = await retryResponse.json()
-          alert(`Failed to update assignment: ${retryError.error || 'Unknown error'}`)
-          return null
-        }
+      //   if (!retryResponse.ok) {
+      //     const retryError = await retryResponse.json()
+      //     alert(`Failed to update assignment: ${retryError.error || 'Unknown error'}`)
+      //     return null
+      //   }
 
-        const retryData = await retryResponse.json()
-        console.log('Assignment updated successfully:', retryData.message)
-        return retryData.assignment
-      }
+      //   const retryData = await retryResponse.json()
+      //   console.log('Assignment updated successfully:', retryData.message)
+      //   return retryData.assignment
+      // }
 
-      if (error.error?.includes('No assignment exists') && method === 'PATCH') {
-        console.log('No assignment found, retrying with POST...')
-        const retryResponse = await fetch(url, {
-          method: 'POST',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCsrfToken(),
-          },
-          body: JSON.stringify(assignmentPayload),
-        })
+      // if (error.error?.includes('No assignment exists') && method === 'PATCH') {
+      //   console.log('No assignment found, retrying with POST...')
+      //   const retryResponse = await fetch(url, {
+      //     method: 'POST',
+      //     credentials: 'include',
+      //     headers: {
+      //       'Content-Type': 'application/json',
+      //       'X-CSRFToken': getCsrfToken(),
+      //     },
+      //     body: JSON.stringify(assignmentPayload),
+      //   })
 
-        if (!retryResponse.ok) {
-          const retryError = await retryResponse.json()
-          alert(`Failed to create assignment: ${retryError.error || 'Unknown error'}`)
-          return null
-        }
+      //   if (!retryResponse.ok) {
+      //     const retryError = await retryResponse.json()
+      //     alert(`Failed to create assignment: ${retryError.error || 'Unknown error'}`)
+      //     return null
+      //   }
 
-        const retryData = await retryResponse.json()
-        console.log('Assignment created successfully:', retryData.message)
-        return retryData.assignment
-      }
+      //   const retryData = await retryResponse.json()
+      //   console.log('Assignment created successfully:', retryData.message)
+      //   return retryData.assignment
+      // }
 
       alert(`Program saved, but assignment failed: ${error.error || 'Unknown error'}`)
       return null
@@ -1253,7 +1253,7 @@ async function handleAssignment(programId, isUpdate) {
 async function deleteAssignmentIfExists(programId) {
   try {
     const response = await fetch(
-      `http://127.0.0.1:8000/api/workout/assignment-delete/${programId}`,
+      `http://127.0.0.1:8000/api/workout/assignment-delete/${programId}/`,
       {
         method: 'DELETE',
         credentials: 'include',
@@ -1371,14 +1371,26 @@ async function submitProgram() {
     const programData = await programResponse.json()
     const programId = programData.id
 
-    if (!workoutProgram.is_public) {
-      if (workoutAssignment.member_id) {
-        await handleAssignment(programId, editingProgramId.value !== null)
-      }
-    } else {
-      if (editingProgramId.value) {
-        await deleteAssignmentIfExists(programId)
-      }
+    const wasPrivateBefore = isEditing && backupProgramData.value 
+      ? backupProgramData.value.is_public === false 
+      : false
+    const isPrivateNow = workoutProgram.is_public === false
+    const isPublicNow = workoutProgram.is_public === true
+    
+    if (isPrivateNow && workoutAssignment.member_id) {
+      // Case 1: Program is PRIVATE (new or staying private)
+      // → Create or update assignment
+      console.log('Creating/updating assignment for private program')
+      await handleAssignment(programId, isEditing)
+    } else if (isEditing && wasPrivateBefore && isPublicNow) {
+      // Case 2: Program was PRIVATE, now changed to PUBLIC
+      // → Delete the existing assignment
+      console.log('Program changed from private to public, deleting assignment')
+      await deleteAssignmentIfExists(programId)
+    } else if (isPublicNow) {
+      // Case 3: Program is PUBLIC (new or staying public)
+      // → Do nothing with assignments
+      console.log('Program is public, no assignment action needed')
     }
 
     emit('programCreated', programData)

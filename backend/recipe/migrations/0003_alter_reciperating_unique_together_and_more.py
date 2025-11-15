@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("recipe", "0002_alter_reciperating_rating"),
         ("users", "0016_remove_userachievement_achievement_and_more"),

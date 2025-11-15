@@ -5,7 +5,7 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from django.http import FileResponse, Http404
 from django.utils.text import slugify
-from django.db.models import Avg, Count, Q
+from django.db.models import Avg
 
 from .models import Recipe, RecipeRating
 from .serializers import RecipeSerializer, RecipeRatingSerializer
@@ -18,47 +18,47 @@ def recipe_list(request):
     """GET = list recipes with sorting/filtering, POST = create new recipe"""
     if request.method == "GET":
         recipes = Recipe.objects.all()
-        
+
         # Search by title
-        search = request.query_params.get('search', None)
+        search = request.query_params.get("search", None)
         if search:
             recipes = recipes.filter(title__icontains=search)
-        
+
         # Filter by minimum rating
-        min_rating = request.query_params.get('min_rating', None)
+        min_rating = request.query_params.get("min_rating", None)
         if min_rating:
             try:
                 min_rating = float(min_rating)
                 # Annotate with average rating and filter
-                recipes = recipes.annotate(
-                    avg_rating=Avg('ratings__rating')
-                ).filter(avg_rating__gte=min_rating)
+                recipes = recipes.annotate(avg_rating=Avg("ratings__rating")).filter(
+                    avg_rating__gte=min_rating
+                )
             except ValueError:
                 pass
-        
+
         # Sorting
-        sort_by = request.query_params.get('sort_by', 'newest')
-        
-        if sort_by == 'oldest':
-            recipes = recipes.order_by('created_at')
-        elif sort_by == 'newest':
-            recipes = recipes.order_by('-created_at')
-        elif sort_by == 'rating_high':
-            recipes = recipes.annotate(
-                avg_rating=Avg('ratings__rating')
-            ).order_by('-avg_rating', '-created_at')
-        elif sort_by == 'rating_low':
-            recipes = recipes.annotate(
-                avg_rating=Avg('ratings__rating')
-            ).order_by('avg_rating', '-created_at')
-        elif sort_by == 'title_az':
-            recipes = recipes.order_by('title')
-        elif sort_by == 'title_za':
-            recipes = recipes.order_by('-title')
+        sort_by = request.query_params.get("sort_by", "newest")
+
+        if sort_by == "oldest":
+            recipes = recipes.order_by("created_at")
+        elif sort_by == "newest":
+            recipes = recipes.order_by("-created_at")
+        elif sort_by == "rating_high":
+            recipes = recipes.annotate(avg_rating=Avg("ratings__rating")).order_by(
+                "avg_rating", "-created_at"
+            )
+        elif sort_by == "rating_low":
+            recipes = recipes.annotate(avg_rating=Avg("ratings__rating")).order_by(
+                "-avg_rating", "-created_at"
+            )
+        elif sort_by == "title_az":
+            recipes = recipes.order_by("title")
+        elif sort_by == "title_za":
+            recipes = recipes.order_by("-title")
         else:
             # Default to newest
-            recipes = recipes.order_by('-created_at')
-        
+            recipes = recipes.order_by("-created_at")
+
         serializer = RecipeSerializer(recipes, many=True, context={"request": request})
         return Response(serializer.data)
 
@@ -227,34 +227,35 @@ def my_recipes(request):
     """Returns only the recipes created by the authenticated user."""
     user_profile = request.user.userprofile
     recipes = Recipe.objects.filter(user_profile=user_profile)
-    
+
     # Apply same sorting logic
-    sort_by = request.query_params.get('sort_by', 'newest')
-    
-    if sort_by == 'oldest':
-        recipes = recipes.order_by('created_at')
-    elif sort_by == 'newest':
-        recipes = recipes.order_by('-created_at')
-    elif sort_by == 'rating_high':
-        recipes = recipes.annotate(
-            avg_rating=Avg('ratings__rating')
-        ).order_by('-avg_rating', '-created_at')
-    elif sort_by == 'rating_low':
-        recipes = recipes.annotate(
-            avg_rating=Avg('ratings__rating')
-        ).order_by('avg_rating', '-created_at')
-    elif sort_by == 'title_az':
-        recipes = recipes.order_by('title')
-    elif sort_by == 'title_za':
-        recipes = recipes.order_by('-title')
+    sort_by = request.query_params.get("sort_by", "newest")
+
+    if sort_by == "oldest":
+        recipes = recipes.order_by("created_at")
+    elif sort_by == "newest":
+        recipes = recipes.order_by("-created_at")
+    elif sort_by == "rating_high":
+        recipes = recipes.annotate(avg_rating=Avg("ratings__rating")).order_by(
+            "-avg_rating", "-created_at"
+        )
+    elif sort_by == "rating_low":
+        recipes = recipes.annotate(avg_rating=Avg("ratings__rating")).order_by(
+            "avg_rating", "-created_at"
+        )
+    elif sort_by == "title_az":
+        recipes = recipes.order_by("title")
+    elif sort_by == "title_za":
+        recipes = recipes.order_by("-title")
     else:
-        recipes = recipes.order_by('-created_at')
-    
+        recipes = recipes.order_by("-created_at")
+
     serializer = RecipeSerializer(recipes, many=True, context={"request": request})
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 # ==========================Rating Endpoint==========================
+
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
@@ -273,9 +274,7 @@ def give_rating(request, id):
         if rating_value not in range(1, 6):
             raise ValueError
         if user_profile == recipe.user_profile:
-            return Response(
-                {"detail": "You cannot rate your own recipe."}, status=400
-            )
+            return Response({"detail": "You cannot rate your own recipe."}, status=400)
     except ValueError:
         return Response({"detail": "Rating must be 1–5."}, status=400)
 
@@ -309,9 +308,7 @@ def get_rating(request, id):
             "recipe": recipe.title,
             "average_rating": recipe.average_rating,
             "rating_count": recipe.rating_count,
-            "ratings": RecipeRatingSerializer(
-                recipe.ratings.all(), many=True
-            ).data,
+            "ratings": RecipeRatingSerializer(recipe.ratings.all(), many=True).data,
         }
     )
 

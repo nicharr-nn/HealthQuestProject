@@ -30,11 +30,11 @@ urlpatterns = [
         views.user_weekly_activity,
         name="weekly-activity",
     ),
-    path(
-        "day/<int:id>/videos/",
-        views.workout_day_videos,
-        name="workout-day-videos",
-    ),
+    # path(
+    #     "day/<int:id>/videos/",
+    #     views.workout_day_videos,
+    #     name="workout-day-videos",
+    # ),
     path(
         "day/<int:id>/complete/",
         views.complete_workout_day,
@@ -49,8 +49,8 @@ urlpatterns = [
     # Workout Assignment URLs
     path(
         "assignment-update/<int:id>/",
-        views.workout_assignment_update,
-        name="workout-assignment-update",
+        views.update_workout_assignment,
+        name="update_assignment",
     ),
     path(
         "assignments/",
@@ -58,12 +58,12 @@ urlpatterns = [
         name="list-my-assignments",
     ),
     path(
-        "assignment-manage/<int:program_id>",
+        "assignment-manage/<int:program_id>/",
         views.manage_workout_assignment,
         name="manage-assignment",
     ),
     path(
-        "assignment-delete/<int:program_id>",
+        "assignment-delete/<int:program_id>/",
         views.delete_workout_assignment,
         name="delete-assignment",
     ),
