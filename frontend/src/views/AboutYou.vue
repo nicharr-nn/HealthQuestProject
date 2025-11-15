@@ -203,7 +203,7 @@ async function submitProfile() {
       location: form.location
     };
 
-    const response = await fetch("http://127.0.0.1:8000/api/update-profile/", {
+    const response = await fetch("http://127.0.0.1:8000/api/user/update-profile/", {
       method: "POST",
       credentials: "include",
       headers: {

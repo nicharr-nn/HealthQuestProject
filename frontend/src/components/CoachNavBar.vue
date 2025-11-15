@@ -45,16 +45,6 @@
             </RouterLink>
           </li>
 
-          <li>
-            <RouterLink
-              to="/view-member"
-              class="font-body text-white hover:text-[#c7d2fe] transition-colors"
-              active-class="text-[#c7d2fe]"
-            >
-              Member
-            </RouterLink>
-          </li>
-
           <!-- Clickable Food Post Dropdown -->
           <li class="relative">
             <button
@@ -143,16 +133,6 @@
               active-class="text-[#c7d2fe]"
             >
               Dashboard
-            </RouterLink>
-          </li>
-          <li>
-            <RouterLink
-              to="/view-member"
-              @click="closeMobileMenu"
-              class="block font-body text-white hover:text-[#c7d2fe] py-2"
-              active-class="text-[#c7d2fe]"
-            >
-              Member
             </RouterLink>
           </li>
           <li>

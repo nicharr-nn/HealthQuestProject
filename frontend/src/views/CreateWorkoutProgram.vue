@@ -95,7 +95,8 @@
 
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1.5" for="duration">
-                Duration (day{{ workoutProgram.duration === 1 ? '' : 's' }}) <span class="text-red-500">*</span>
+                Duration (day{{ workoutProgram.duration === 1 ? '' : 's' }})
+                <span class="text-red-500">*</span>
               </label>
               <input
                 id="duration"
@@ -150,43 +151,46 @@
 
           <!-- Visibility Toggle -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1.5 justify-between flex w-full"> Visibility
+            <label
+              class="block text-sm font-medium text-gray-700 mb-1.5 justify-between flex w-full"
+            >
+              Visibility
 
-            <label class="inline-flex items-center cursor-pointer">
-              <span
-                class="select-none text-sm font-semibold transition-colors duration-200"
-                :class="workoutProgram.is_public ? 'text-blue-600' : 'text-gray-400'"
-              >
-                Public
-              </span>
+              <label class="inline-flex items-center cursor-pointer">
+                <span
+                  class="select-none text-sm font-semibold transition-colors duration-200"
+                  :class="workoutProgram.is_public ? 'text-blue-600' : 'text-gray-400'"
+                >
+                  Public
+                </span>
 
-              <input
-                type="checkbox"
-                class="sr-only peer"
-                :checked="!workoutProgram.is_public"
-                @change="workoutProgram.is_public = !workoutProgram.is_public"
-              />
+                <input
+                  type="checkbox"
+                  class="sr-only peer"
+                  :checked="!workoutProgram.is_public"
+                  @change="workoutProgram.is_public = !workoutProgram.is_public"
+                />
 
-              <div
-                class="relative mx-4 w-14 h-7 bg-blue-200 peer-focus:outline-none rounded-full peer transition-colors duration-300 peer-checked:bg-pink-200"
-              >
                 <div
-                  class="absolute top-0.5 left-0.5 bg-white border-2 rounded-full h-6 w-6 transition-all duration-300 shadow-md"
-                  :class="
-                    workoutProgram.is_public
-                      ? 'translate-x-0 border-blue-500'
-                      : 'translate-x-7 border-pink-500'
-                  "
-                ></div>
-              </div>
+                  class="relative mx-4 w-14 h-7 bg-blue-200 peer-focus:outline-none rounded-full peer transition-colors duration-300 peer-checked:bg-pink-200"
+                >
+                  <div
+                    class="absolute top-0.5 left-0.5 bg-white border-2 rounded-full h-6 w-6 transition-all duration-300 shadow-md"
+                    :class="
+                      workoutProgram.is_public
+                        ? 'translate-x-0 border-blue-500'
+                        : 'translate-x-7 border-pink-500'
+                    "
+                  ></div>
+                </div>
 
-              <span
-                class="select-none text-sm font-semibold transition-colors duration-200"
-                :class="!workoutProgram.is_public ? 'text-pink-600' : 'text-gray-400'"
-              >
-                Private
-              </span>
-            </label>
+                <span
+                  class="select-none text-sm font-semibold transition-colors duration-200"
+                  :class="!workoutProgram.is_public ? 'text-pink-600' : 'text-gray-400'"
+                >
+                  Private
+                </span>
+              </label>
             </label>
 
             <p class="text-xs text-gray-600 italic mt-2">
@@ -309,33 +313,33 @@
           </span>
           
         </div> -->
-          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-    <div class="flex items-center gap-2 text-blue-800">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="h-5 w-5"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-        />
-      </svg>
-      <span class="font-semibold text-sm"
-        >Program Duration: {{ duration }} day{{ duration === 1 ? '' : 's' }}
-        {{
-          duration > 0
-            ? `(${Math.ceil(duration / 7)} week${Math.ceil(duration / 7) === 1 ? '' : 's'})`
-            : ''
-        }}
-      </span>
-    </div>
-    <p class="text-xs text-blue-600 mt-1">Add workout sessions for each day of the program</p>
-  </div>
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+          <div class="flex items-center gap-2 text-blue-800">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <span class="font-semibold text-sm"
+              >Program Duration: {{ duration }} day{{ duration === 1 ? '' : 's' }}
+              {{
+                duration > 0
+                  ? `(${Math.ceil(duration / 7)} week${Math.ceil(duration / 7) === 1 ? '' : 's'})`
+                  : ''
+              }}
+            </span>
+          </div>
+          <p class="text-xs text-blue-600 mt-1">Add workout sessions for each day of the program</p>
+        </div>
 
         <!-- Day Selection -->
         <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-6">
@@ -743,7 +747,7 @@ onMounted(async () => {
 
 async function fetchUserProfileId() {
   try {
-    const response = await fetch('http://127.0.0.1:8000/api/user-info/', {
+    const response = await fetch('http://127.0.0.1:8000/api/user/user-info/', {
       credentials: 'include',
     })
     if (response.ok) {
@@ -795,8 +799,8 @@ async function fetchCoachMembers() {
 const props = defineProps({
   existingProgram: {
     type: Object,
-    default: null
-  }
+    default: null,
+  },
 })
 
 const isEditing = computed(() => {
@@ -1296,7 +1300,7 @@ async function submitProgram() {
 
   if (!coachUserProfileId.value) {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/user-info/', {
+      const response = await fetch('http://127.0.0.1:8000/api/user/user-info/', {
         credentials: 'include',
       })
       if (response.ok) {

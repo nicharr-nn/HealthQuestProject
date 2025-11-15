@@ -6,7 +6,7 @@
 
     <div v-else>
       <!-- Program Title -->
-      <h1 class="text-4xl font-bold text-center mb-8">{{ program.title }}</h1>
+      <h1 class="text-4xl font-bold text-center mb-8 text-[#846757]">{{ program.title.toUpperCase() }}</h1>
 
       <!-- Day Selector -->
       <div class="relative max-w-6xl mx-auto mb-8 rounded-full bg-[#E3CFD8]">
@@ -289,7 +289,7 @@ async function fetchProgramDetail() {
           id: day.id,
           day_number: dayNumber,
           title: `Day ${dayNumber}`,
-          workouts: [], 
+          workouts: [],
           total_duration: 0,
         }
       }
@@ -319,7 +319,6 @@ async function fetchProgramDetail() {
     // Pick the first incomplete day as default
     const firstIncomplete = days.value.find((d) => !dayCompletionStates.value[d.id])
     selectedDay.value = firstIncomplete ? firstIncomplete.id : (days.value[0]?.id ?? null)
-
   } catch (err) {
     error.value = err.message
   } finally {
@@ -418,7 +417,7 @@ function allWorkoutsComplete(dayId) {
 }
 
 async function getCurrentXp() {
-  const res = await fetch(`http://127.0.0.1:8000/api/user-info/`, {
+  const res = await fetch(`http://127.0.0.1:8000/api/user/user-info/`, {
     credentials: 'include',
   })
   if (!res.ok) throw new Error('Failed to load user info')
@@ -457,8 +456,7 @@ async function completeDay(dayId) {
     } else {
       alert(`🎉 You completed all days in this program! You earned ${xp.value} XP!`)
     }
-  alert(`🎉 Congratulations! You earned ${xp.value} XP!`)
-
+    alert(`🎉 Congratulations! You earned ${xp.value} XP!`)
   } catch (err) {
     console.error(err)
     alert('Failed to complete day. Please try again.')
@@ -467,4 +465,3 @@ async function completeDay(dayId) {
   }
 }
 </script>
-
