@@ -58,7 +58,6 @@ def download_recipe_pdf(request, id):
     except Recipe.DoesNotExist:
         raise Http404("Recipe not found")
 
-    # Optional access restriction
     user_profile = request.user.userprofile
     if (
         recipe.access_level == "gold"
@@ -132,7 +131,14 @@ def delete_recipe(request, id):
     """DELETE a recipe"""
     recipe = get_object_or_404(Recipe, pk=id)
     user_profile = request.user.userprofile
+    is_admin = hasattr(request.user, "admin_profile")
 
+    # Admin
+    if is_admin:
+        recipe.delete()
+        return Response({"detail": "Recipe deleted successfully."}, status=200)
+
+    # Own the recipe
     if (
         recipe.user_profile != user_profile
         and user_profile.role != "coach"
@@ -140,13 +146,12 @@ def delete_recipe(request, id):
     ):
         return Response(
             {"detail": "Permission denied. You can only delete your own recipes."},
-            status=status.HTTP_403_FORBIDDEN,
+            status=403,
         )
 
     recipe.delete()
-    return Response(
-        {"detail": "Recipe deleted successfully."}, status=status.HTTP_200_OK
-    )
+    return Response({"detail": "Recipe deleted successfully."}, status=200)
+
 
 
 @api_view(["PUT", "PATCH"])

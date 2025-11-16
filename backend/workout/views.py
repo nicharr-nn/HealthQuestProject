@@ -143,8 +143,8 @@ def workout_program_detail(request, id):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == "DELETE":
-        # Only the coach who created it can delete
-        if program.coach != user_profile:
+        # Only the coach who created and admin it can delete
+        if program.coach != user_profile and not request.user.is_staff and not request.user.is_admin:
             return Response(
                 {"error": "You don't have permission to delete this program"},
                 status=status.HTTP_403_FORBIDDEN,

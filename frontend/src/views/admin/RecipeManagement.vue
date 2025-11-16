@@ -345,14 +345,12 @@ const deleteRecipe = async (id) => {
       headers: { 'Content-Type': 'application/json' },
     })
 
-    if (response.status === 204) {
-      alert('✅ Recipe deleted successfully!')
-      // Refresh your recipe list — adjust as needed
-      fetchRecipes?.() || fetchMenus?.(showMine?.value)
+    if (response.status === 200 || response.status === 204) {
+      alert('Recipe deleted successfully!')
+      await fetchRecipes()
     } else {
-      // Handle API errors
       const data = await response.json().catch(() => ({}))
-      alert('Delete failed: ' + (data.error || response.statusText))
+      alert('Delete failed: ' + (data.detail || response.statusText))
     }
   } catch (err) {
     console.error(err)

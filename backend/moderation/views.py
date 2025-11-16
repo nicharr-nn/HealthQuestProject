@@ -90,7 +90,7 @@ def list_coaches_for_admin(request):
 def delete_recipe(request, id):
     recipe = get_object_or_404(Recipe, pk=id)
     user_profile = request.user.userprofile
-    is_admin = hasattr(request.user, "admin")
+    is_admin = hasattr(request.user, "admin_profile")
 
     if recipe.user_profile != user_profile and not is_admin:
         return Response(
@@ -109,7 +109,7 @@ def delete_workout(request, id):
 
     workout = get_object_or_404(WorkoutProgram, pk=id)
     user_profile = request.user.userprofile
-    is_admin = hasattr(request.user, "admin")
+    is_admin = hasattr(request.user, "admin_profile")
 
     if workout.coach.user != user_profile and not is_admin:
         return Response(
