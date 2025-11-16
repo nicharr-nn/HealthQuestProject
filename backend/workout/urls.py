@@ -30,11 +30,6 @@ urlpatterns = [
         views.user_weekly_activity,
         name="weekly-activity",
     ),
-    # path(
-    #     "day/<int:id>/videos/",
-    #     views.workout_day_videos,
-    #     name="workout-day-videos",
-    # ),
     path(
         "day/<int:id>/complete/",
         views.complete_workout_day,

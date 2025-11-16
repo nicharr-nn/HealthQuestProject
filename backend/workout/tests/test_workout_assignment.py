@@ -165,7 +165,6 @@ class WorkoutAssignmentTests(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-
     def test_update_assignment_status(self):
         """Test member can update assignment status to in_progress"""
         WorkoutDayCompletion.objects.create(
@@ -217,12 +216,10 @@ class WorkoutAssignmentTests(TestCase):
         """Test coach can delete an assignment"""
         self.client.force_login(self.coach_user)
 
-        url = reverse(
-            "workout-assignment-delete", kwargs={"id": self.workout_assignment.id}
-        )
+        url = reverse("delete-assignment", kwargs={"program_id": self.workout_assignment.id})
         response = self.client.delete(url)
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(
-            WorkoutAssignment.objects.filter(id=self.workout_assignment.id).exists()
+            WorkoutAssignment.objects.filter(program_id=self.workout_assignment.id).exists()
         )

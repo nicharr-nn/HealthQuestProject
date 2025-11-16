@@ -2,9 +2,8 @@ from django.test import TestCase
 from rest_framework.test import APIClient
 from django.contrib.auth.models import User
 from django.urls import reverse
-from django.core.files.uploadedfile import SimpleUploadedFile
 from ..models import Recipe, RecipeRating
-from django.conf import settings
+
 
 class RecipeRatingTests(TestCase):
     def setUp(self):
@@ -63,8 +62,7 @@ class RecipeRatingTests(TestCase):
         self.assertTrue(response.data["created"])
         self.assertTrue(
             RecipeRating.objects.filter(
-                recipe=self.recipe,
-                user_profile=self.silver_profile
+                recipe=self.recipe, user_profile=self.silver_profile
             ).exists()
         )
         self.client.logout()
@@ -73,9 +71,7 @@ class RecipeRatingTests(TestCase):
         """Test updating an existing rating"""
         # Create initial rating
         RecipeRating.objects.create(
-            recipe=self.recipe,
-            user_profile=self.silver_profile,
-            rating=3
+            recipe=self.recipe, user_profile=self.silver_profile, rating=3
         )
 
         url = reverse("give-recipe-rating", kwargs={"id": self.recipe.id})
@@ -86,11 +82,10 @@ class RecipeRatingTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["rating"], 5)
         self.assertFalse(response.data["created"])
-        
+
         # Verify update
         rating = RecipeRating.objects.get(
-            recipe=self.recipe,
-            user_profile=self.silver_profile
+            recipe=self.recipe, user_profile=self.silver_profile
         )
         self.assertEqual(rating.rating, 5)
         self.client.logout()
@@ -100,17 +95,17 @@ class RecipeRatingTests(TestCase):
         url = reverse("give-recipe-rating", kwargs={"id": self.recipe.id})
 
         self.client.force_login(self.silver_user)
-        
+
         # Test rating outside range
         data = {"rating": 6}
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, 400)
-        
+
         # Test rating = 0
         data = {"rating": 0}
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, 400)
-        
+
         self.client.logout()
 
     def test_give_rating_no_value(self):
@@ -138,14 +133,10 @@ class RecipeRatingTests(TestCase):
         """Test retrieving recipe ratings"""
         # Create some ratings
         RecipeRating.objects.create(
-            recipe=self.recipe,
-            user_profile=self.silver_profile,
-            rating=4
+            recipe=self.recipe, user_profile=self.silver_profile, rating=4
         )
         RecipeRating.objects.create(
-            recipe=self.recipe,
-            user_profile=self.gold_profile,
-            rating=5
+            recipe=self.recipe, user_profile=self.gold_profile, rating=5
         )
 
         url = reverse("get-recipe-rating", kwargs={"id": self.recipe.id})
@@ -163,9 +154,7 @@ class RecipeRatingTests(TestCase):
         """Test deleting a rating"""
         # Create rating
         RecipeRating.objects.create(
-            recipe=self.recipe,
-            user_profile=self.silver_profile,
-            rating=4
+            recipe=self.recipe, user_profile=self.silver_profile, rating=4
         )
 
         url = reverse("delete-recipe-rating", kwargs={"id": self.recipe.id})
@@ -175,8 +164,7 @@ class RecipeRatingTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFalse(
             RecipeRating.objects.filter(
-                recipe=self.recipe,
-                user_profile=self.silver_profile
+                recipe=self.recipe, user_profile=self.silver_profile
             ).exists()
         )
         self.client.logout()
@@ -208,7 +196,7 @@ class RecipeRatingTests(TestCase):
             ingredients="Premium ingredients",
             steps="Premium steps",
             user_profile=self.coach_profile,
-            access_level="gold"
+            access_level="gold",
         )
 
         url = reverse("download-recipe-pdf", kwargs={"id": gold_recipe.id})
