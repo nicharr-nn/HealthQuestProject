@@ -53,12 +53,6 @@ defineEmits(['close', 'select'])
 
 const nav = [
   {
-    title: 'Overview',
-    items: [
-      { id: 'dashboard', label: 'Dashboard', icon: '📊', path: '/admin-dashboard' },
-    ]
-  },
-  {
     title: 'User Management',
     items: [
       { id: 'users', label: 'Users', icon: '👥', path: '/admin-user' },

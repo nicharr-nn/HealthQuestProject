@@ -288,8 +288,8 @@ const coaches = ref([])
 const coachModal = ref({ open: false, coach: null })
 
 const filteredCoaches = computed(() => {
-  let result = coaches.value.filter(c => c.certification_doc)
-  
+  let result = [...coaches.value]
+
   if (searchQuery.value) {
     const q = searchQuery.value.toLowerCase()
     result = result.filter(c =>
@@ -298,6 +298,7 @@ const filteredCoaches = computed(() => {
       c.bio?.toLowerCase().includes(q)
     )
   }
+
   return result
 })
 
