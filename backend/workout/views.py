@@ -110,13 +110,12 @@ def create_workout_programs(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(["GET", "DELETE"])
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def workout_program_detail(request, id):
     """
     GET: Retrieve a specific workout program
     PUT/PATCH: Update a workout program
-    DELETE: Delete a workout program
     """
     program = get_object_or_404(WorkoutProgram, pk=id)
 
@@ -306,7 +305,7 @@ def _calculate_current_streak(completions, today):
     return streak
 
 
-# Analytics
+# ========== ANALYTICS ==========
 
 
 @api_view(["GET"])
@@ -353,43 +352,7 @@ def user_weekly_activity(request):
 
     return Response(result)
 
-
-# @api_view(["GET", "POST"])
-# @permission_classes([IsAuthenticated])
-# def workout_day_videos(request, id):
-#     """
-#     GET: Retrieve all YouTube links for a WorkoutDay
-#     POST: Add a new YouTube link (coaches only)
-#     """
-#     workout_day = get_object_or_404(WorkoutDay, id=id)
-
-#     if request.method == "GET":
-#         return Response({"video_links": workout_day.video_links})
-
-#     elif request.method == "POST":
-#         profile = request.user.userprofile
-#         if profile.role != "coach":
-#             raise PermissionDenied("Only coaches can add video links")
-
-#         new_link = request.data.get("link")
-#         if not new_link:
-#             return Response(
-#                 {"error": "You must provide a YouTube link"},
-#                 status=status.HTTP_400_BAD_REQUEST,
-#             )
-
-#         # Append new link to JSONField
-#         workout_day.video_links.append(new_link)
-#         workout_day.save(update_fields=["video_links"])
-
-#         return Response(
-#             {
-#                 "message": "Video link added",
-#                 "video_links": workout_day.video_links,
-#             }
-#         )
-
-
+# ========== WORKOUT DAY COMPLETION VIEWS ==========
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def check_workout_day_completion(request, id):
