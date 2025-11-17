@@ -25,7 +25,7 @@
               @click="sidebarOpen = !sidebarOpen"
               aria-label="Toggle menu"
             >
-              ☰
+              <Menu class="w-5 h-5" />
             </button>
             <div class="relative hidden md:block">
               <!-- use `search` (declared in script) -->
@@ -183,7 +183,7 @@ import { useUserStore } from '@/stores/user'
 import { useToastStore } from '@/stores/toast'
 import DeleteModal from '@/components/DeleteModal.vue'
 import AdminSideBar from '@/components/AdminSideBar.vue'
-import { Bell } from 'lucide-vue-next'
+import { Bell, Menu } from 'lucide-vue-next'
 
 const userStore = useUserStore()
 const toast = useToastStore()

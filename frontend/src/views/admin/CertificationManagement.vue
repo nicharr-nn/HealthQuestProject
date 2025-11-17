@@ -26,7 +26,7 @@
               @click="sidebarOpen = !sidebarOpen"
               aria-label="Toggle menu"
             >
-              ☰
+              <Menu class="w-5 h-5" />
             </button>
             <div class="relative hidden md:block">
               <input
@@ -271,7 +271,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import AdminSideBar from '@/components/AdminSideBar.vue'
-import { Bell } from 'lucide-vue-next'
+import { Bell, Menu } from 'lucide-vue-next'
 
 const router = useRouter()
 const userStore = useUserStore()
