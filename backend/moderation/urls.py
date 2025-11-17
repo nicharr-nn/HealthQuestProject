@@ -21,4 +21,3 @@ urlpatterns = [
         views.reject_coach,
         name="reject_coach"),
 ]
-

@@ -36,10 +36,10 @@ def workout_programs(request):
             request.user.is_staff
             or request.user.is_superuser
             or user_profile.role == "admin"
-            ):
-                programs = WorkoutProgram.objects.all()
-                serializer = WorkoutProgramSerializer(programs, many=True)
-                return Response(serializer.data)
+        ):
+            programs = WorkoutProgram.objects.all()
+            serializer = WorkoutProgramSerializer(programs, many=True)
+            return Response(serializer.data)
 
         user_level = user_profile.get_current_level()
         # Build query based on user's level
