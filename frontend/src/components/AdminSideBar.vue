@@ -29,7 +29,9 @@
             class="group flex items-center gap-3 rounded-md px-4 py-2.5 text-slate-300 hover:text-blue-400 hover:bg-blue-500/10 border-r-2 border-transparent"
             :class="activeSection === item.id ? 'bg-blue-500/10 text-blue-400 border-blue-500' : ''"
             >
-            <span class="w-5 h-5 shrink-0">{{ item.icon }}</span>
+            <span class="w-5 h-5 shrink-0">
+              <component :is="icons[item.icon]" class="w-full h-full" />
+            </span>
             <span class="truncate">{{ item.label }}</span>
             <span
                 v-if="item.badge"
@@ -44,6 +46,7 @@
 </template>
 
 <script setup>
+import * as icons from "lucide-vue-next";
 defineProps({
   sidebarOpen: Boolean,
   activeSection: String,
@@ -53,18 +56,16 @@ defineEmits(['close', 'select'])
 
 const nav = [
   {
-    title: 'User Management',
     items: [
-      { id: 'users', label: 'Users', icon: '👥', path: '/admin-user' },
-      { id: 'coaches', label: 'Coaches', icon: '🏃', path: '/admin-certification' }
+      { id: 'users', label: 'Users', icon: 'Users', path: '/admin-user' }, 
     ]
   },
   {
     title: 'Content Management',
     items: [
-      { id: 'workouts', label: 'Workouts', icon: '💪', path: '/admin-workout' },
-      { id: 'recipes', label: 'Recipes', icon: '🍽️', path: '/admin-recipe' },
-      { id: 'certifications', label: 'Certifications', icon: '🎓', path: '/admin-certification' },
+      { id: 'coaches', label: 'Certificates', icon: 'StickyNote', path: '/admin-certification' },
+      { id: 'workouts', label: 'Workouts', icon: 'Dumbbell', path: '/admin-workout' },
+      { id: 'recipes', label: 'Recipes', icon: 'Utensils', path: '/admin-recipe' },
     ]
   },
 ]

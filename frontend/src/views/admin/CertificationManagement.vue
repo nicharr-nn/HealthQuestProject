@@ -40,8 +40,11 @@
 
           <div class="flex items-center gap-3">
             <button class="relative rounded-md bg-slate-100 p-2" @click="showNotifications">
-              🔔
-              <span v-if="pendingCount > 0" class="absolute right-1 top-1 inline-block h-2 w-2 rounded-full bg-rose-500"></span>
+              <Bell class="w-5 h-5 text-slate-700" />
+              <span
+                v-if="pendingCount > 0"
+                class="absolute right-1 top-1 inline-block h-2 w-2 rounded-full bg-rose-500"
+              ></span>
             </button>
             <!-- Header User Info -->
             <div class="flex items-center gap-2">
@@ -95,9 +98,6 @@
                   <option value="approved">Approved</option>
                   <option value="rejected">Rejected</option>
                 </select>
-                <!-- <button class="rounded-md bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700" @click="exportCoachList">
-                  Export List
-                </button> -->
               </div>
             </div>
 
@@ -271,6 +271,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import AdminSideBar from '@/components/AdminSideBar.vue'
+import { Bell } from 'lucide-vue-next'
 
 const router = useRouter()
 const userStore = useUserStore()
