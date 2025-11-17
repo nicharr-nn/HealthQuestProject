@@ -229,7 +229,15 @@ async function confirmDelete() {
   } catch (e) { toast.error("Error: " + e.message) }
 }
 
-function formatDate(date) { return date ? new Date(date).toLocaleDateString() : 'N/A' }
+function formatDate(dateString) {
+  if (!dateString) return 'N/A'
+  return new Date(dateString).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  })
+}
+
 function getInitials(name) { return name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) || '?' }
 function roleClass(role) { if(role==='normal') return "bg-purple-100 text-purple-700"; if(role==='coach') return "bg-yellow-100 text-yellow-700"; return "bg-blue-100 text-blue-700" }
 
