@@ -349,7 +349,11 @@ async function fetchWorkouts() {
     const data = await res.json()
 
     if (import.meta.env.DEV) {
-      try { console.debug('Admin Workouts payload sample', Array.isArray(data) ? data.slice(0, 2) : data) } catch {}
+      try {
+        console.debug('Admin Workouts payload sample', Array.isArray(data) ? data.slice(0, 2) : data)
+      } catch (e) {
+        console.error(e)
+      }
     }
 
     const base = data.map(w => {
@@ -395,7 +399,7 @@ async function fetchWorkouts() {
           })
         }
       } catch (e) {
-        // silent best-effort
+        console.error(e)
       }
     }
 
@@ -430,7 +434,12 @@ async function deleteWorkout(id) {
     if (!res.ok) {
       const text = await res.text()
       let body = text
-      try { body = JSON.parse(text) } catch {}
+      try { 
+        body = JSON.parse(text) 
+      } catch (e) {
+        console.error(e)
+      }
+
       if (res.status === 403) {
         alert((body && (body.detail || body.error)) || "You don't have permission to delete this program")
       } else {
