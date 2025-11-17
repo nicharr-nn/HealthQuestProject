@@ -23,6 +23,7 @@ const FoodDiary = () => import('../views/FoodDiary.vue')
 const CertificationManagement = () => import('../views/admin/CertificationManagement.vue')
 const RecipeManagement = () => import('../views/admin/RecipeManagement.vue')
 const WorkoutManagement = () => import('../views/admin/WorkoutManagement.vue')
+const AdminUser = () => import('../views/admin/AdminUser.vue')
 
 const routes = [
   { path: '/', name: 'LandingPage', component: LandingPage },
@@ -47,6 +48,7 @@ const routes = [
   { path: '/admin-certification', name: 'CertificationManagement', component: CertificationManagement, meta: { requiresAdmin: true } },
   { path: '/admin-recipe', name: 'RecipeManagement', component: RecipeManagement, meta: { requiresAdmin: true } },
   { path: '/admin-workout', name: 'WorkoutManagement', component: WorkoutManagement, meta: { requiresAdmin: true } },
+  { path: '/admin-user', name: 'AdminUser', component: AdminUser, meta: { requiresAdmin: true } },
 ]
 
 const router = createRouter({
@@ -87,8 +89,8 @@ router.beforeEach(async (to, from, next) => {
   }
 
   // --- Redirect admin users away from all non-admin pages ---
-  if (isAdmin && !['/admin', '/admin-user'].includes(to.path)) {
-    return next('/admin')
+  if (isAdmin && !to.path.startsWith('/admin-')) {
+    return next(from.fullPath || '/admin-user') 
   }
 
   // --- Redirect approved coaches away from onboarding pages ---
