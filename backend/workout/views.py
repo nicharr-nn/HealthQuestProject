@@ -144,7 +144,7 @@ def workout_program_detail(request, id):
 
     elif request.method == "DELETE":
         # Only the coach who created and admin it can delete
-        if program.coach != user_profile and not request.user.is_staff and not request.user.is_admin:
+        if program.coach != user_profile and not request.user.is_staff:
             return Response(
                 {"error": "You don't have permission to delete this program"},
                 status=status.HTTP_403_FORBIDDEN,
