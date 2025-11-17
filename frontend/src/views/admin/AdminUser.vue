@@ -17,7 +17,7 @@
     <!-- Main column -->
     <div :class="sidebarOpen ? 'md:pl-72' : 'md:pl-0'">
       <!-- Header -->
-      <header class="sticky top-0 left-0 right-0 z-30 bg-white/90 backdrop-blur shadow-sm">
+      <header class="sticky top-0 left-0 right-0 z-30 z-30 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-sm">
         <div class="flex items-center justify-between px-4 py-3 md:px-8">
           <div class="flex items-center gap-3">
             <button
@@ -30,24 +30,45 @@
             <div class="relative hidden md:block">
               <input
                 type="text"
-                placeholder="Search users..."
-                v-model="search"
-                @input="applyFilters"
+                placeholder="Search recipes..."
+                v-model="searchQuery"
                 class="w-80 rounded-md border border-slate-200 pl-5 pr-3 py-2 text-sm font-subtitle placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
               />
             </div>
           </div>
 
-          <!-- User Info + Logout -->
           <div class="flex items-center gap-3">
-            <div class="grid h-10 w-10 place-items-center rounded-full bg-blue-500 font-bold text-white">
-              {{ getInitials(userStore.user?.username) }}
-            </div>
-            <div class="leading-tight">
-              <div class="font-medium">{{ userStore.user?.username || 'Loading...' }}</div>
-              <div class="text-[11px] text-slate-500">Administrator</div>
-            </div>
-            <button @click="logout" class="ml-3 flex items-center py-2 px-3 rounded-md hover:bg-gray-100">
+            <button class="relative rounded-md bg-slate-100 p-2" @click="showNotifications">
+              🔔
+              <span v-if="pendingCount > 0" class="absolute right-1 top-1 inline-block h-2 w-2 rounded-full bg-rose-500"></span>
+            </button>
+            <!-- Header User Info -->
+            <div class="flex items-center gap-2">
+              <!-- Avatar -->
+              <div class="grid h-10 w-10 place-items-center rounded-full bg-blue-500 font-bold font-subtitle text-white">
+                <template v-if="userStore.user?.username">
+                  {{ getInitials(userStore.user.username) }}
+                </template>
+                <template v-else>?</template>
+              </div>
+
+              <!-- Username and Role -->
+              <div class="leading-tight">
+                <div class="font-medium font-subtitle">
+                  <template v-if="userStore.user?.username">
+                    {{ userStore.user.username }}
+                  </template>
+                  <template v-else>
+                    Loading...
+                  </template>
+                </div>
+                <div class="text-[11px] text-slate-500 font-subtitle">Administrator</div>
+              </div>
+            </div>            
+            <button 
+              @click="logout"
+              class="ml-3 flex items-center py-2 px-3 rounded-md hover:bg-gray-100"
+            >
               <span class="material-symbols-outlined">logout</span>
             </button>
           </div>
@@ -186,7 +207,7 @@ async function confirmDelete() {
 }
 
 function formatDate(date) { return new Date(date).toLocaleDateString() }
-function getInitials(name) { if (!name) return "U"; const parts = name.split(" "); return parts.length>=2 ? parts[0][0]+parts[1][0] : parts[0][0] }
+function getInitials(name) { return name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) || '?' }
 function roleClass(role) { if(role==='normal') return "bg-purple-100 text-purple-700"; if(role==='coach') return "bg-yellow-100 text-yellow-700"; return "bg-blue-100 text-blue-700" }
 
 async function fetchUsers() {
