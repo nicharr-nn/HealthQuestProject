@@ -1,5 +1,6 @@
 from rest_framework import permissions
 
+
 class CanViewRecipe(permissions.BasePermission):
     """
     Allow:

@@ -153,7 +153,6 @@ def delete_recipe(request, id):
     return Response({"detail": "Recipe deleted successfully."}, status=200)
 
 
-
 @api_view(["PUT", "PATCH"])
 @permission_classes([IsAuthenticated])
 def update_recipe(request, id):

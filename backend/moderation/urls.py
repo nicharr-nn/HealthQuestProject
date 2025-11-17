@@ -1,11 +1,17 @@
 from django.urls import path
 from . import views
 urlpatterns = [
-    path("recipe/<int:recipe_id>/delete/", views.delete_recipe, name="delete_recipe"),
-
-    path("workout/programs/<int:id>/delete/", views.delete_workout, name="delete_workout"),
-
-    path("admin/coaches/", views.list_coaches_for_admin, name="list_coaches"),
+    path(
+        "recipe/<int:recipe_id>/delete/",
+        views.delete_recipe,
+        name="delete_recipe"),
+    path(
+        "workout/programs/<int:id>/delete/",
+        views.delete_workout,
+        name="delete_workout"),
+    path("admin/coaches/",
+         views.list_coaches_for_admin,
+         name="list_coaches"),
     path(
         "admin/coaches/<int:coach_id>/approve/",
         views.approve_coach,
