@@ -7,7 +7,11 @@ from coach.models import Coach
 from .models import Admin, AdminModeration
 from recipe.models import Recipe
 from django.shortcuts import get_object_or_404
+from django.contrib.auth import get_user_model
+from django.core.mail import send_mail
+from django.conf import settings
 
+User = get_user_model()
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
