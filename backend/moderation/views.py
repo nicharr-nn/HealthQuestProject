@@ -134,3 +134,84 @@ def delete_workout(request, id):
 
     workout.delete()
     return Response({"detail": "Workout deleted successfully."}, status=200)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def list_all_users(request):
+    # Check admin permission
+    if not Admin.objects.filter(user=request.user).exists():
+        return Response({"error": "You are not an admin"}, status=403)
+
+    users = User.objects.all().order_by("-date_joined")
+
+    data = [
+        {
+            "id": u.id,
+            "username": u.username,
+            "email": u.email,
+            "full_name": u.get_full_name(),
+            "role": getattr(u.userprofile, "role", None),
+            "date_joined": u.date_joined,
+            "is_active": u.is_active,
+        }
+        for u in users if u.userprofile.role != "admin"
+    ]
+
+    return Response(data)
+
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def delete_user(request, user_id):
+    try:
+        admin = Admin.objects.get(user=request.user)
+    except Admin.DoesNotExist:
+        return Response(
+            {"error": "You are not an admin"},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    try:
+        user = User.objects.get(pk=user_id)
+    except User.DoesNotExist:
+        return Response(
+            {"error": "User not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    subject = "Account Deletion Notification"
+    message = (
+        f"Dear {user.username},\n\n"
+        "Your HealthQuest account has been "
+        "permanently deleted by an administrator.\n\n\n"
+        "Thank you,\n"
+        "HealthQuest Team"
+    )
+
+    send_mail(
+        subject,
+        message,
+        settings.DEFAULT_FROM_EMAIL,
+        [user.email],
+        fail_silently=False,
+    )
+
+    AdminModeration.objects.create(
+        admin=admin,
+        content_type="user",
+        content_id=user.id,
+        action="delete_user",
+    )
+
+    username = user.username
+    user.delete()
+
+    return Response(
+        {
+            "message": (
+                f"User '{username}' deleted, "
+                "email sent and action logged."
+            )
+        },
+        status=status.HTTP_200_OK,
+    )
