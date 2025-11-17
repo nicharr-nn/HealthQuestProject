@@ -5,7 +5,8 @@
       v-if="sidebarOpen"
       class="fixed inset-0 z-40 bg-black/40 md:hidden"
       @click="sidebarOpen = false"
-    />
+    >
+    </div>
 
     <!-- Sidebar -->
     <aside
@@ -93,7 +94,8 @@
 
       <!-- Page content -->
       <main class="px-4 py-6 md:px-8">
-        <!-- COACHES CERTIFICATION SECTION -->
+        <AdminUser v-show="activeSection === 'users'" />
+      <!-- COACHES CERTIFICATION SECTION -->
         <section v-show="activeSection === 'coaches'" class="space-y-6">
           <div>
             <h2 class="text-2xl font-bold">Coach Certification Verification</h2>
@@ -1037,7 +1039,6 @@ import {
   ArcElement
 } from 'chart.js'
 
-// Register Chart.js components
 ChartJS.register(
   CategoryScale,
   LinearScale,
