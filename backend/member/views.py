@@ -11,6 +11,8 @@ from .serializers import (
     FoodPostCommentSerializer,
 )
 from coach.models import Coach
+from workout.models import WorkoutProgram, WorkoutAssignment
+from workout.serializers import WorkoutAssignmentSerializer
 
 
 @api_view(["GET", "PATCH"])
@@ -278,38 +280,72 @@ def manage_member_request(request):
         )
 
 
-@api_view(["PATCH"])
+@api_view(["POST"])
 @permission_classes([IsAuthenticated])
-def assign_program_to_member(request, member_id):
+def assign_program_to_member(request):
     """
-    Coach assigns a workout program to an accepted member.
+    Assign a workout program to a member (coaches only).
     """
-    user_profile = getattr(request.user, "userprofile", None)
-    coach_profile = getattr(user_profile, "coach_profile", None)
-
-    if not coach_profile:
-        return Response({"error": "You are not a coach."}, status=403)
-
-    try:
-        relationship = CoachMemberRelationship.objects.get(
-            coach=coach_profile, member__member_id=member_id, status="accepted"
+    coach_profile = request.user.userprofile
+    if coach_profile.role != "coach":
+        return Response(
+            {"error": "Only coaches can assign programs."},
+            status=status.HTTP_403_FORBIDDEN,
         )
-    except CoachMemberRelationship.DoesNotExist:
-        return Response({"error": "No such accepted member."}, status=404)
 
-    program_name = request.data.get("program_name")
-    if not program_name:
-        return Response({"error": "Program name required."}, status=400)
+    member_identifier = request.data.get("member_id")
+    if not member_identifier:
+        return Response(
+            {"error": "Member ID is required."}, status=status.HTTP_400_BAD_REQUEST
+        )
 
-    relationship.member.program_name = program_name
-    relationship.member.save()
+    program_id = request.data.get("program_id")
+    if not program_id:
+        return Response(
+            {"error": "Program ID is required."}, status=status.HTTP_400_BAD_REQUEST
+        )
 
+    # Try to find member by member_id string first, then by primary key
+    try:
+        if isinstance(member_identifier, str) and member_identifier.startswith("M-"):
+            member = Member.objects.get(member_id=member_identifier)
+        else:
+            # Try as primary key
+            member = Member.objects.get(pk=member_identifier)
+    except Member.DoesNotExist:
+        return Response(
+            {"error": "Member not found."}, status=status.HTTP_404_NOT_FOUND
+        )
+
+    program = get_object_or_404(WorkoutProgram, pk=program_id)
+
+    # Optional due date
+    due_date = request.data.get("due_date")
+
+    # Prevent duplicates
+    if WorkoutAssignment.objects.filter(member=member, program=program).exists():
+        return Response(
+            {"message": "This program is already assigned to the member."},
+            status=status.HTTP_200_OK,
+        )
+
+    assignment = WorkoutAssignment.objects.create(
+        member=member,
+        program=program,
+        due_date=due_date if due_date else None,
+    )
+
+    member.program_name = program.title
+    member.save(update_fields=["program_name"])
+
+    serializer = WorkoutAssignmentSerializer(assignment)
     return Response(
-        {"message": f"Program '{program_name}' assigned to member."},
-        status=200,
+        {"message": "Program assigned successfully.", "assignment": serializer.data},
+        status=status.HTTP_201_CREATED,
     )
 
 
+# ==================== FOOD POSTS ====================
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def food_posts(request):
@@ -389,10 +425,8 @@ def upload_food_post_image(request, id):
 def food_post_comments(request, post_id):
     """List or create comments for a food post"""
     post = get_object_or_404(FoodPost, pk=post_id)
-    profile = request.user.userprofile
 
     if request.method == "GET":
-        # Anyone (coach or member) can view comments
         comments = post.comments.all()
         serializer = FoodPostCommentSerializer(
             comments, many=True, context={"request": request}
@@ -400,13 +434,40 @@ def food_post_comments(request, post_id):
         return Response(serializer.data)
 
     elif request.method == "POST":
-        # Only coaches can create comments
-        if profile.role != "coach":
+        profile = request.user.userprofile
+
+        # only the post owner or that member's coach may comment
+        if profile.role == "member":
+            # member may only comment on their own post
+            if post.user_profile != profile:
+                return Response(
+                    {"error": "Members may only comment on their own posts."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+        elif profile.role == "coach":
+            # coach must be assigned to the member who created the post
+            member = getattr(post.user_profile, "member_profile", None)
+            if not member:
+                return Response(
+                    {"error": "Member profile not found for this post."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            assigned = CoachMemberRelationship.objects.filter(
+                coach__user=profile, member=member, status__in=["accepted", "approved"]
+            ).exists()
+            if not assigned:
+                return Response(
+                    {"error": "You are not the assigned coach for this member."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+        else:
             return Response(
-                {"error": "Only coaches can comment on food posts"},
+                {"error": "Only members or coaches may comment."},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
+        # Both member and coach can comment
         serializer = FoodPostCommentSerializer(
             data=request.data, context={"request": request}
         )
@@ -424,7 +485,7 @@ def food_post_comment_detail(request, post_id, comment_id):
     profile = request.user.userprofile
 
     # Only the comment author (coach) can update/delete
-    if comment.coach != profile:
+    if comment.author != profile:
         return Response(
             {"error": "You can only modify your own comments"},
             status=status.HTTP_403_FORBIDDEN,
@@ -459,9 +520,11 @@ def uncommented_food_posts(request):
         )
 
     # Get all food posts where this coach is assigned and has no comments
-    uncommented_posts = FoodPost.objects.filter(
-        coach=profile, comments__isnull=True
-    ).select_related("user_profile__user").order_by("-created_at")
+    uncommented_posts = (
+        FoodPost.objects.filter(coach=profile, comments__isnull=True)
+        .select_related("user_profile__user")
+        .order_by("-created_at")
+    )
 
     # Serialize the posts
     data = []
@@ -479,6 +542,4 @@ def uncommented_food_posts(request):
             }
         )
 
-    return Response(
-        {"count": len(data), "posts": data}, status=status.HTTP_200_OK
-    )
+    return Response({"count": len(data), "posts": data}, status=status.HTTP_200_OK)

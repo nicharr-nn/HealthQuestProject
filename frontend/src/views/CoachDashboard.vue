@@ -70,6 +70,12 @@
           <div class="stat-label">My Members</div>
           <div class="stat-action">View All →</div>
         </div>
+
+        <div class="stat-card clickable" @click="router.push('/view-request')">
+          <div class="stat-number">{{ pendingRequestCount }}</div>
+          <div class="stat-label">Pending Requests</div>
+          <div class="stat-action">View All →</div>
+        </div>
       </div>
 
       <div class="programs-section">
@@ -107,7 +113,7 @@
             <div class="program-meta">
               <div class="meta-item">
                 <span class="meta-label">Duration:</span>
-                <span class="meta-value">{{ program.duration }} days</span>
+                <span class="meta-value">{{ program.duration }} day{{ program.duration === 1 ? '' : 's' }}</span>
               </div>
               <div class="meta-item">
                 <span class="meta-label">Category:</span>
@@ -152,6 +158,7 @@ const programs = ref<any[]>([])
 const coachID = ref<string>('')
 const memberCount = ref(0)
 const editingProgram = ref<any>(null)
+const pendingRequestCount = ref(0)
 
 const isApproved = computed(() => approvalStatus.value === 'approved')
 const totalSessions = computed(() =>
@@ -227,6 +234,20 @@ async function loadMemberCount() {
   }
 }
 
+async function loadPendingRequestCount() {
+  try {
+    const res = await fetch('http://127.0.0.1:8000/api/member/coach-requests/', { credentials: 'include' })
+    if (!res.ok) throw new Error('Failed to fetch requests')
+    const data = await res.json()
+    pendingRequestCount.value = data.filter((r: any) => r.status === 'pending').length
+    memberCount.value = data.filter((r: any) => r.status === 'accepted').length
+  } catch (err) {
+    console.error('Failed to load pending requests', err)
+    pendingRequestCount.value = 0
+    memberCount.value = 0
+  }
+}
+
 async function editProgram(programId: number) {
   // Navigate to create-workout-program with the program ID
   router.push({
@@ -279,7 +300,7 @@ onMounted(async () => {
   await loadCoachStatus()
 
  if (isApproved.value) {
-    await Promise.all([loadPrograms(), loadMemberCount()])
+    await Promise.all([loadPrograms(), loadMemberCount(), loadPendingRequestCount()])
   }
 
   loading.value = false

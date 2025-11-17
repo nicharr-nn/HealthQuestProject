@@ -54,7 +54,7 @@
           </div>
 
           <div class="member-actions">
-            <button class="btn small ghost" @click="viewProgress(member)">📊 View Progress</button>
+            <button class="btn small ghost" @click="viewFoodDiary(member)">View Food Diary</button>
             <button class="btn small danger" @click="removeMember(member)">Remove</button>
           </div>
         </div>
@@ -106,8 +106,8 @@ async function loadMembers() {
   }
 }
 
-function viewProgress(member: Member) {
-  router.push(`/member/${member.memberId}/progress`)
+function viewFoodDiary(member: Member) {
+  router.push(`/food-diary/${member.memberId}`)
 }
 
 async function removeMember(member: Member) {

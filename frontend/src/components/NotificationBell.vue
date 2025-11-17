@@ -89,11 +89,11 @@
         </div>
 
         <!-- Footer -->
-        <div class="dropdown-footer">
+        <!-- <div class="dropdown-footer">
           <button @click="goToViewAll" class="view-all-btn">
             View All Activity
           </button>
-        </div>
+        </div> -->
       </div>
     </transition>
   </div>
@@ -196,11 +196,6 @@ const goToMemberRequests = () => {
 const goToFoodDiary = (memberId) => {
   closeDropdown()
   router.push(`/food-diary/${memberId}`)
-}
-
-const goToViewAll = () => {
-  closeDropdown()
-  router.push('/view-member')
 }
 
 // Click outside to close

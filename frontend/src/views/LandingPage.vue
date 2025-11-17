@@ -55,19 +55,36 @@
     </section>
 
     <!-- Contact Section -->
-    <section id="contract" class="bg-[#FAF4E6] py-16 px-4">
+    <section id="contract" class="bg-[#FAF4E6] text-[#846757] py-16 px-4 font-body">
       <div class="max-w-7xl mx-auto text-center">
-        <h2 class="text-3xl md:text-4xl font-bold text-[#846757] mb-4">Contact Us</h2>
-        <p class="text-lg md:text-xl text-[#846757] mb-8">
+        <h2 class="text-3xl md:text-4xl font-subtitle  mb-4">Contact Us</h2>
+        <p class="text-lg md:text-xl mb-8">
           Get in touch with us! We'd love to hear from you.
         </p>
+        <!-- Replace the contact section grid and its items -->
+        <div class="flex flex-col md:grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div class="h-80 w-full bg-blue-200 rounded-xl flex items-center justify-center text-2xl text-[#846757]">01</div>
+          <div class="h-80 w-full bg-blue-200 rounded-xl flex items-center justify-center text-2xl text-[#846757]">02</div>
+          <div class="h-80 w-full bg-blue-200 rounded-xl flex items-center justify-center text-2xl text-[#846757]">03</div>
+          <div class="h-80 w-full bg-blue-200 rounded-xl flex flex-col items-center justify-center p-4">
+            <div class="w-48 aspect-square overflow-hidden rounded-lg">
+              <img 
+                src="@/images/raveewan.jpeg" 
+                alt="Contact Us" 
+                class="w-full h-full object-cover"
+              />
+            </div>
+            <p class="text-[#846757] mt-4">Raveewan Santipong<br>
+              Email: raveewan.s@ku.th
+            </p>
+          </div>
+        </div>
       </div>
     </section>
   </div>
 </template>
 
 <script setup>
-
 const redirectToGoogle = () => {
   window.location.href = "http://127.0.0.1:8000/accounts/google/login/"
 }

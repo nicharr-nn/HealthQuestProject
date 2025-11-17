@@ -1,6 +1,8 @@
 from django.db import models
 
 from users.models import UserProfile
+from member.models import Member
+from django.utils import timezone
 
 
 class WorkoutProgram(models.Model):
@@ -13,6 +15,13 @@ class WorkoutProgram(models.Model):
         ("flexibility", "Flexibility"),
         ("full_body", "Full Body"),
     ]
+
+    DIFFICULTY_CHOICES = [
+        ("easy", "Easy"),
+        ("medium", "Medium"),
+        ("hard", "Hard"),
+    ]
+
     coach = models.ForeignKey(
         UserProfile,
         on_delete=models.CASCADE,
@@ -23,7 +32,9 @@ class WorkoutProgram(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
     level_access = models.CharField(max_length=50, default="all")
-    difficulty_level = models.CharField(max_length=50, default="easy")
+    difficulty_level = models.CharField(
+        max_length=50, choices=DIFFICULTY_CHOICES, default="easy"
+    )
     is_public = models.BooleanField(default=True)
     duration = models.IntegerField(help_text="Total duration in days", default=0)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -37,6 +48,18 @@ class WorkoutProgram(models.Model):
 
 
 class WorkoutDay(models.Model):
+    WORKOUT_TYPE_CHOICES = [
+        ("strength_training", "Strength Training"),
+        ("cardio", "Cardio"),
+        ("hiit", "HIIT"),
+        ("flexibility", "Flexibility"),
+        ("recovery", "Recovery"),
+        ("full_body", "Full Body"),
+        ("upper_body", "Upper Body"),
+        ("lower_body", "Lower Body"),
+        ("core", "Core"),
+    ]
+
     program = models.ForeignKey(
         WorkoutProgram,
         on_delete=models.CASCADE,
@@ -52,9 +75,14 @@ class WorkoutDay(models.Model):
         through="WorkoutDayCompletion",
         related_name="completed_days",
     )
+    type = models.CharField(
+        max_length=50,
+        choices=WORKOUT_TYPE_CHOICES,
+        blank=True,
+        null=True,
+    )
 
     class Meta:
-        unique_together = ("program", "day_number")
         ordering = ["day_number"]
 
     def __str__(self):
@@ -77,3 +105,57 @@ class WorkoutDayCompletion(models.Model):
 
     class Meta:
         unique_together = ("user_profile", "workout_day")
+
+
+class WorkoutAssignment(models.Model):
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("in_progress", "In Progress"),
+        ("completed", "Completed"),
+        ("paused", "Paused"),
+        ("overdue", "Overdue"),
+    ]
+
+    member = models.ForeignKey(
+        Member,
+        on_delete=models.CASCADE,
+        related_name="assignments",
+        null=True,  # removed after testing
+        blank=True,  # removed after testing
+    )
+
+    program = models.ForeignKey(
+        WorkoutProgram,
+        on_delete=models.CASCADE,
+        related_name="assignments",
+    )
+    assigned_date = models.DateField(auto_now_add=True)
+    due_date = models.DateField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    completed_date = models.DateField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-assigned_date"]
+        unique_together = ("member", "program")
+
+    def __str__(self):
+        return f"{self.member.user.user.username} → {self.program.title}"
+
+    def check_completion(self):
+        """Check if all day_numbers are completed."""
+        total_days = self.program.days.values("day_number").distinct().count()
+        completed_days = (
+            WorkoutDayCompletion.objects.filter(
+                user_profile=self.member.user, workout_day__program=self.program
+            )
+            .values("workout_day__day_number")
+            .distinct()
+            .count()
+        )
+
+        if completed_days >= total_days:
+            self.status = "completed"
+            self.completed_date = timezone.now().date()
+            self.save(update_fields=["status", "completed_date"])
+            return True
+        return False
