@@ -13,6 +13,7 @@ from django.conf import settings
 
 User = get_user_model()
 
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def approve_coach(request, coach_id):
@@ -138,6 +139,7 @@ def delete_workout(request, id):
 
     workout.delete()
     return Response({"detail": "Workout deleted successfully."}, status=200)
+
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])

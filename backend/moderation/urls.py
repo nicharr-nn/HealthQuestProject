@@ -26,10 +26,10 @@ urlpatterns = [
         name="admin_list_coaches"),
     path(
         "admin/users/",
-         views.list_all_users,
-         name="admin_list_users"),
+        views.list_all_users,
+        name="admin_list_users"),
     path(
         "admin/users/<int:user_id>/delete/",
-         views.delete_user,
-         name="admin_delete_user"),
+        views.delete_user,
+        name="admin_delete_user"),
 ]
