@@ -193,30 +193,17 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowLeft, ClipboardPen } from 'lucide-vue-next'
 
-interface MemberRequest {
-  id: string
-  memberId: string
-  memberName: string
-  programName?: string
-  experienceLevel: string
-  message?: string
-  goals?: string[]
-  status: 'pending' | 'accepted' | 'rejected'
-  submittedAt: string
-  relationship_id: number
-}
-
 const router = useRouter()
-const requests = ref<MemberRequest[]>([])
-const activeTab = ref<'all' | 'pending' | 'accepted' | 'rejected'>('all')
+const requests = ref([])
+const activeTab = ref('all')
 const loading = ref(true)
 const showModal = ref(false)
-const selectedRequest = ref<MemberRequest | null>(null)
+const selectedRequest = ref(null)
 
 const modalProfile = ref({
   user: { username: '' },
@@ -236,13 +223,15 @@ const modalError = ref('')
 const pendingRequests = computed(() => requests.value.filter(r => r.status === 'pending'))
 const acceptedRequests = computed(() => requests.value.filter(r => r.status === 'accepted'))
 const rejectedRequests = computed(() => requests.value.filter(r => r.status === 'rejected'))
-const filteredRequests = computed(() => activeTab.value === 'all' ? requests.value : requests.value.filter(r => r.status === activeTab.value))
+const filteredRequests = computed(() =>
+  activeTab.value === 'all' ? requests.value : requests.value.filter(r => r.status === activeTab.value)
+)
 
 function goBackToDashboard() {
   router.push('/coach-dashboard')
 }
 
-function formatDate(dateStr: string) {
+function formatDate(dateStr) {
   const date = new Date(dateStr)
   const now = new Date()
   const diffTime = Math.abs(now.getTime() - date.getTime())
@@ -259,7 +248,7 @@ async function loadRequests() {
   try {
     const res = await fetch('http://127.0.0.1:8000/api/member/coach-requests/', { credentials: 'include' })
     if (!res.ok) throw new Error('Failed to fetch')
-    const data: MemberRequest[] = await res.json()
+    const data = await res.json()
     requests.value = data
   } catch (err) {
     console.error(err)
@@ -269,7 +258,7 @@ async function loadRequests() {
   }
 }
 
-async function updateRequestStatus(relationshipId: number, status: 'accepted' | 'rejected') {
+async function updateRequestStatus(relationshipId, status) {
   try {
     const res = await fetch(`http://127.0.0.1:8000/api/member/coach-requests/${relationshipId}/`, {
       method: 'PATCH',
@@ -288,7 +277,7 @@ async function updateRequestStatus(relationshipId: number, status: 'accepted' | 
   }
 }
 
-async function viewDetails(request: MemberRequest) {
+async function viewDetails(request) {
   selectedRequest.value = request
   showModal.value = true
   modalLoading.value = true

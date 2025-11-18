@@ -210,7 +210,7 @@
 </template>
 
 
-<script setup lang="ts">
+<script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import NotificationBell from '@/components/NotificationBell.vue'
@@ -220,11 +220,11 @@ const router = useRouter()
 
 const loading = ref(true)
 const showCreateProgram = ref(false)
-const approvalStatus = ref<'pending'|'approved'|'rejected'>('pending')
-const programs = ref<any[]>([])
-const coachID = ref<string>('')
+const approvalStatus = ref('pending')
+const programs = ref([])
+const coachID = ref('')
 const memberCount = ref(0)
-const editingProgram = ref<any>(null)
+const editingProgram = ref(null)
 const pendingRequestCount = ref(0)
 const copied = ref(false)
 
@@ -250,8 +250,6 @@ function copyCoachID() {
   }
 }
 
-
-
 async function loadCoachStatus() {
   try {
     const res = await fetch('http://127.0.0.1:8000/api/coach/status/', {
@@ -266,7 +264,6 @@ async function loadCoachStatus() {
     const data = await res.json()
     const status = data?.coach?.status_approval ?? data?.status_approval ?? null
     approvalStatus.value = status === 'approved' ? 'approved' : status === 'rejected' ? 'rejected' : 'pending'
-
     coachID.value = data?.coach?.public_id ?? ''
   } catch (err) {
     console.error('Error loading coach status', err)
@@ -274,6 +271,7 @@ async function loadCoachStatus() {
     coachID.value = ''
   }
 }
+
 const API_BASE = 'http://127.0.0.1:8000/api/workout/programs/'
 
 async function loadPrograms() {
@@ -285,12 +283,10 @@ async function loadPrograms() {
     } else if (data.results && Array.isArray(data.results)) {
       programs.value = data.results
     } else if (data.id) {
-      // API returned a single program (not an array)
       programs.value = [data]
     } else {
       programs.value = []
     }
-
   } catch {
     programs.value = []
   }
@@ -301,8 +297,7 @@ async function loadMemberCount() {
     const res = await fetch('http://127.0.0.1:8000/api/member/coach-requests/', { credentials: 'include' })
     if (!res.ok) throw new Error('Failed to fetch requests')
     const data = await res.json()
-
-    memberCount.value = data.filter((r: any) => r.status === 'accepted').length
+    memberCount.value = data.filter(r => r.status === 'accepted').length
   } catch (err) {
     console.error('Failed to load member count', err)
     memberCount.value = 0
@@ -314,8 +309,8 @@ async function loadPendingRequestCount() {
     const res = await fetch('http://127.0.0.1:8000/api/member/coach-requests/', { credentials: 'include' })
     if (!res.ok) throw new Error('Failed to fetch requests')
     const data = await res.json()
-    pendingRequestCount.value = data.filter((r: any) => r.status === 'pending').length
-    memberCount.value = data.filter((r: any) => r.status === 'accepted').length
+    pendingRequestCount.value = data.filter(r => r.status === 'pending').length
+    memberCount.value = data.filter(r => r.status === 'accepted').length
   } catch (err) {
     console.error('Failed to load pending requests', err)
     pendingRequestCount.value = 0
@@ -323,15 +318,14 @@ async function loadPendingRequestCount() {
   }
 }
 
-async function editProgram(programId: number) {
-  // Navigate to create-workout-program with the program ID
+async function editProgram(programId) {
   router.push({
     path: '/create-workout-program',
     query: { edit: programId }
   })
 }
 
-async function deleteProgram(programId: number) {
+async function deleteProgram(programId) {
   try {
     const res = await fetch(`${API_BASE}${programId}/`, {
       method: 'DELETE',
@@ -339,9 +333,7 @@ async function deleteProgram(programId: number) {
     })
 
     if (res.ok) {
-      // refresh list
       await loadPrograms()
-      // close modal if editing the deleted program
       if (editingProgram.value && editingProgram.value.id === programId) {
         editingProgram.value = null
         showCreateProgram.value = false
@@ -349,7 +341,7 @@ async function deleteProgram(programId: number) {
       alert('Program deleted successfully!')
     } else {
       const text = await res.text()
-      let body: any = text
+      let body = text
       try { 
         body = JSON.parse(text) 
       } catch (err) {
@@ -365,7 +357,7 @@ async function deleteProgram(programId: number) {
   }
 }
 
-function truncate(text: any, max = 120) {
+function truncate(text, max = 120) {
   if (text === null || text === undefined) return ''
   const s = String(text).trim()
   return s.length > max ? s.slice(0, max).trimEnd() + '…' : s
@@ -373,11 +365,9 @@ function truncate(text: any, max = 120) {
 
 onMounted(async () => {
   await loadCoachStatus()
-
- if (isApproved.value) {
+  if (isApproved.value) {
     await Promise.all([loadPrograms(), loadMemberCount(), loadPendingRequestCount()])
   }
-
   loading.value = false
 })
 </script>

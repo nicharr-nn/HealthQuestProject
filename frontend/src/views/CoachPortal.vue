@@ -3,14 +3,13 @@
     <!-- Page Header -->
     <div class="mb-6">
       <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Coach Portal</h1>
-      <p class="text-gray-500 mt-1">Create and manage programs</p>
+      <p class="text-gray-500 mt-1">Create and manage your profile</p>
     </div>
 
     <!-- Content Grid -->
     <div class="flex flex-col md:flex-row gap-4">
       <!-- Coach Registration Card -->
       <div class="flex-1 bg-white border border-gray-200 rounded-2xl shadow-sm p-6 min-w-0">
-        <div class="text-lg font-semibold mb-3">Coach Registration</div>
 
         <form @submit.prevent="submitApplication" class="grid gap-4">
           <!-- Name -->
@@ -91,27 +90,26 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { reactive, ref, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
 
 const coachForm = reactive({ bio: '' })
-const selectedFile = ref<File | null>(null)
-const selectedFileName = ref<string | null>(null)
+const selectedFile = ref(null)
+const selectedFileName = ref(null)
 const hasSubmitted = ref(false)
-const coachStatus = ref<'not_submitted' | 'pending' | 'approved' | 'rejected'>('not_submitted')
+const coachStatus = ref('not_submitted')
 const originalBio = ref('')
 const originalName = ref('')
 const isEditingProfile = ref(false)
 const isResubmitting = ref(false)
 const googleName = ref('')
 
-
 // Called when file input changes
-function onFileSelected(event: Event) {
-  const files = (event.target as HTMLInputElement).files
+function onFileSelected(event) {
+  const files = event.target.files
   if (files && files.length > 0) {
     selectedFile.value = files[0]
     selectedFileName.value = files[0].name
@@ -221,7 +219,7 @@ function cancelEdit() {
 }
 
 async function saveProfile() {
-  const payload: Record<string, any> = {}
+  const payload = {}
 
   if (coachForm.bio !== originalBio.value) payload.bio = coachForm.bio
   if (googleName.value !== originalName.value) payload.name = googleName.value
