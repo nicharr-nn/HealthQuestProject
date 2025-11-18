@@ -90,7 +90,7 @@ router.beforeEach(async (to, from, next) => {
 
   // --- Redirect admin users away from all non-admin pages ---
   if (isAdmin && !to.path.startsWith('/admin-')) {
-    return next(from.fullPath || '/admin-user') 
+    return next('/admin-user')
   }
 
   // --- Redirect approved coaches away from onboarding pages ---
