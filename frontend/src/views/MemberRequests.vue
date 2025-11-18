@@ -12,7 +12,7 @@
     <div class="flex flex-col md:flex-row justify-between gap-5 mb-6">
       <div class="flex-1">
         <h1 class="text-3xl font-bold text-gray-900 mb-2">Member Requests</h1>
-        <p class="text-gray-500 text-base">Review and manage membership requests from potential clients</p>
+        <p class="text-gray-500 text-base">Review and manage membership requests </p>
       </div>
 
       <div class="flex gap-3">
@@ -70,7 +70,7 @@
         </div>
         <div class="text-gray-500 leading-relaxed">
           {{ activeTab === 'pending'
-            ? 'All caught up! No pending requests at the moment.'
+            ? 'No pending requests at the moment.'
             : `You don't have any ${activeTab} requests.` }}
         </div>
       </div>
