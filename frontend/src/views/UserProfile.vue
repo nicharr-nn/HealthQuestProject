@@ -6,142 +6,124 @@
       <h1 class="font-subtitle text-5xl md:text-6xl text-center tracking-wide text-[#846757]">
         MY PROFILE
       </h1>
+
       <!-- Main Content -->
       <div class="px-6 py-10">
         <div class="max-w-3xl mx-auto">
           <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
             <div class="p-12">
-              <div class="flex gap-12">
+              <div class="flex flex-col lg:flex-row gap-12">
                 <!-- Profile Picture -->
-                <div class="flex-shrink-0">
-                  <div class="relative">
-                    <div class="w-64 h-64 rounded-full bg-gray-200 overflow-hidden shadow-lg">
-                      <img
-                        v-if="profile.photo"
-                        :src="profile.photo"
-                        alt="Profile Photo"
-                        class="w-full h-full object-cover"
-                      />
-                      <span v-else class="text-gray-500 flex items-center justify-center h-full">
-                        No Photo
-                      </span>
-                    </div>  
-                    <div class="upload-container">
-                      <div class="relative">
-                        <!-- Hidden File Input -->
-                        <input
-                          type="file"
-                          id="photo"
-                          @change="handleFileChange"
-                          class="hidden"
-                          :disabled="!isEditing"
-                        />
+                <div class="flex-shrink-0 relative">
+                  <div class="w-64 h-64 rounded-full bg-gray-200 overflow-hidden shadow-lg">
+                    <img
+                      v-if="profile.photo"
+                      :src="profile.photo"
+                      alt="Profile Photo"
+                      class="w-full h-full object-cover"
+                    />
+                    <span v-else class="text-gray-500 flex items-center justify-center h-full">
+                      No Photo
+                    </span>
+                  </div>
 
-                        <!-- Visible Upload Icon -->
-                        <label 
-                          for="photo" 
-                          :class="{ 'cursor-pointer': isEditing, 'cursor-not-allowed opacity-0': !isEditing }"
-                          class="absolute bottom-2 right-4 bg-white p-3 rounded-full hover:shadow-xl transition-shadow"
-                        >
-                          <span class="material-symbols-outlined text-gray-600 text-xl">
-                            image_arrow_up
-                          </span>
-                        </label>
-                      </div>
-                      <p v-if="uploadMessage" class="mt-4 text-gray-600">{{ uploadMessage }}</p>
-                    </div>
+                  <!-- File Upload -->
+                  <div class="mt-4 relative">
+                    <input
+                      type="file"
+                      id="photo"
+                      @change="handleFileChange"
+                      class="hidden"
+                      :disabled="!isEditing"
+                    />
+                    <label
+                      for="photo"
+                      :class="isEditing ? 'cursor-pointer' : 'cursor-not-allowed opacity-0'"
+                      class="absolute bottom-2 right-4 bg-white p-3 rounded-full hover:shadow-xl transition-shadow"
+                    >
+                      <span class="material-symbols-outlined text-gray-600 text-xl">
+                        image_arrow_up
+                      </span>
+                    </label>
+                    <p v-if="uploadMessage" class="mt-16 text-gray-600">{{ uploadMessage }}</p>
                   </div>
                 </div>
 
                 <!-- Profile Info -->
                 <div class="flex-1 min-w-0">
                   <div class="space-y-5">
-                    <!-- Name (Read-only) -->
+                    <!-- Name -->
                     <div class="flex justify-between items-center border-b border-gray-200 pb-4">
                       <label class="text-gray-600 font-medium text-lg w-32 flex-shrink-0">Name</label>
                       <div class="flex-1 min-w-0 text-right">
                         <span class="text-teal-600 text-lg font-medium break-words">
                           {{ profile.name }}
                         </span>
-                        <p v-if="isEditing" class="text-xs text-gray-400 mt-1">
-                          (Linked to Google account)
-                        </p>
+                        <p v-if="isEditing" class="text-xs text-gray-400 mt-1">(Linked to Google account)</p>
                       </div>
                     </div>
 
-                    <!-- Email (Read-only) -->
+                    <!-- Email -->
                     <div class="flex justify-between items-center border-b border-gray-200 pb-4">
                       <label class="text-gray-600 font-medium text-lg w-32 flex-shrink-0">Email</label>
                       <div class="flex-1 min-w-0 text-right">
-                        <span class="text-teal-600 text-lg font-medium break-all">
-                          {{ profile.email }}
-                        </span>
-                        <p v-if="isEditing" class="text-xs text-gray-400 mt-1">
-                          (Linked to Google account)
-                        </p>
+                        <span class="text-teal-600 text-lg font-medium break-all">{{ profile.email }}</span>
+                        <p v-if="isEditing" class="text-xs text-gray-400 mt-1">(Linked to Google account)</p>
                       </div>
                     </div>
 
                     <!-- Height -->
                     <div class="flex justify-between items-center border-b border-gray-200 pb-4">
                       <label class="text-gray-600 font-medium text-lg w-32 flex-shrink-0">Height</label>
-                      <div class="flex-1 min-w-0">
-                        <div class="flex justify-end items-center">
-                          <template v-if="isEditing">
-                            <input
-                              v-model="editProfile.height"
-                              @input="handleHeightInput"
-                              @blur="handleHeightInput"
-                              type="number"
-                              step="0.1"
-                              min="50"
-                              max="220"
-                              class="text-teal-600 text-lg font-medium bg-gray-100 border outline-none focus:bg-gray-50 px-3 py-2 rounded w-32 text-right"
-                              :class="validationErrors.height ? 'border-red-500' : 'border-gray-300'"
-                            />
-                          </template>
-                          <template v-else>
-                            <span class="text-teal-600 text-lg font-medium">
-                              {{ profile.height }}
-                            </span>
-                          </template>
-                          <span class="text-gray-600 text-lg ml-2">cm</span>
-                        </div>
-                        <p v-if="isEditing && validationErrors.height" class="text-red-500 text-xs mt-1 text-right">
-                          {{ validationErrors.height }}
-                        </p>
+                      <div class="flex-1 min-w-0 flex justify-end items-center">
+                        <template v-if="isEditing">
+                          <input
+                            v-model="editProfile.height"
+                            @input="handleHeightInput"
+                            @blur="handleHeightInput"
+                            type="number"
+                            step="0.1"
+                            min="50"
+                            max="220"
+                            :class="validationErrors.height ? 'border-red-500' : 'border-gray-300'"
+                            class="text-teal-600 text-lg font-medium bg-gray-100 border outline-none focus:bg-gray-50 px-3 py-2 rounded w-32 text-right"
+                          />
+                        </template>
+                        <template v-else>
+                          <span class="text-teal-600 text-lg font-medium">{{ profile.height }}</span>
+                        </template>
+                        <span class="text-gray-600 text-lg ml-2">cm</span>
                       </div>
+                      <p v-if="isEditing && validationErrors.height" class="text-red-500 text-xs mt-1 text-right">
+                        {{ validationErrors.height }}
+                      </p>
                     </div>
 
                     <!-- Weight -->
                     <div class="flex justify-between items-center border-b border-gray-200 pb-4">
                       <label class="text-gray-600 font-medium text-lg w-32 flex-shrink-0">Weight</label>
-                      <div class="flex-1 min-w-0">
-                        <div class="flex justify-end items-center">
-                          <template v-if="isEditing">
-                            <input
-                              v-model="editProfile.weight"
-                              @input="handleWeightInput"
-                              @blur="handleWeightInput"
-                              type="number"
-                              step="0.1"
-                              min="20"
-                              max="200"
-                              class="text-teal-600 text-lg font-medium bg-gray-100 border outline-none focus:bg-gray-50 px-3 py-2 rounded w-32 text-right"
-                              :class="validationErrors.weight ? 'border-red-500' : 'border-gray-300'"
-                            />
-                          </template>
-                          <template v-else>
-                            <span class="text-teal-600 text-lg font-medium">
-                              {{ profile.weight }}
-                            </span>
-                          </template>
-                          <span class="text-gray-600 text-lg ml-2">Kg</span>
-                        </div>
-                        <p v-if="isEditing && validationErrors.weight" class="text-red-500 text-xs mt-1 text-right">
-                          {{ validationErrors.weight }}
-                        </p>
+                      <div class="flex-1 min-w-0 flex justify-end items-center">
+                        <template v-if="isEditing">
+                          <input
+                            v-model="editProfile.weight"
+                            @input="handleWeightInput"
+                            @blur="handleWeightInput"
+                            type="number"
+                            step="0.1"
+                            min="20"
+                            max="200"
+                            :class="validationErrors.weight ? 'border-red-500' : 'border-gray-300'"
+                            class="text-teal-600 text-lg font-medium bg-gray-100 border outline-none focus:bg-gray-50 px-3 py-2 rounded w-32 text-right"
+                          />
+                        </template>
+                        <template v-else>
+                          <span class="text-teal-600 text-lg font-medium">{{ profile.weight }}</span>
+                        </template>
+                        <span class="text-gray-600 text-lg ml-2">Kg</span>
                       </div>
+                      <p v-if="isEditing && validationErrors.weight" class="text-red-500 text-xs mt-1 text-right">
+                        {{ validationErrors.weight }}
+                      </p>
                     </div>
 
                     <!-- Goal -->
@@ -213,16 +195,13 @@
                     <button
                       @click="saveChanges"
                       :disabled="isFormInvalid"
-                      :class="{ 'opacity-50 cursor-not-allowed': validationErrors.height || validationErrors.weight }"
-                      class="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-full font-semibold text-lg transition-colors shadow-lg
-                       disabled:hover:bg-blue-500 cursor-pointer"
+                      class="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-full font-semibold text-lg transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Save Changes
                     </button>
                     <button
                       @click="cancelEdit"
-                      class="bg-gray-500 hover:bg-gray-600 text-white px-8 py-3 rounded-full font-semibold text-lg transition-colors shadow-lg
-                      cursor-pointer"
+                      class="bg-gray-500 hover:bg-gray-600 text-white px-8 py-3 rounded-full font-semibold text-lg transition-colors shadow-lg"
                     >
                       Cancel
                     </button>
@@ -230,7 +209,7 @@
                   <template v-else>
                     <button
                       @click="isEditing = true"
-                      class="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-full font-semibold text-lg transition-colors shadow-lg cursor-pointer"
+                      class="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-full font-semibold text-lg transition-colors shadow-lg"
                     >
                       Edit Profile
                     </button>
@@ -239,7 +218,7 @@
 
                 <button
                   @click="openDeleteModal"
-                  class="bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-full font-semibold text-lg transition-colors shadow-lg cursor-pointer"
+                  class="bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-full font-semibold text-lg transition-colors shadow-lg"
                 >
                   Delete Account
                 </button>
@@ -250,7 +229,7 @@
       </div>
     </div>
 
-    <!-- Delete Confirmation Component -->
+    <!-- Delete Confirmation Modal -->
     <DeleteModal
       v-model:show="showDeleteModal"
       message="Are you sure you want to delete your account"
@@ -617,13 +596,3 @@ onMounted(() => {
   fetchUserProfile()
 })
 </script>
-
-<style scoped>
-img {
-  object-fit: cover;
-}
-
-.upload-container {
-  margin-top: 1rem;
-}
-</style>

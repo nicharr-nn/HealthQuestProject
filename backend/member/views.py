@@ -15,6 +15,50 @@ from workout.models import WorkoutProgram, WorkoutAssignment
 from workout.serializers import WorkoutAssignmentSerializer
 
 
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def coach_member_profile(request, member_id):
+    """Allow a coach to view the profile of a member they are connected to."""
+    user_profile = getattr(request.user, "userprofile", None)
+    coach_profile = getattr(user_profile, "coach_profile", None)
+
+    if not coach_profile:
+        return Response({"error": "You are not a coach"},
+                        status=status.HTTP_403_FORBIDDEN)
+
+    member = get_object_or_404(Member, member_id=member_id)
+
+    # Ensure this coach has a relationship with the member
+    if not CoachMemberRelationship.objects.filter(
+        coach=coach_profile, member=member
+    ).exists():
+        return Response(
+            {"error": "You do not have access to this member."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    profile = member.user
+    user = profile.user
+
+    data = {
+        "user": {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+        },
+        "age": profile.age,
+        "gender": profile.gender,
+        "height": profile.height,
+        "weight": profile.weight,
+        "location": profile.location,
+        "photo": profile.photo.url if profile.photo else None,
+    }
+
+    return Response(data, status=status.HTTP_200_OK)
+
+
 @api_view(["GET", "PATCH"])
 @permission_classes([IsAuthenticated])
 def coach_member_requests(request, pk=None):
@@ -93,6 +137,33 @@ def accepted_members(request):
     ]
 
     return Response(members_data, status=status.HTTP_200_OK)
+
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def coach_remove_member(request, member_id):
+    """Allow a coach to remove an accepted member from their list."""
+    user_profile = getattr(request.user, "userprofile", None)
+    coach_profile = getattr(user_profile, "coach_profile", None)
+
+    if not coach_profile:
+        return Response(
+            {"error": "You are not a coach"}, status=status.HTTP_403_FORBIDDEN
+        )
+
+    member = get_object_or_404(Member, member_id=member_id)
+
+    try:
+        relationship = CoachMemberRelationship.objects.get(
+            coach=coach_profile, member=member
+        )
+    except CoachMemberRelationship.DoesNotExist:
+        return Response(
+            {"error": "Relationship not found"}, status=status.HTTP_404_NOT_FOUND
+        )
+
+    relationship.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(["POST", "PATCH"])

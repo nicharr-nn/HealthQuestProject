@@ -5,8 +5,7 @@
       v-if="sidebarOpen"
       class="fixed inset-0 z-40 bg-black/40 md:hidden"
       @click="sidebarOpen = false"
-    >
-    </div>
+    />
 
     <AdminSideBar
       :sidebarOpen="sidebarOpen"
@@ -27,7 +26,7 @@
               @click="sidebarOpen = !sidebarOpen"
               aria-label="Toggle menu"
             >
-              ☰
+              <Menu class="w-5 h-5" />
             </button>
             <div class="relative hidden md:block">
               <input
@@ -41,8 +40,11 @@
 
           <div class="flex items-center gap-3">
             <button class="relative rounded-md bg-slate-100 p-2" @click="showNotifications">
-              🔔
-              <span v-if="pendingCount > 0" class="absolute right-1 top-1 inline-block h-2 w-2 rounded-full bg-rose-500"></span>
+              <Bell class="w-5 h-5 text-slate-700" />
+              <span
+                v-if="pendingCount > 0"
+                class="absolute right-1 top-1 inline-block h-2 w-2 rounded-full bg-rose-500"
+              ></span>
             </button>
             <!-- Header User Info -->
             <div class="flex items-center gap-2">
@@ -79,8 +81,7 @@
 
       <!-- Page content -->
       <main class="px-4 py-6 md:px-8">
-        <AdminUser v-show="activeSection === 'users'" />
-      <!-- COACHES CERTIFICATION SECTION -->
+        <!-- COACHES CERTIFICATION SECTION -->
         <section v-show="activeSection === 'coaches'" class="space-y-6">
           <div>
             <h2 class="text-2xl font-bold font-subtitle">Coach Certification Verification</h2>
@@ -97,9 +98,6 @@
                   <option value="approved">Approved</option>
                   <option value="rejected">Rejected</option>
                 </select>
-                <!-- <button class="rounded-md bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700" @click="exportCoachList">
-                  Export List
-                </button> -->
               </div>
             </div>
 
@@ -118,6 +116,7 @@
                     <th class="px-3 py-2 text-left font-subtitle">Coach Name</th>
                     <th class="px-3 py-2 text-left font-subtitle">Email</th>
                     <th class="px-3 py-2 text-left font-subtitle">Applied Date</th>
+                    <th class="px-3 py-2 text-left font-subtitle">Status</th>
                     <th class="px-3 py-2 text-left font-subtitle">Actions</th>
                   </tr>
                 </thead>
@@ -272,7 +271,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import AdminSideBar from '@/components/AdminSideBar.vue'
-import AdminUser from './AdminUser.vue'
+import { Bell, Menu } from 'lucide-vue-next'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -290,8 +289,8 @@ const coaches = ref([])
 const coachModal = ref({ open: false, coach: null })
 
 const filteredCoaches = computed(() => {
-  let result = coaches.value.filter(c => c.certification_doc)
-  
+  let result = [...coaches.value]
+
   if (searchQuery.value) {
     const q = searchQuery.value.toLowerCase()
     result = result.filter(c =>
@@ -300,6 +299,7 @@ const filteredCoaches = computed(() => {
       c.bio?.toLowerCase().includes(q)
     )
   }
+
   return result
 })
 

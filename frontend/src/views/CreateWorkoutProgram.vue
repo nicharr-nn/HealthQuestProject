@@ -473,16 +473,16 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { reactive, ref, computed, watch, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
 const route = useRoute()
 
-const coachUserProfileId = ref<number | null>(null)
-const editingProgramId = ref<number | null>(null)
-const backupProgramData = ref<WorkoutProgram | null>(null)
+const coachUserProfileId = ref(null)
+const editingProgramId = ref(null)
+const backupProgramData = ref(null)
 
 const descriptionError = ref('')
 const descriptionLength = computed(() => workoutProgram.description.length)
@@ -496,7 +496,7 @@ function validateDescription() {
 }
 
 onMounted(async () => {
-  const editId = route.query.edit as string
+  const editId = route.query.edit
 
   if (editId) {
     editingProgramId.value = parseInt(editId)
@@ -546,60 +546,17 @@ async function fetchUserProfileId() {
   }
 }
 
-interface Props {
-  existingProgram?: {
-    title: string
-    description: string
-    difficulty_level: string
-    duration: number
-    category: string
-    WorkoutDays: Record<number, WorkoutDay[]>
-  } | null
-}
-
-const props = defineProps<Props>()
+const props = defineProps()
 
 const isEditing = computed(() => {
   return Boolean(props.existingProgram) || Boolean(editingProgramId.value)
 })
 
-const emit = defineEmits<{
-  programCreated: [
-    program: {
-      title: string
-      description: string
-      difficulty_level: string
-      duration: number
-      category: string
-      WorkoutDays: Record<number, WorkoutDay[]>
-    },
-  ]
-  cancel: []
-}>()
+const emit = defineEmits(['programCreated', 'cancel'])
 
-const backupWorkout = ref<WorkoutDay | null>(null)
+const backupWorkout = ref(null)
 
-interface WorkoutDay {
-  day_number: number
-  title: string
-  duration: number
-  type: string
-  video_link: string
-}
-
-interface WorkoutProgram {
-  title: string
-  description: string
-  difficulty_level: string
-  duration: number
-  category: string
-  is_public: boolean
-  level_access: string
-  WorkoutDays: Record<number, WorkoutDay[]>
-  member_id?: string
-}
-
-const workoutProgram = reactive<WorkoutProgram>({
+const workoutProgram = reactive({
   title: '',
   description: '',
   difficulty_level: '',
@@ -610,7 +567,7 @@ const workoutProgram = reactive<WorkoutProgram>({
   WorkoutDays: {},
 })
 
-const currentWorkout = reactive<WorkoutDay>({
+const currentWorkout = reactive({
   day_number: 1,
   title: '',
   duration: 30,
@@ -618,9 +575,9 @@ const currentWorkout = reactive<WorkoutDay>({
   type: '',
 })
 
-const selectedDay = ref<number | ''>('')
-const editingDay = ref<number | null>(null)
-const editingWorkoutIndex = ref<number | null>(null)
+const selectedDay = ref('')
+const editingDay = ref(null)
+const editingWorkoutIndex = ref(null)
 const youtubeError = ref('')
 const youtubeRegex =
   /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)[a-zA-Z0-9_-]{11}/
@@ -629,7 +586,7 @@ const workoutAssignment = reactive({
   member_id: '',
 })
 
-async function createAssignment(programId: number) {
+async function createAssignment(programId) {
   try {
     const payload = {
       program_id: programId,
@@ -680,7 +637,7 @@ function validateDuration() {
   }
 
   if (duration < 5) {
-    durationError.value = 'Duration must be at least 5 minutese'
+    durationError.value = 'Duration must be at least 5 minutes'
     return false
   }
 
@@ -697,6 +654,7 @@ function validateDuration() {
   durationError.value = ''
   return true
 }
+
 function validatevideo_link() {
   youtubeError.value = ''
   if (!currentWorkout.video_link || currentWorkout.video_link.trim() === '') {
@@ -733,24 +691,16 @@ function saveDayWorkout() {
     return
   }
 
-  // Ensure duration is integer
   currentWorkout.duration = Math.round(currentWorkout.duration)
 
-  // Validate YouTube URL if provided
-  if (currentWorkout.video_link && currentWorkout.video_link.trim() !== '') {
-    validatevideo_link()
-    if (youtubeError.value) {
-      alert('Please fix the YouTube URL error before saving')
-      return
-    }
-  } else {
-    alert('Please enter a YouTube video URL')
+  if (!validatevideo_link()) {
+    alert('Please enter a valid YouTube video URL')
     return
   }
 
-  const targetDay = editingDay.value || (selectedDay.value as number)
+  const targetDay = editingDay.value || Number(selectedDay.value)
 
-  const workout: WorkoutDay = {
+  const workout = {
     day_number: targetDay,
     title: currentWorkout.title.trim(),
     duration: currentWorkout.duration,
@@ -770,7 +720,7 @@ function saveDayWorkout() {
   resetCurrentWorkout()
 }
 
-function editWorkout(day: number, workoutIndex: number) {
+function editWorkout(day, workoutIndex) {
   const workout = workoutProgram.WorkoutDays[day]?.[workoutIndex]
   if (workout) {
     editingDay.value = day
@@ -785,7 +735,7 @@ function editWorkout(day: number, workoutIndex: number) {
   }
 }
 
-function removeWorkout(day: number, workoutIndex: number) {
+function removeWorkout(day, workoutIndex) {
   if (workoutProgram.WorkoutDays[day]) {
     workoutProgram.WorkoutDays[day].splice(workoutIndex, 1)
     if (workoutProgram.WorkoutDays[day].length === 0) {
@@ -796,14 +746,7 @@ function removeWorkout(day: number, workoutIndex: number) {
 
 function handleCancel() {
   if (editingProgramId.value && backupProgramData.value) {
-    workoutProgram.title = backupProgramData.value.title
-    workoutProgram.description = backupProgramData.value.description
-    workoutProgram.difficulty_level = backupProgramData.value.difficulty_level
-    workoutProgram.duration = backupProgramData.value.duration
-    workoutProgram.category = backupProgramData.value.category
-    workoutProgram.is_public = backupProgramData.value.is_public
-    workoutProgram.level_access = backupProgramData.value.level_access
-    workoutProgram.WorkoutDays = JSON.parse(JSON.stringify(backupProgramData.value.WorkoutDays))
+    Object.assign(workoutProgram, backupProgramData.value)
     workoutAssignment.member_id = backupProgramData.value.member_id || ''
     router.push('/coach-dashboard')
   } else {
@@ -835,7 +778,7 @@ function resetCurrentWorkout() {
   youtubeError.value = ''
 }
 
-async function loadExistingProgram(programId: number) {
+async function loadExistingProgram(programId) {
   try {
     const response = await fetch(`http://127.0.0.1:8000/api/workout/programs/${programId}/`, {
       credentials: 'include',
@@ -861,24 +804,19 @@ async function loadExistingProgram(programId: number) {
     if (programData.days && Array.isArray(programData.days)) {
       workoutProgram.WorkoutDays = {}
 
-      programData.days.forEach((day: any) => {
+      programData.days.forEach((day) => {
         const dayNumber = day.day_number
         if (!dayNumber) return
 
-        // Initialize day array if missing
         if (!workoutProgram.WorkoutDays[dayNumber]) {
           workoutProgram.WorkoutDays[dayNumber] = []
         }
 
-        // Handle multiple videos per day entry
         const videoLinks = day.video_links || []
         if (videoLinks.length > 0) {
-          videoLinks.forEach((videoLink: string, index: number) => {
-            const workout: WorkoutDay = {
-              title:
-                videoLinks.length > 1
-                  ? `${day.title || `Day ${dayNumber}`} - Part ${index + 1}`
-                  : day.title || `Day ${dayNumber}`,
+          videoLinks.forEach((videoLink, index) => {
+            const workout = {
+              title: videoLinks.length > 1 ? `${day.title || `Day ${dayNumber}`} - Part ${index + 1}` : day.title || `Day ${dayNumber}`,
               type: day.type || '',
               duration: Math.floor((day.duration || 30) / videoLinks.length),
               video_link: videoLink,
@@ -887,7 +825,7 @@ async function loadExistingProgram(programId: number) {
             workoutProgram.WorkoutDays[dayNumber].push(workout)
           })
         } else {
-          const workout: WorkoutDay = {
+          const workout = {
             title: day.title || `Day ${dayNumber}`,
             type: day.type || '',
             duration: day.duration || 30,
@@ -941,7 +879,7 @@ async function submitProgram() {
       day_number: Number(day),
       title: workout.title,
       type: workout.type || '',
-      video_links: [workout.video_link].filter(Boolean), // Single video per workout
+      video_links: [workout.video_link].filter(Boolean),
       duration: workout.duration,
     }))
   })
@@ -959,9 +897,7 @@ async function submitProgram() {
       day_number: day.day_number,
       title: day.title,
       type: day.type || '',
-      video_links: Array.isArray(day.video_links)
-        ? day.video_links
-        : [day.video_links].filter(Boolean),
+      video_links: Array.isArray(day.video_links) ? day.video_links : [day.video_links].filter(Boolean),
       duration: day.duration,
     })),
   }
@@ -1043,10 +979,10 @@ watch(
       workoutProgram.difficulty_level = program.difficulty_level
       workoutProgram.duration = program.duration
       workoutProgram.category = program.category
-      workoutProgram.is_public = (program as any).is_public ?? true
-      workoutProgram.level_access = (program as any).level_access ?? 'all'
+      workoutProgram.is_public = program.is_public ?? true
+      workoutProgram.level_access = program.level_access ?? 'all'
       workoutProgram.WorkoutDays = { ...program.WorkoutDays }
-      workoutAssignment.member_id = (program as any).member_id || ''
+      workoutAssignment.member_id = program.member_id || ''
     } else {
       resetProgram()
     }
