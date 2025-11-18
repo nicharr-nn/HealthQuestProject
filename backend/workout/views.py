@@ -359,6 +359,7 @@ def user_weekly_activity(request):
 
     return Response(result)
 
+
 # ========== WORKOUT DAY COMPLETION VIEWS ==========
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
