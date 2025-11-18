@@ -1,7 +1,9 @@
 from django.urls import path
 from .views import (
     coach_member_requests,
+    coach_member_profile,
     accepted_members,
+    coach_remove_member,
     apply_as_member,
     get_member_profile,
     manage_member_request,
@@ -23,6 +25,13 @@ urlpatterns = [
         name="coach-member-requests-detail",
     ),
     path("accepted/", accepted_members, name="accepted-members"),
+
+    # coach can remove an accepted member
+    path("<str:member_id>/", coach_remove_member, name="coach-remove-member"),
+
+    # coach can view member profile
+    path("profile/<str:member_id>/", coach_member_profile, name="member-profile"),
+
     # member specific endpoints
     path("member-apply/", apply_as_member, name="apply-as-member"),
     path("member-profile/", get_member_profile, name="get-member-profile"),
