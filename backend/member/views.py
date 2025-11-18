@@ -24,8 +24,9 @@ def coach_member_profile(request, member_id):
     coach_profile = getattr(user_profile, "coach_profile", None)
 
     if not coach_profile:
-        return Response({"error": "You are not a coach"},
-                        status=status.HTTP_403_FORBIDDEN)
+        return Response(
+            {"error": "You are not a coach"}, status=status.HTTP_403_FORBIDDEN
+        )
 
     member = get_object_or_404(Member, member_id=member_id)
 

@@ -188,8 +188,8 @@ def delete_workout_program(request, id):
     program = get_object_or_404(WorkoutProgram, pk=id)
     user_profile = request.user.userprofile
     if request.method == "DELETE":
-        # Only the coach who created it can delete
-        if program.coach != user_profile:
+        # Only the coach who created and admin it can delete
+        if program.coach != user_profile and not request.user.is_staff:
             return Response(
                 {"error": "You don't have permission to delete this program"},
                 status=status.HTTP_403_FORBIDDEN,
@@ -358,6 +358,7 @@ def user_weekly_activity(request):
         )
 
     return Response(result)
+
 
 # ========== WORKOUT DAY COMPLETION VIEWS ==========
 @api_view(["GET"])
