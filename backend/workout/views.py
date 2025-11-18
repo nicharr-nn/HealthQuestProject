@@ -634,23 +634,27 @@ def manage_workout_assignment(request, program_id):
         )
 
     elif request.method == "PATCH":
-        # Update existing assignment
+        # Update or create assignment (upsert behavior)
         if not existing_assignment:
-            return Response(
-                {
-                    "error": "No assignment exists for this program",
-                    "current_member": existing_assignment.member.member_id,
-                    "current_due_date": (
-                        existing_assignment.due_date.isoformat()
-                        if existing_assignment.due_date
-                        else None
-                    ),
-                    "hint": "Use POST to create a new assignment",
-                },
-                status=status.HTTP_404_NOT_FOUND,
+            # Auto-create if doesn't exist
+            assignment = WorkoutAssignment.objects.create(
+                member=member, program=program, due_date=due_date_obj, status="assigned"
             )
 
-        # Update member if changed
+            # Update member's program_name
+            member.program_name = program.title
+            member.save(update_fields=["program_name"])
+
+            serializer = WorkoutAssignmentSerializer(assignment)
+            return Response(
+                {
+                    "message": "Assignment created successfully",
+                    "assignment": serializer.data,
+                },
+                status=status.HTTP_201_CREATED,
+            )
+
+        # Update existing assignment
         if existing_assignment.member != member:
             existing_assignment.member = member
 
