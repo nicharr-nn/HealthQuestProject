@@ -29,8 +29,9 @@ def coach_member_profile(request, member_id):
     member = get_object_or_404(Member, member_id=member_id)
 
     # Ensure this coach has a relationship with the member
-    if not CoachMemberRelationship.objects.filter(coach=coach_profile, \
-                                              member=member).exists():
+    if not CoachMemberRelationship.objects.filter(
+        coach=coach_profile, member=member
+    ).exists():
         return Response(
             {"error": "You do not have access to this member."},
             status=status.HTTP_403_FORBIDDEN,
