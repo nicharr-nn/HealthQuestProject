@@ -37,5 +37,5 @@ onMounted(() => {
 })
 
 // Check if user is on admin page
-const showNavbar = computed(() => route.name !== 'AdminDashboard')
+const showNavbar = computed(() => !route.path.startsWith('/admin'))
 </script>

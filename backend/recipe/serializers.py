@@ -1,6 +1,16 @@
 from rest_framework import serializers
 from .models import Recipe, RecipeRating
 
+from users.models import UserProfile
+
+
+# class UserProfileSerializer(serializers.ModelSerializer):
+#     username = serializers.CharField(source="user.username", read_only=True)
+
+#     class Meta:
+#         model = UserProfile
+#         fields = ["id", "username"]
+
 
 class RecipeSerializer(serializers.ModelSerializer):
     user_profile = serializers.StringRelatedField(read_only=True)

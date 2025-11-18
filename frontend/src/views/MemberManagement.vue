@@ -1,61 +1,78 @@
 <template>
-  <div class="member-management">
-    <button class="btn primary" @click="goBackToDashboard">
-      ← Back to Dashboard
+  <div class="max-w-[1200px] mx-auto p-6">
+    <button
+      @click="goBackToDashboard"
+      class="inline-flex items-center justify-center p-2 border border-gray-300 bg-white rounded-lg mb-6 hover:bg-gray-100 transition"
+    >
+      <ArrowLeft class="w-5 h-5 text-gray-700 mr-2" />
+      Back to Dashboard
     </button>
 
-    <div class="page-header">
-      <div class="header-content">
-        <h1 class="page-title">Member Management</h1>
-        <p class="page-subtitle">
-          View and manage members who have been accepted
-        </p>
+    <div class="flex justify-between items-start mb-6">
+      <div class="flex-1">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Member Management</h1>
+        <p class="text-gray-500 text-base">View and manage members who have been accepted</p>
       </div>
-      <div class="header-stats">
-        <div class="stat-badge approved">
-          <span class="stat-number">{{ members.length }}</span>
-          <span class="stat-label">Active Members</span>
+      <div class="flex gap-3">
+        <div class="flex flex-col items-center py-3 px-4 rounded-xl bg-green-100 border border-green-500">
+          <span class="text-2xl font-bold">{{ members.length }}</span>
+          <span class="text-xs uppercase text-gray-600">Active Members</span>
         </div>
       </div>
     </div>
 
-    <div class="members-container">
-      <div v-if="loading" class="empty-state">
+    <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+      <div v-if="loading" class="text-center py-16 px-6">
         Loading members...
       </div>
 
-      <div v-else-if="members.length === 0" class="empty-state">
-        <div class="empty-icon">🙌</div>
-        <div class="empty-title">No active members</div>
-        <div class="empty-message">Start approving member requests to see them here.</div>
+      <div v-else-if="members.length === 0" class="text-center py-16 px-6">
+        <!-- use file-user symbol from lucid -->
+        <FileUser class="w-12 h-12 text-gray-400 mx-auto mb-4" />
+        <div class="text-xl font-semibold text-gray-700 mb-3">No active members</div>
+        <div class="text-gray-600">Start approving member requests to see them here.</div>
       </div>
 
-      <div v-else class="members-grid">
+      <div v-else class="grid gap-4">
         <div
           v-for="member in members"
           :key="member.memberId"
-          class="member-card"
+          class="border border-gray-200 rounded-xl p-5 bg-gray-50"
         >
-          <div class="member-header">
-            <div class="member-info">
-              <div class="member-avatar">{{ member.name.charAt(0).toUpperCase() }}</div>
-              <div class="member-details">
-                <div class="member-name">{{ member.name }}</div>
-                <div class="member-id">ID: {{ member.memberId }}</div>
+        <div class="flex flex-col md:flex-row justify-between items-center gap-3 mb-4">
+              <div class="flex items-center gap-3 flex-1 min-w-0">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 text-white flex items-center justify-center font-semibold text-lg flex-shrink-0">
+                  {{ member.name.charAt(0).toUpperCase() }}
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-lg font-semibold text-gray-900 mb-1 truncate">{{ member.name }}</div>
+                  <div class="text-sm font-semibold text-blue-500 font-mono truncate">ID: {{ member.memberId }}</div>
+                </div>
               </div>
+            <div class="px-3 py-1.5 rounded-full bg-green-100 text-green-800 text-xs font-semibold self-start">ACTIVE</div>
+          </div>
+
+          <div class="grid gap-2 mb-4 p-3 bg-white rounded-lg border border-gray-100 shadow-sm">
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-500 font-medium">Level:</span>
+              <span class="font-semibold text-gray-800">
+                {{ member.experienceLevel ? member.experienceLevel.charAt(0).toUpperCase()+ member.experienceLevel.slice(1) : 'Not specified' }}
+              </span>
             </div>
-            <div class="member-status">ACTIVE</div>
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-500 font-medium">Joined:</span>
+              <span class="font-semibold text-gray-800">{{ formatDate(member.joinedAt) }}</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-500 font-medium">Assigned Program:</span>
+              <span class="font-semibold text-gray-800">{{ member.programName || 'Not specified' }}</span>
+            </div>
           </div>
 
-          <div class="member-info-body">
-            <div class="info-row"><span class="info-label">Program:</span><span class="info-value">{{ member.programName || 'Not specified'}}</span></div>
-            <div class="info-row"><span class="info-label">Level:</span><span class="info-value">{{ member.experienceLevel || 'Not specified' }}</span></div>
-            <div class="info-row"><span class="info-label">Joined:</span><span class="info-value">{{ formatDate(member.joinedAt) }}</span></div>
-          </div>
-
-          <div class="member-actions">
-            <button class="btn small ghost" @click="viewFoodDiary(member)">View Food Diary</button>
-            <button class="btn small danger" @click="removeMember(member)">Remove</button>
+          <div class="flex gap-2 flex-wrap pt-4 border-t border-gray-200">
+            <button class="border border-gray-300 rounded-lg px-3 py-1.5 text-xs font-semibold hover:bg-gray-50 transition-all" @click="viewFoodDiary(member)">View Food Diary</button>
+            <!-- <button class="border border-gray-300 rounded-lg px-3 py-1.5 text-xs font-semibold hover:bg-gray-50 transition-all" @click="viewDetails(request)">View Details</button> -->
+            <button class="bg-red-500 text-white border-red-500 rounded-lg px-3 py-1.5 text-xs font-semibold hover:bg-red-600 transition-all" @click="removeMember(member)">Remove</button>
           </div>
         </div>
       </div>
@@ -63,27 +80,20 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-
-interface Member {
-  memberId: string
-  name: string
-  programName: string
-  experienceLevel: string
-  joinedAt: string
-}
+import { ArrowLeft, FileUser } from 'lucide-vue-next'
 
 const router = useRouter()
-const members = ref<Member[]>([])
+const members = ref([])
 const loading = ref(true)
 
 function goBackToDashboard() {
   router.push('/coach-dashboard')
 }
 
-function formatDate(dateStr: string) {
+function formatDate(dateStr) {
   const date = new Date(dateStr)
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
@@ -95,7 +105,7 @@ async function loadMembers() {
       credentials: 'include'
     })
     if (!res.ok) throw new Error('Failed to fetch members')
-    const data: Member[] = await res.json()
+    const data = await res.json()
     members.value = data
   } catch (err) {
     console.error(err)
@@ -105,11 +115,11 @@ async function loadMembers() {
   }
 }
 
-function viewFoodDiary(member: Member) {
+function viewFoodDiary(member) {
   router.push(`/food-diary/${member.memberId}`)
 }
 
-async function removeMember(member: Member) {
+async function removeMember(member) {
   if (!confirm(`Remove ${member.name} from your members?`)) return
   try {
     const res = await fetch(`http://127.0.0.1:8000/api/member/${member.memberId}/`, {
@@ -128,188 +138,3 @@ onMounted(() => {
   loadMembers()
 })
 </script>
-
-<style scoped>
-.member-management {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 24px;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 24px;
-}
-
-.page-title {
-  font-size: 32px;
-  font-weight: 700;
-}
-
-.page-subtitle {
-  color: #6b7280;
-}
-
-.header-stats {
-  display: flex;
-  gap: 12px;
-}
-
-.stat-badge {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 12px 16px;
-  border-radius: 12px;
-  background: #d1fae5;
-  border: 1px solid #10b981;
-}
-
-.stat-number {
-  font-size: 24px;
-  font-weight: 700;
-}
-
-.stat-label {
-  font-size: 12px;
-  text-transform: uppercase;
-  color: #6b7280;
-}
-
-.members-container {
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-.empty-state {
-  text-align: center;
-  padding: 64px 24px;
-}
-
-.members-grid {
-  display: grid;
-  gap: 16px;
-}
-
-.member-card {
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 20px;
-  background: #fafafa;
-}
-
-.member-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 16px;
-}
-
-.member-info {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
-.member-avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  font-weight: 600;
-}
-
-.member-name {
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.member-id {
-  font-size: 12px;
-  color: #3b82f6;
-  font-family: monospace;
-}
-
-.member-email {
-  font-size: 14px;
-  color: #6b7280;
-}
-
-.member-status {
-  padding: 6px 12px;
-  border-radius: 20px;
-  background: #d1fae5;
-  color: #065f46;
-  font-size: 12px;
-  font-weight: 600;
-  align-self: flex-start;
-}
-
-.member-info-body {
-  display: grid;
-  gap: 8px;
-  margin-bottom: 16px;
-  padding: 12px;
-  background: #fff;
-  border-radius: 8px;
-}
-
-.info-row {
-  display: flex;
-  justify-content: space-between;
-}
-
-.info-label {
-  color: #6b7280;
-}
-
-.info-value {
-  font-weight: 600;
-}
-
-.member-actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  padding-top: 16px;
-  border-top: 1px solid #e5e7eb;
-}
-
-.btn {
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  padding: 8px 16px;
-  font-weight: 600;
-  background: #fff;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.btn.small {
-  padding: 6px 12px;
-  font-size: 12px;
-}
-
-.btn.danger {
-  background: #ef4444;
-  color: #fff;
-  border-color: #ef4444;
-}
-
-.btn.danger:hover {
-  background: #dc2626;
-}
-
-.btn.ghost:hover {
-  background: #f3f4f6;
-}
-</style>

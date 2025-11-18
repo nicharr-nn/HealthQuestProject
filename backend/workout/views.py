@@ -30,6 +30,17 @@ User = get_user_model()
 def workout_programs(request):
     if request.method == "GET":
         user_profile = request.user.userprofile
+
+        # Admins and staff can see all workout programs
+        if (
+            request.user.is_staff
+            or request.user.is_superuser
+            or user_profile.role == "admin"
+        ):
+            programs = WorkoutProgram.objects.all()
+            serializer = WorkoutProgramSerializer(programs, many=True)
+            return Response(serializer.data)
+
         user_level = user_profile.get_current_level()
 
         # Build query based on user's level

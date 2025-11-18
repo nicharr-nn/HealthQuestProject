@@ -175,3 +175,12 @@ def user_levels(request):
         "next_xp": next_xp,
     }
     return Response(payload)
+
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def all_users(request):
+    # exclude admin users
+    users = User.objects.all()
+    serializer = UserSerializer(users, many=True)
+    return Response(serializer.data)

@@ -6,6 +6,7 @@
       <h1 class="font-subtitle text-5xl md:text-6xl text-center tracking-wide text-[#846757]">
         MY PROFILE
       </h1>
+
       <!-- Main Content -->
       <div class="px-6 py-10">
         <div class="max-w-3xl mx-auto">
@@ -62,7 +63,7 @@
                 <!-- Profile Info -->
                 <div class="flex-1 min-w-0">
                   <div class="space-y-5">
-                    <!-- Name (Read-only) -->
+                    <!-- Name -->
                     <div class="flex justify-between items-center border-b border-gray-200 pb-4">
                       <label class="text-gray-600 font-medium text-lg w-32 flex-shrink-0"
                         >Name</label
@@ -71,24 +72,18 @@
                         <span class="text-teal-600 text-lg font-medium break-words">
                           {{ profile.name }}
                         </span>
-                        <p v-if="isEditing" class="text-xs text-gray-400 mt-1">
-                          (Linked to Google account)
-                        </p>
+                        <p v-if="isEditing" class="text-xs text-gray-400 mt-1">(Linked to Google account)</p>
                       </div>
                     </div>
 
-                    <!-- Email (Read-only) -->
+                    <!-- Email -->
                     <div class="flex justify-between items-center border-b border-gray-200 pb-4">
                       <label class="text-gray-600 font-medium text-lg w-32 flex-shrink-0"
                         >Email</label
                       >
                       <div class="flex-1 min-w-0 text-right">
-                        <span class="text-teal-600 text-lg font-medium break-all">
-                          {{ profile.email }}
-                        </span>
-                        <p v-if="isEditing" class="text-xs text-gray-400 mt-1">
-                          (Linked to Google account)
-                        </p>
+                        <span class="text-teal-600 text-lg font-medium break-all">{{ profile.email }}</span>
+                        <p v-if="isEditing" class="text-xs text-gray-400 mt-1">(Linked to Google account)</p>
                       </div>
                     </div>
 
@@ -267,7 +262,7 @@
                   <template v-else>
                     <button
                       @click="isEditing = true"
-                      class="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-full font-semibold text-lg transition-colors shadow-lg cursor-pointer"
+                      class="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-full font-semibold text-lg transition-colors shadow-lg"
                     >
                       Edit Profile
                     </button>
@@ -276,7 +271,7 @@
 
                 <button
                   @click="openDeleteModal"
-                  class="bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-full font-semibold text-lg transition-colors shadow-lg cursor-pointer"
+                  class="bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-full font-semibold text-lg transition-colors shadow-lg"
                 >
                   Delete Account
                 </button>
@@ -287,7 +282,7 @@
       </div>
     </div>
 
-    <!-- Delete Confirmation Component -->
+    <!-- Delete Confirmation Modal -->
     <DeleteModal
       v-model:show="showDeleteModal"
       message="Are you sure you want to delete your account"

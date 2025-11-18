@@ -8,5 +8,6 @@ urlpatterns = [
     path("select-goal/", views.set_goal, name="select-goal"),
     path("update-profile/", views.update_profile, name="update-profile"),
     path("upload-photo/", views.upload_photo, name="upload-photo"),
+    path("users/", views.all_users, name="all-users"),
     path("delete-account/", views.delete_account, name="delete-account"),
 ]

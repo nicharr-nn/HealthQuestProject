@@ -1,99 +1,191 @@
 <template>
-  <div class="member-requests">
-    <button class="btn primary" @click="goBackToDashboard">
-      ← Back to Dashboard
+  <div class="max-w-[1200px] mx-auto p-6">
+    <button
+      @click="goBackToDashboard"
+      class="inline-flex items-center justify-center p-2 border border-gray-300 bg-white rounded-lg mb-6 hover:bg-gray-100 transition"
+    >
+      <ArrowLeft class="w-5 h-5 text-gray-700 mr-2" />
+      Back to Dashboard
     </button>
 
-    <div class="page-header">
-      <div class="header-content">
-        <h1 class="page-title">Member Requests</h1>
-        <p class="page-subtitle">Review and manage membership requests from potential clients</p>
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row justify-between gap-5 mb-6">
+      <div class="flex-1">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Member Requests</h1>
+        <p class="text-gray-500 text-base">Review and manage membership requests from potential clients</p>
       </div>
-      <div class="header-stats">
-        <div class="stat-badge pending">
-          <span class="stat-number">{{ pendingRequests.length }}</span>
-          <span class="stat-label">Pending</span>
+
+      <div class="flex gap-3">
+        <div class="flex flex-col items-center px-4 py-3 rounded-xl min-w-[80px] border" :class="{'bg-yellow-100 border-yellow-400': true}">
+          <span class="text-2xl font-bold text-gray-900">{{ pendingRequests.length }}</span>
+          <span class="text-xs font-medium text-gray-500 uppercase">Pending</span>
         </div>
-        <div class="stat-badge accepted">
-          <span class="stat-number">{{ acceptedRequests.length }}</span>
-          <span class="stat-label">Accepted</span>
+        <div class="flex flex-col items-center px-4 py-3 rounded-xl min-w-[80px] border" :class="{'bg-green-100 border-green-400': true}">
+          <span class="text-2xl font-bold text-gray-900">{{ acceptedRequests.length }}</span>
+          <span class="text-xs font-medium text-gray-500 uppercase">Accepted</span>
         </div>
       </div>
     </div>
 
     <!-- Filter Tabs -->
-    <div class="filter-tabs">
-      <button class="tab-btn" :class="{ active: activeTab === 'all' }" @click="activeTab = 'all'">
+    <div class="flex flex-wrap gap-2 mb-6 border-b-2 border-gray-200">
+      <button
+        class="px-5 py-3 text-sm font-semibold text-gray-500 border-b-2 border-transparent hover:text-gray-700 transition"
+        :class="{'text-blue-500 border-blue-500': activeTab === 'all'}"
+        @click="activeTab = 'all'"
+      >
         All Requests ({{ requests.length }})
       </button>
-      <button class="tab-btn" :class="{ active: activeTab === 'pending' }" @click="activeTab = 'pending'">
+      <button
+        class="px-5 py-3 text-sm font-semibold text-gray-500 border-b-2 border-transparent hover:text-gray-700 transition"
+        :class="{'text-blue-500 border-blue-500': activeTab === 'pending'}"
+        @click="activeTab = 'pending'"
+      >
         Pending ({{ pendingRequests.length }})
       </button>
-      <button class="tab-btn" :class="{ active: activeTab === 'accepted' }" @click="activeTab = 'accepted'">
+      <button
+        class="px-5 py-3 text-sm font-semibold text-gray-500 border-b-2 border-transparent hover:text-gray-700 transition"
+        :class="{'text-blue-500 border-blue-500': activeTab === 'accepted'}"
+        @click="activeTab = 'accepted'"
+      >
         Accepted ({{ acceptedRequests.length }})
       </button>
-      <button class="tab-btn" :class="{ active: activeTab === 'rejected' }" @click="activeTab = 'rejected'">
+      <button
+        class="px-5 py-3 text-sm font-semibold text-gray-500 border-b-2 border-transparent hover:text-gray-700 transition"
+        :class="{'text-blue-500 border-blue-500': activeTab === 'rejected'}"
+        @click="activeTab = 'rejected'"
+      >
         Rejected ({{ rejectedRequests.length }})
       </button>
     </div>
 
     <!-- Requests List -->
-    <div class="requests-container">
-      <div v-if="loading" class="empty-state">
-        Loading requests...
-      </div>
+    <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+      <div v-if="loading" class="text-center py-16">Loading requests...</div>
 
-      <div v-else-if="filteredRequests.length === 0" class="empty-state">
-        <div class="empty-icon">📋</div>
-        <div class="empty-title">No {{ activeTab === 'all' ? '' : activeTab }} requests</div>
-        <div class="empty-message">
+      <div v-else-if="filteredRequests.length === 0" class="text-center py-16">
+        <clipboard-pen class="w-12 h-12 text-gray-400 mx-auto mb-4" />
+        <div class="text-xl font-semibold text-gray-700 mb-2">
+          No {{ activeTab === 'all' ? '' : activeTab }} requests
+        </div>
+        <div class="text-gray-500 leading-relaxed">
           {{ activeTab === 'pending'
             ? 'All caught up! No pending requests at the moment.'
             : `You don't have any ${activeTab} requests.` }}
         </div>
       </div>
 
-      <div v-else class="requests-grid">
-        <div v-for="request in filteredRequests" :key="request.id" class="request-card">
-          <div class="request-header">
-            <div class="member-info">
-              <div class="member-avatar">{{ request.memberName.charAt(0).toUpperCase() }}</div>
-              <div class="member-details">
-                <div class="member-name">{{ request.memberName }}</div>
-                <div class="member-id">ID: {{ request.memberId }}</div>
+      <div v-else class="grid gap-4">
+        <div v-for="request in filteredRequests" :key="request.id" class="bg-gray-50 border border-gray-200 rounded-xl p-5 hover:border-blue-500 hover:shadow-md transition">
+          
+          <!-- Request Header -->
+          <div class="flex flex-col md:flex-row justify-between items-center gap-3 mb-4">
+            <div class="flex items-center gap-3 flex-1 min-w-0">
+              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 text-white flex items-center justify-center font-semibold text-lg flex-shrink-0">
+                {{ request.memberName.charAt(0).toUpperCase() }}
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="text-lg font-semibold text-gray-900 mb-1 truncate">{{ request.memberName }}</div>
+                <div class="text-sm font-semibold text-blue-500 font-mono truncate">ID: {{ request.memberId }}</div>
               </div>
             </div>
-            <div class="request-status" :class="request.status">{{ request.status }}</div>
-          </div>
 
-          <div class="request-info">
-            <div class="info-row"><span class="info-label">Member ID:</span><span class="info-value member-id-value">{{ request.memberId }}</span></div>
-            <div class="info-row"><span class="info-label">Program:</span><span class="info-value">{{ request.programName || 'Any Program' }}</span></div>
-            <div class="info-row"><span class="info-label">Experience Level:</span><span class="info-value">{{ request.experienceLevel }}</span></div>
-            <div class="info-row"><span class="info-label">Submitted:</span><span class="info-value">{{ formatDate(request.submittedAt) }}</span></div>
-          </div>
-
-          <div v-if="request.message" class="request-message">
-            <div class="message-label">Message:</div>
-            <div class="message-content">{{ request.message }}</div>
-          </div>
-
-          <div v-if="request.goals?.length" class="request-goals">
-            <div class="goals-label">Goals:</div>
-            <div class="goals-tags">
-              <span v-for="goal in request.goals" :key="goal" class="goal-tag">{{ goal }}</span>
+            <div
+              class="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-semibold uppercase whitespace-nowrap flex-shrink-0"
+              :class="{
+                'bg-yellow-100 text-yellow-800': request.status === 'pending',
+                'bg-green-100 text-green-800': request.status === 'accepted',
+                'bg-red-100 text-red-800': request.status === 'rejected'
+              }"
+            >
+              {{ request.status }}
             </div>
           </div>
 
-          <div class="request-actions">
+          <!-- Request Info -->
+          <div class="grid gap-2 mb-4 p-3 bg-white rounded-lg">
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-500 font-medium">Experience Level:</span>
+              <span class="text-gray-800 font-semibold">{{ request.experienceLevel ? request.experienceLevel.charAt(0).toUpperCase() + request.experienceLevel.slice(1) : 'Not specified' }}</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-500 font-medium">Submitted:</span>
+              <span class="text-gray-800 font-semibold">{{ formatDate(request.submittedAt) }}</span>
+            </div>
+          </div>
+          
+          <!-- Request Message -->
+          <div v-if="request.message" class="mb-4 p-3 bg-white border-l-4 border-blue-500 rounded-lg">
+            <div class="text-xs font-semibold text-gray-500 uppercase mb-1">Message:</div>
+            <div class="text-sm text-gray-800 leading-relaxed">{{ request.message }}</div>
+          </div>
+
+          <!-- Goals -->
+          <div v-if="request.goals?.length" class="mb-4">
+            <div class="text-xs font-semibold text-gray-500 uppercase mb-2">Goals:</div>
+            <div class="flex flex-wrap gap-2">
+              <span v-for="goal in request.goals" :key="goal" class="bg-purple-100 text-purple-800 px-2.5 py-1 rounded-full text-xs font-medium">{{ goal }}</span>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex flex-wrap gap-2 pt-4 border-t border-gray-200">
             <template v-if="request.status === 'pending'">
-              <button class="btn small success" @click="updateRequestStatus(request.relationship_id, 'accepted')">✓ Accept</button>
-              <button class="btn small danger" @click="updateRequestStatus(request.relationship_id, 'rejected')">✕ Reject</button>
-              <button class="btn small ghost" @click="viewDetails(request)">View Details</button>
+              <button class="px-3 py-1.5 text-xs font-semibold rounded bg-green-500 text-white hover:bg-green-600 transition" @click="updateRequestStatus(request.relationship_id, 'accepted')">✓ Accept</button>
+              <button class="px-3 py-1.5 text-xs font-semibold rounded bg-red-500 text-white hover:bg-red-600 transition" @click="updateRequestStatus(request.relationship_id, 'rejected')">✕ Reject</button>
+              <button class="px-3 py-1.5 text-xs font-semibold rounded bg-transparent border border-gray-300 text-gray-700 hover:bg-gray-100 transition" @click="viewDetails(request)">View Details</button>
             </template>
             <template v-else>
-              <button class="btn small ghost" @click="viewDetails(request)">View Details</button>
+              <button class="px-3 py-1.5 text-xs font-semibold rounded bg-transparent border border-gray-300 text-gray-700 hover:bg-gray-100 transition" @click="viewDetails(request)">View Details</button>
             </template>
+          </div>
+
+          <!-- Profile Modal -->
+          <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
+            <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-6 relative">
+              <!-- Close button -->
+              <button 
+                @click="showModal = false" 
+                class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-lg font-bold"
+              >
+              ×
+              </button>
+
+              <h2 class="text-xl font-bold text-gray-900 mb-6 text-center">Details</h2>
+
+              <!-- Loading / Error -->
+              <div v-if="modalLoading" class="text-center py-16 text-gray-500">Loading profile...</div>
+              <div v-else-if="modalError" class="text-center py-16 text-red-500">{{ modalError }}</div>
+
+              <!-- Profile Details -->
+              <div v-else class="grid grid-cols-1 gap-4 text-gray-700 text-sm">
+                <div class="flex justify-between">
+                  <span class="font-medium text-gray-500">Username:</span>
+                  <!-- Full name -->
+                  <span class="font-semibold">{{ modalProfile.user.username || '-' }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="font-medium text-gray-500">Age:</span>
+                  <span>{{ modalProfile.age || '-' }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="font-medium text-gray-500">Gender:</span>
+                  <span>{{ modalProfile.gender || '-' }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="font-medium text-gray-500">Height:</span>
+                  <span>{{ modalProfile.height ? modalProfile.height + ' cm' : '-' }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="font-medium text-gray-500">Weight:</span>
+                  <span>{{ modalProfile.weight ? modalProfile.weight + ' kg' : '-' }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="font-medium text-gray-500">Location:</span>
+                  <span>{{ modalProfile.location || '-' }}</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -101,38 +193,45 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-
-interface MemberRequest {
-  id: string
-  memberId: string
-  memberName: string
-  programName?: string
-  experienceLevel: string
-  message?: string
-  goals?: string[]
-  status: 'pending' | 'accepted' | 'rejected'
-  submittedAt: string
-  relationship_id: number
-}
+import { ArrowLeft, ClipboardPen } from 'lucide-vue-next'
 
 const router = useRouter()
-const requests = ref<MemberRequest[]>([])
-const activeTab = ref<'all' | 'pending' | 'accepted' | 'rejected'>('all')
+const requests = ref([])
+const activeTab = ref('all')
 const loading = ref(true)
+const showModal = ref(false)
+const selectedRequest = ref(null)
+
+const modalProfile = ref({
+  user: { username: '' },
+  photo: null,
+  role: '',
+  age: null,
+  gender: '',
+  height: null,
+  weight: null,
+  location: '',
+  created_at: '',
+  updated_at: '',
+})
+const modalLoading = ref(false)
+const modalError = ref('')
 
 const pendingRequests = computed(() => requests.value.filter(r => r.status === 'pending'))
 const acceptedRequests = computed(() => requests.value.filter(r => r.status === 'accepted'))
 const rejectedRequests = computed(() => requests.value.filter(r => r.status === 'rejected'))
-const filteredRequests = computed(() => activeTab.value === 'all' ? requests.value : requests.value.filter(r => r.status === activeTab.value))
+const filteredRequests = computed(() =>
+  activeTab.value === 'all' ? requests.value : requests.value.filter(r => r.status === activeTab.value)
+)
 
 function goBackToDashboard() {
   router.push('/coach-dashboard')
 }
 
-function formatDate(dateStr: string) {
+function formatDate(dateStr) {
   const date = new Date(dateStr)
   const now = new Date()
   const diffTime = Math.abs(now.getTime() - date.getTime())
@@ -149,7 +248,7 @@ async function loadRequests() {
   try {
     const res = await fetch('http://127.0.0.1:8000/api/member/coach-requests/', { credentials: 'include' })
     if (!res.ok) throw new Error('Failed to fetch')
-    const data: MemberRequest[] = await res.json()
+    const data = await res.json()
     requests.value = data
   } catch (err) {
     console.error(err)
@@ -159,7 +258,7 @@ async function loadRequests() {
   }
 }
 
-async function updateRequestStatus(relationshipId: number, status: 'accepted' | 'rejected') {
+async function updateRequestStatus(relationshipId, status) {
   try {
     const res = await fetch(`http://127.0.0.1:8000/api/member/coach-requests/${relationshipId}/`, {
       method: 'PATCH',
@@ -178,440 +277,51 @@ async function updateRequestStatus(relationshipId: number, status: 'accepted' | 
   }
 }
 
-function viewDetails(request: MemberRequest) {
-  alert(`View details for ${request.memberName}`)
+async function viewDetails(request) {
+  selectedRequest.value = request
+  showModal.value = true
+  modalLoading.value = true
+  modalError.value = ''
+  modalProfile.value = {
+    user: { username: '' },
+    photo: null,
+    role: '',
+    age: null,
+    gender: '',
+    height: null,
+    weight: null,
+    location: '',
+    created_at: '',
+    updated_at: '',
+  }
+
+  try {
+    const res = await fetch(`http://127.0.0.1:8000/api/member/profile/${request.memberId}/`, { credentials: 'include' })
+    if (!res.ok) throw new Error('Failed to fetch profile')
+    const data = await res.json()
+
+    modalProfile.value = {
+      user: { username: data.user.username || '' },
+      photo: null,
+      role: '',
+      age: data.age || null,
+      gender: data.gender || '',
+      height: data.height || null,
+      weight: data.weight || null,
+      location: data.location || '',
+      created_at: '',
+      updated_at: '',
+    }
+
+  } catch (err) {
+    console.error(err)
+    modalError.value = 'Failed to load profile.'
+  } finally {
+    modalLoading.value = false
+  }
 }
 
 onMounted(() => {
   loadRequests()
 })
 </script>
-
-<style scoped>
-.member-requests {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 24px;
-}
-
-.back-btn {
-  background: transparent;
-  border: none;
-  color: #3b82f6;
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  padding: 8px 12px;
-  margin-bottom: 16px;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  width: fit-content;
-}
-
-.back-btn:hover {
-  background: #eff6ff;
-  color: #2563eb;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 20px;
-  margin-bottom: 24px;
-}
-
-.header-content {
-  flex: 1;
-}
-
-.page-title {
-  font-size: 32px;
-  font-weight: 700;
-  color: #111827;
-  margin: 0 0 8px 0;
-}
-
-.page-subtitle {
-  color: #6b7280;
-  font-size: 16px;
-  margin: 0;
-}
-
-.header-stats {
-  display: flex;
-  gap: 12px;
-}
-
-.stat-badge {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 12px 16px;
-  border-radius: 12px;
-  min-width: 80px;
-}
-
-.stat-badge.pending {
-  background: #fef3c7;
-  border: 1px solid #f59e0b;
-}
-
-.stat-badge.accepted {
-  background: #d1fae5;
-  border: 1px solid #10b981;
-}
-
-.stat-number {
-  font-size: 24px;
-  font-weight: 700;
-  color: #111827;
-}
-
-.stat-label {
-  font-size: 12px;
-  color: #6b7280;
-  font-weight: 500;
-  text-transform: uppercase;
-}
-
-.filter-tabs {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 24px;
-  border-bottom: 2px solid #e5e7eb;
-  padding-bottom: 0;
-  flex-wrap: wrap;
-}
-
-.tab-btn {
-  background: transparent;
-  border: none;
-  padding: 12px 20px;
-  font-weight: 600;
-  font-size: 14px;
-  color: #6b7280;
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -2px;
-  transition: all 0.2s ease;
-}
-
-.tab-btn:hover {
-  color: #374151;
-}
-
-.tab-btn.active {
-  color: #3b82f6;
-  border-bottom-color: #3b82f6;
-}
-
-.requests-container {
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-.empty-state {
-  text-align: center;
-  padding: 64px 24px;
-}
-
-.empty-icon {
-  font-size: 64px;
-  margin-bottom: 16px;
-}
-
-.empty-title {
-  font-size: 20px;
-  font-weight: 600;
-  color: #374151;
-  margin-bottom: 8px;
-}
-
-.empty-message {
-  color: #6b7280;
-  line-height: 1.5;
-}
-
-.requests-grid {
-  display: grid;
-  gap: 16px;
-}
-
-.request-card {
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 20px;
-  background: #fafafa;
-  transition: all 0.2s ease;
-}
-
-.request-card:hover {
-  border-color: #3b82f6;
-  box-shadow: 0 4px 12px rgba(59,130,246,0.1);
-}
-
-.request-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 16px;
-}
-
-.member-info {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  flex: 1;
-}
-
-.member-avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  font-weight: 600;
-  flex-shrink: 0;
-}
-
-.member-details {
-  flex: 1;
-  min-width: 0;
-}
-
-.member-name {
-  font-size: 18px;
-  font-weight: 600;
-  color: #111827;
-  margin-bottom: 4px;
-}
-
-.member-id {
-  font-size: 12px;
-  color: #3b82f6;
-  font-weight: 600;
-  font-family: monospace;
-  margin-bottom: 4px;
-}
-
-.member-email {
-  font-size: 14px;
-  color: #6b7280;
-}
-
-.request-status {
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  flex-shrink: 0;
-}
-
-.request-status.pending {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.request-status.accepted {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.request-status.rejected {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.request-info {
-  display: grid;
-  gap: 8px;
-  margin-bottom: 16px;
-  padding: 12px;
-  background: #fff;
-  border-radius: 8px;
-}
-
-.info-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 14px;
-}
-
-.info-label {
-  color: #6b7280;
-  font-weight: 500;
-}
-
-.info-value {
-  color: #374151;
-  font-weight: 600;
-}
-
-.member-id-value {
-  font-family: monospace;
-  color: #3b82f6;
-  background: #eff6ff;
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-
-.request-message {
-  margin-bottom: 16px;
-  padding: 12px;
-  background: #fff;
-  border-radius: 8px;
-  border-left: 3px solid #3b82f6;
-}
-
-.message-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: #6b7280;
-  text-transform: uppercase;
-  margin-bottom: 6px;
-}
-
-.message-content {
-  color: #374151;
-  line-height: 1.5;
-  font-size: 14px;
-}
-
-.request-goals {
-  margin-bottom: 16px;
-}
-
-.goals-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: #6b7280;
-  text-transform: uppercase;
-  margin-bottom: 8px;
-}
-
-.goals-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.goal-tag {
-  background: #ede9fe;
-  color: #5b21b6;
-  padding: 4px 10px;
-  border-radius: 16px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.request-actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  padding-top: 16px;
-  border-top: 1px solid #e5e7eb;
-}
-
-.btn {
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  padding: 8px 16px;
-  font-weight: 600;
-  background: #fff;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 14px;
-}
-
-.btn:hover {
-  background: #f9fafb;
-}
-
-.btn.small {
-  padding: 6px 12px;
-  font-size: 12px;
-}
-
-.btn.success {
-  background: #10b981;
-  color: #fff;
-  border-color: #10b981;
-}
-
-.btn.success:hover {
-  background: #059669;
-}
-
-.btn.danger {
-  background: #ef4444;
-  color: #fff;
-  border-color: #ef4444;
-}
-
-.btn.danger:hover {
-  background: #dc2626;
-}
-
-.btn.ghost {
-  background: transparent;
-  color: #374151;
-}
-
-.btn.ghost:hover {
-  background: #f3f4f6;
-}
-
-@media (max-width: 768px) {
-  .page-header {
-    flex-direction: column;
-  }
-
-  .header-stats {
-    width: 100%;
-    justify-content: space-around;
-  }
-
-  .filter-tabs {
-    overflow-x: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-
-  .filter-tabs::-webkit-scrollbar {
-    display: none;
-  }
-
-  .tab-btn {
-    white-space: nowrap;
-  }
-
-  .request-header {
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .request-status {
-    align-self: flex-start;
-  }
-
-  .request-actions {
-    flex-direction: column;
-  }
-
-  .btn.small {
-    width: 100%;
-  }
-}
-</style>
