@@ -593,16 +593,12 @@
 </template>
 
 <script setup>
-<script setup>
 import { reactive, ref, computed, watch, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
 const route = useRoute()
 
-const coachUserProfileId = ref(null)
-const editingProgramId = ref(null)
-const backupProgramData = ref(null)
 const coachUserProfileId = ref(null)
 const editingProgramId = ref(null)
 const backupProgramData = ref(null)
@@ -825,7 +821,6 @@ const workoutProgram = reactive({
 })
 
 const currentWorkout = reactive({
-const currentWorkout = reactive({
   day_number: 1,
   title: '',
   duration: 30,
@@ -833,9 +828,6 @@ const currentWorkout = reactive({
   type: '',
 })
 
-const selectedDay = ref('')
-const editingDay = ref(null)
-const editingWorkoutIndex = ref(null)
 const selectedDay = ref('')
 const editingDay = ref(null)
 const editingWorkoutIndex = ref(null)
@@ -870,7 +862,6 @@ function validateDuration() {
 
   if (duration < 5) {
     durationError.value = 'Duration must be at least 5 minutes'
-    durationError.value = 'Duration must be at least 5 minutes'
     return false
   }
 
@@ -887,7 +878,6 @@ function validateDuration() {
   durationError.value = ''
   return true
 }
-
 
 function validatevideo_link() {
   youtubeError.value = ''
@@ -941,7 +931,6 @@ function saveDayWorkout() {
   const targetDay = editingDay.value || selectedDay.value
 
   const workout = {
-  const workout = {
     day_number: targetDay,
     title: currentWorkout.title.trim(),
     duration: currentWorkout.duration,
@@ -962,7 +951,6 @@ function saveDayWorkout() {
 }
 
 function editWorkout(day, workoutIndex) {
-function editWorkout(day, workoutIndex) {
   const workout = workoutProgram.WorkoutDays[day]?.[workoutIndex]
   if (workout) {
     editingDay.value = day
@@ -978,7 +966,6 @@ function editWorkout(day, workoutIndex) {
 }
 
 function removeWorkout(day, workoutIndex) {
-function removeWorkout(day, workoutIndex) {
   if (workoutProgram.WorkoutDays[day]) {
     workoutProgram.WorkoutDays[day].splice(workoutIndex, 1)
     if (workoutProgram.WorkoutDays[day].length === 0) {
@@ -989,7 +976,14 @@ function removeWorkout(day, workoutIndex) {
 
 function handleCancel() {
   if (editingProgramId.value && backupProgramData.value) {
-    Object.assign(workoutProgram, backupProgramData.value)
+    workoutProgram.title = backupProgramData.value.title
+    workoutProgram.description = backupProgramData.value.description
+    workoutProgram.difficulty_level = backupProgramData.value.difficulty_level
+    workoutProgram.duration = backupProgramData.value.duration
+    workoutProgram.category = backupProgramData.value.category
+    workoutProgram.is_public = backupProgramData.value.is_public
+    workoutProgram.level_access = backupProgramData.value.level_access
+    workoutProgram.WorkoutDays = JSON.parse(JSON.stringify(backupProgramData.value.WorkoutDays))
     workoutAssignment.member_id = backupProgramData.value.member_id || ''
     router.push('/coach-dashboard')
   } else {
@@ -1022,7 +1016,6 @@ function resetCurrentWorkout() {
 }
 
 async function loadExistingProgram(programId) {
-async function loadExistingProgram(programId) {
   try {
     const response = await fetch(`http://127.0.0.1:8000/api/workout/programs/${programId}/`, {
       credentials: 'include',
@@ -1053,7 +1046,6 @@ async function loadExistingProgram(programId) {
       workoutProgram.WorkoutDays = {}
 
       programData.days.forEach((day) => {
-      programData.days.forEach((day) => {
         const dayNumber = day.day_number
         if (!dayNumber) return
 
@@ -1077,7 +1069,6 @@ async function loadExistingProgram(programId) {
             workoutProgram.WorkoutDays[dayNumber].push(workout)
           })
         } else {
-          const workout = {
           const workout = {
             title: day.title || `Day ${dayNumber}`,
             type: day.type || '',
@@ -1155,31 +1146,6 @@ async function handleAssignment(programId, isUpdate) {
     due_date: workoutAssignment.due_date || null,
   }
 
-  // const checkAssignmentExists = async () => {
-  //   if (!isUpdate) return false
-
-  //   try {
-  //     const checkResponse = await fetch(
-  //       `http://127.0.0.1:8000/api/workout/programs/${programId}/`,
-  //       {
-  //         credentials: 'include',
-  //       },
-  //     )
-
-  //     if (checkResponse.ok) {
-  //       const programData = await checkResponse.json()
-  //       return !!programData.assignment
-  //     }
-  //   } catch (error) {
-  //     console.error('Failed to check assignment:', error)
-  //   }
-  //   return false
-  // }
-
-  // const assignmentExists = await checkAssignmentExists()
-  // console.log('Assignment exists:', assignmentExists)
-
-  // const method = isUpdate && assignmentExists ? 'PATCH' : 'POST'
   const method = isUpdate ? 'PATCH' : 'POST'
   const url = `http://127.0.0.1:8000/api/workout/assignment-manage/${programId}/`
   console.log(`Assignment request: ${method} ${url}`, assignmentPayload)
@@ -1198,52 +1164,6 @@ async function handleAssignment(programId, isUpdate) {
     if (!response.ok) {
       const error = await response.json()
       console.error('Assignment error:', error)
-
-      // if (error.error?.includes('already exists') && method === 'POST') {
-      //   console.log('Assignment exists, retrying with PATCH...')
-      //   const retryResponse = await fetch(url, {
-      //     method: 'PATCH',
-      //     credentials: 'include',
-      //     headers: {
-      //       'Content-Type': 'application/json',
-      //       'X-CSRFToken': getCsrfToken(),
-      //     },
-      //     body: JSON.stringify(assignmentPayload),
-      //   })
-
-      //   if (!retryResponse.ok) {
-      //     const retryError = await retryResponse.json()
-      //     alert(`Failed to update assignment: ${retryError.error || 'Unknown error'}`)
-      //     return null
-      //   }
-
-      //   const retryData = await retryResponse.json()
-      //   console.log('Assignment updated successfully:', retryData.message)
-      //   return retryData.assignment
-      // }
-
-      // if (error.error?.includes('No assignment exists') && method === 'PATCH') {
-      //   console.log('No assignment found, retrying with POST...')
-      //   const retryResponse = await fetch(url, {
-      //     method: 'POST',
-      //     credentials: 'include',
-      //     headers: {
-      //       'Content-Type': 'application/json',
-      //       'X-CSRFToken': getCsrfToken(),
-      //     },
-      //     body: JSON.stringify(assignmentPayload),
-      //   })
-
-      //   if (!retryResponse.ok) {
-      //     const retryError = await retryResponse.json()
-      //     alert(`Failed to create assignment: ${retryError.error || 'Unknown error'}`)
-      //     return null
-      //   }
-
-      //   const retryData = await retryResponse.json()
-      //   console.log('Assignment created successfully:', retryData.message)
-      //   return retryData.assignment
-      // }
 
       alert(`Program saved, but assignment failed: ${error.error || 'Unknown error'}`)
       return null
@@ -1332,7 +1252,6 @@ async function submitProgram() {
       title: workout.title,
       type: workout.type || '',
       video_links: [workout.video_link].filter(Boolean),
-      video_links: [workout.video_link].filter(Boolean),
       duration: workout.duration,
     }))
   })
@@ -1350,7 +1269,9 @@ async function submitProgram() {
       day_number: day.day_number,
       title: day.title,
       type: day.type || '',
-      video_links: Array.isArray(day.video_links) ? day.video_links : [day.video_links].filter(Boolean),
+      video_links: Array.isArray(day.video_links)
+        ? day.video_links
+        : [day.video_links].filter(Boolean),
       duration: day.duration,
     })),
   }
