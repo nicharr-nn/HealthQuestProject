@@ -1,8 +1,8 @@
 <template>
-  <header class="bg-[#88ACEA] shadow-md">
+  <header class="bg-[#88ACEA] shadow-md relative">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between h-16 items-center">
-        <!-- Left: Brand -->
+        <!-- Brand -->
         <RouterLink 
           to="/" 
           class="font-subtitle text-2xl text-white hover:text-[#c7d2fe] transition-colors"
@@ -33,7 +33,7 @@
           </svg>
         </button>
 
-        <!-- Desktop Navigation Links -->
+        <!-- Desktop Nav Links -->
         <ul class="hidden md:flex items-center space-x-8">
           <li>
             <RouterLink
@@ -45,17 +45,7 @@
             </RouterLink>
           </li>
 
-          <li>
-            <RouterLink
-              to="/view-member"
-              class="font-body text-white hover:text-[#c7d2fe] transition-colors"
-              active-class="text-[#c7d2fe]"
-            >
-              Member
-            </RouterLink>
-          </li>
-
-          <!-- Clickable Food Post Dropdown -->
+          <!-- Post Dropdown -->
           <li class="relative">
             <button
               @click="toggleDropdown"
@@ -66,11 +56,11 @@
             >
               Post
               <svg
-                class="w-4 h-4 ml-1"
+                class="w-4 h-4 ml-1 transition-transform"
+                :class="showDropdown ? 'rotate-180' : ''"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
-                :class="showDropdown ? 'rotate-180 transition-transform' : 'transition-transform'"
               >
                 <path
                   stroke-linecap="round"
@@ -81,30 +71,38 @@
               </svg>
             </button>
 
-            <transition name="fade">
-              <ul
-              v-if="showDropdown"
-              class="absolute left-0 mt-2 w-44 bg-[#88ACEA] rounded-md shadow-lg z-50"
+            <!-- Dropdown Menu -->
+            <transition
+              enter-active-class="transition-opacity duration-200"
+              enter-from-class="opacity-0"
+              enter-to-class="opacity-100"
+              leave-active-class="transition-opacity duration-200"
+              leave-from-class="opacity-100"
+              leave-to-class="opacity-0"
             >
-              <li>
-                <RouterLink
-                  to="/food-recipe"
-                  @click="closeDropdown"
-                  class="block px-4 py-2 text-white hover:text-[#c7d2fe] rounded-t-md"
-                >
-                  Food Recipes
-                </RouterLink>
-              </li>
-              <li>
-                <RouterLink
-                  to="/food-diary"
-                  @click="closeDropdown"
-                  class="block px-4 py-2 text-white hover:text-[#c7d2fe] rounded-t-md"
-                >
-                  Member Posts
-                </RouterLink>
-              </li>
-            </ul>
+              <ul
+                v-if="showDropdown"
+                class="absolute left-0 mt-2 w-44 bg-[#88ACEA] rounded-md shadow-lg z-50"
+              >
+                <li>
+                  <RouterLink
+                    to="/food-recipe"
+                    @click="closeDropdown"
+                    class="block px-4 py-2 text-white hover:text-[#c7d2fe] rounded-t-md"
+                  >
+                    Food Recipes
+                  </RouterLink>
+                </li>
+                <li>
+                  <RouterLink
+                    to="/food-diary"
+                    @click="closeDropdown"
+                    class="block px-4 py-2 text-white hover:text-[#c7d2fe] rounded-t-md"
+                  >
+                    Member Posts
+                  </RouterLink>
+                </li>
+              </ul>
             </transition>
           </li>
 
@@ -129,7 +127,7 @@
         </ul>
       </div>
 
-      <!-- Mobile Navigation Menu -->
+      <!-- Mobile Menu -->
       <div 
         v-if="mobileMenuOpen"
         class="md:hidden absolute left-0 right-0 bg-[#88ACEA] shadow-lg py-4 z-50"
@@ -225,13 +223,3 @@ async function logout() {
   window.location.href = "http://127.0.0.1:8000/accounts/logout/"
 }
 </script>
-
-<style scoped>
-
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 0.2s ease;
-}
-.fade-enter-from, .fade-leave-to {
-  opacity: 0;
-}
-</style>

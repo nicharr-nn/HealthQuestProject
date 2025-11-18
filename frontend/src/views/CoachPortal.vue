@@ -1,44 +1,42 @@
 <template>
-  <div class="coach-portal">
-    <div class="page-header">
-      <h1 class="page-title">Coach Portal</h1>
-      <p class="page-subtitle">Create and manage programs</p>
+  <div class="w-full p-6">
+    <!-- Page Header -->
+    <div class="mb-6">
+      <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Coach Portal</h1>
+      <p class="text-gray-500 mt-1">Create and manage programs</p>
     </div>
 
-    <div class="content-grid">
-      <!-- Coach Registration -->
-      <div class="content-card">
-        <div class="card-title mb-3">Coach Registration</div>
+    <!-- Content Grid -->
+    <div class="flex flex-col md:flex-row gap-4">
+      <!-- Coach Registration Card -->
+      <div class="flex-1 bg-white border border-gray-200 rounded-2xl shadow-sm p-6 min-w-0">
+        <div class="text-lg font-semibold mb-3">Coach Registration</div>
 
-        <form @submit.prevent="submitApplication" class="coach-form">
-          <div class="form-group">
-            <label class="form-label">Name</label>
-            <input
-              v-if="isEditingProfile"
-              v-model="googleName"
-              type="text"
-              class="form-input"
-              placeholder="Your name"
-            />
-            <p v-else class="text-gray-700">{{ googleName }}</p>
+        <form @submit.prevent="submitApplication" class="grid gap-4">
+          <!-- Name -->
+          <div class="grid gap-1">
+            <label class="text-gray-700 font-medium text-sm">Name</label>
+            <p class="text-gray-700 text-sm">{{ googleName }}</p>
           </div>
 
-          <div class="form-group">
-            <label class="form-label" for="bio">Short Bio</label>
+          <!-- Bio -->
+          <div class="grid gap-1">
+            <label for="bio" class="text-gray-700 font-medium text-sm">Short Bio</label>
             <textarea
               id="bio"
               v-model="coachForm.bio"
-              class="form-input"
               rows="4"
               placeholder="Tell us a bit about your coaching style and experience"
               :disabled="hasSubmitted && !isEditingProfile"
               maxlength="250"
+              class="border border-gray-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-50 disabled:cursor-not-allowed"
             ></textarea>
-            <small class="text-gray-500">{{ coachForm.bio.length }}/250 characters</small>
+            <small class="text-gray-400 text-xs">{{ coachForm.bio.length }}/250 characters</small>
           </div>
 
-          <div v-if="!hasSubmitted || isResubmitting" class="form-group">
-            <label for="certDoc" class="file-upload-label">
+          <!-- File Upload -->
+          <div v-if="!hasSubmitted || isResubmitting" class="grid gap-2">
+            <label for="certDoc" class="inline-block cursor-pointer">
               <input
                 id="certDoc"
                 type="file"
@@ -47,69 +45,45 @@
                 class="hidden"
                 :required="!hasSubmitted"
               />
-              <span class="btn ghost">Choose File</span>
+              <span class="px-4 py-2 border border-gray-300 rounded-xl text-sm font-semibold hover:bg-gray-100 transition">Choose File</span>
             </label>
-            <span class="ml-2 mt-5 font-body text-gray-700">
-              {{ selectedFile?.name || 'No file chosen' }}
-            </span>
+            <span class="text-gray-700 text-sm">{{ selectedFile?.name || 'No file chosen' }}</span>
           </div>
 
-          <!-- Show submitted file info when already submitted -->
-          <div v-else-if="hasSubmitted && selectedFileName" class="form-group">
-            <label class="form-label">Certification Document</label>
-            <p class="text-gray-700">{{ selectedFileName }}</p>
+          <!-- Show submitted file info -->
+          <div v-else-if="hasSubmitted && selectedFileName" class="grid gap-1">
+            <label class="text-gray-700 font-medium text-sm">Certification Document</label>
+            <p class="text-gray-700 text-sm">{{ selectedFileName }}</p>
           </div>
 
-          <div class="form-row">
-            <!-- Not submitted yet -->
-            <button v-if="!hasSubmitted" type="submit" class="btn primary">Submit Application</button>
-            <button v-if="!hasSubmitted" type="button" class="btn ghost" @click="resetForm">Reset</button>
+          <!-- Buttons -->
+          <div class="flex flex-wrap gap-2 mt-2">
+            <!-- Not submitted -->
+            <button v-if="!hasSubmitted" type="submit" class="px-4 py-2 rounded-xl bg-gray-900 text-white font-semibold hover:brightness-105 transition">Submit Application</button>
+            <button v-if="!hasSubmitted" type="button" @click="resetForm" class="px-4 py-2 rounded-xl border border-gray-300 font-semibold hover:bg-gray-100 transition">Reset</button>
 
-            <!-- Already submitted and approved - can edit profile -->
+            <!-- Already submitted -->
             <template v-else-if="coachStatus === 'approved'">
-              <button 
-                v-if="!isEditingProfile"
-                type="button" 
-                class="btn primary" 
-                @click="startEditProfile"
-              >
-                Edit Profile
-              </button>
+              <template v-if="!isEditingProfile">
+                <button type="button" @click="startEditProfile" class="px-4 py-2 rounded-xl bg-gray-900 text-white font-semibold hover:brightness-105 transition">Edit Profile</button>
+              </template>
               <template v-else>
-                <button 
-                  type="button" 
-                  class="btn primary" 
-                  @click="saveProfile"
-                >
-                  Save Changes
-                </button>
-                <button 
-                  type="button" 
-                  class="btn ghost" 
-                  @click="cancelEdit"
-                >
-                  Cancel
-                </button>
+                <button type="button" @click="saveProfile" class="px-4 py-2 rounded-xl bg-gray-900 text-white font-semibold hover:brightness-105 transition">Save Changes</button>
+                <button type="button" @click="cancelEdit" class="px-4 py-2 rounded-xl border border-gray-300 font-semibold hover:bg-gray-100 transition">Cancel</button>
               </template>
             </template>
 
-            <!-- Pending or rejected - can resubmit -->
-            <button 
-              v-else-if="!isResubmitting"
-              type="button" 
-              class="btn primary" 
-              @click="startResubmit"
-            >
-              Resubmit Certification
-            </button>
+            <!-- Pending or rejected -->
+            <button v-else-if="!isResubmitting" type="button" @click="startResubmit" class="px-4 py-2 rounded-xl bg-gray-900 text-white font-semibold hover:brightness-105 transition">Resubmit Certification</button>
             <template v-else>
-              <button type="submit" class="btn primary">Submit Application</button>
-              <button type="button" class="btn ghost" @click="cancelResubmit">Cancel</button>
+              <button type="submit" class="px-4 py-2 rounded-xl bg-gray-900 text-white font-semibold hover:brightness-105 transition">Submit Application</button>
+              <button type="button" @click="cancelResubmit" class="px-4 py-2 rounded-xl border border-gray-300 font-semibold hover:bg-gray-100 transition">Cancel</button>
             </template>
           </div>
 
-          <div v-if="hasSubmitted" class="form-status mt-2">
-            <p>Your application status: <strong>{{ coachStatus }}</strong></p>
+          <!-- Status -->
+          <div v-if="hasSubmitted" class="mt-2 text-sm text-gray-700">
+            Your application status: <strong>{{ coachStatus }}</strong>
           </div>
         </form>
       </div>
@@ -281,57 +255,3 @@ async function saveProfile() {
   }
 }
 </script>
-
-<style scoped>
-.coach-portal {
-  width: 100%;
-  padding: 24px;
-  box-sizing: border-box;
-}
-.page-header { margin-bottom: 24px; }
-.page-title { font-size: 28px; font-weight: 700; margin: 0; }
-.page-subtitle { color: #6b7280; margin-top: 6px; }
-
-.content-grid {
-  display: flex;
-  gap: 16px;
-}
-@media (min-width: 900px) { .content-grid { grid-template-columns: 1fr 1fr; } }
-
-.content-card {
-  flex: 1;
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
-  min-width: 0;
-}
-.card-title { font-weight: 600; font-size: 18px; }
-.muted { color: #6b7280; }
-.text-gray-700 { color: #374151; }
-.mb-3 { margin-bottom: 12px; }
-.ml-2 { margin-left: 8px; }
-.mt-2 { margin-top: 8px; }
-.mt-5 { margin-top: 20px; }
-
-.coach-form { display: grid; gap: 14px; }
-.form-group { display: grid; gap: 6px; }
-.form-row { display: flex; gap: 10px; margin-top: 6px; }
-.form-label { font-size: 14px; color: #374151; font-weight: 500; }
-.form-input { border: 1px solid #d1d5db; border-radius: 10px; padding: 10px 12px; font-size: 14px; outline: none; width: 100%; }
-.form-input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
-.form-input:disabled { background-color: #f9fafb; cursor: not-allowed; }
-
-.btn { border: 1px solid #d1d5db; border-radius: 10px; padding: 10px 14px; font-weight: 600; background: #fff; cursor: pointer; transition: all 0.2s; }
-.btn:hover { background: #f9fafb; }
-.btn.primary { background: #111827; color: #fff; border-color: #111827; }
-.btn.primary:hover { filter: brightness(1.05); }
-.btn.ghost { background: #fff; }
-.btn.small { padding: 8px 10px; font-size: 13px; }
-
-.file-upload-label { display: inline-block; }
-.hidden { display: none; }
-
-.form-status p { margin-bottom: 12px; color: #374151; }
-</style>
