@@ -26,9 +26,6 @@ urlpatterns = [
     ),
     path("accepted/", accepted_members, name="accepted-members"),
 
-    # coach can remove an accepted member
-    path("<str:member_id>/", coach_remove_member, name="coach-remove-member"),
-
     # coach can view member profile
     path("profile/<str:member_id>/", coach_member_profile, name="member-profile"),
 
@@ -67,4 +64,7 @@ urlpatterns = [
         uncommented_food_posts,
         name="uncommented-food-posts",
     ),
+
+    # coach can remove an accepted member
+    path("<str:member_id>/", coach_remove_member, name="coach-remove-member"),
 ]
