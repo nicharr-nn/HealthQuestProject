@@ -217,13 +217,18 @@ class WorkoutAssignmentTests(TestCase):
         self.client.force_login(self.coach_user)
 
         url = reverse(
-            "delete-assignment", kwargs={"program_id": self.workout_assignment.id}
+            "delete-assignment", kwargs={"program_id": self.program.id}
         )
         response = self.client.delete(url)
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        
         self.assertFalse(
             WorkoutAssignment.objects.filter(
-                program_id=self.workout_assignment.id
+                id=self.workout_assignment.id
             ).exists()
+        )
+        
+        self.assertTrue(
+            WorkoutProgram.objects.filter(id=self.program.id).exists()
         )

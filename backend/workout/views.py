@@ -43,11 +43,7 @@ def workout_programs(request):
 
         # Role-based filtering
         if user_profile.role == "coach":
-            programs = WorkoutProgram.objects.filter(
-                models.Q(coach=user_profile)
-                | (models.Q(is_public=True) & level_filters)
-            ).distinct()
-
+            programs = WorkoutProgram.objects.filter(coach=user_profile).distinct()
         elif user_profile.role == "member":
             # Members see: public programs matching their level + assigned programs
             member_obj = getattr(user_profile, "member_profile", None)
