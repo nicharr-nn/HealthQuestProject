@@ -45,11 +45,7 @@
             </RouterLink>
           </li>
 
-<<<<<<< HEAD
-          <!-- Clickable Food Post Dropdown -->
-=======
           <!-- Post Dropdown -->
->>>>>>> main
           <li class="relative">
             <button
               @click="toggleDropdown"
