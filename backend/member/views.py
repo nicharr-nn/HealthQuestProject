@@ -2,7 +2,9 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
+from datetime import datetime
 from .models import Member, CoachMemberRelationship, FoodPost, FoodPostComment
+from django.shortcuts import get_object_or_404
 from .serializers import (
     CoachMemberRelationshipSerializer,
     MemberSerializer,
@@ -415,7 +417,6 @@ def assign_program_to_member(request):
     )
 
 
-# ==================== FOOD POSTS ====================
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def food_posts(request):
@@ -426,7 +427,23 @@ def food_posts(request):
         if profile.role == "member":
             posts = FoodPost.objects.filter(user_profile=profile)
         elif profile.role == "coach":
+            member_id = request.query_params.get("member_id")
+            date_str = request.query_params.get("date")
+
             posts = FoodPost.objects.filter(coach=profile)
+            
+            if member_id:
+                posts = posts.filter(
+                    user_profile__member_profile__member_id=member_id
+                )
+
+            if date_str:
+                try:
+                    target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+                    posts = posts.filter(created_at__date=target_date)
+                except ValueError:
+                    # If date is invalid, ignore.
+                    pass
         else:
             posts = FoodPost.objects.none()
 
