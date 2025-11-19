@@ -39,13 +39,10 @@
           </div>
 
           <div class="flex items-center gap-3">
-            <button class="relative rounded-md bg-slate-100 p-2" @click="showNotifications">
-              <Bell class="w-5 h-5 text-slate-700" />
-              <span
-                v-if="pendingCount > 0"
-                class="absolute right-1 top-1 inline-block h-2 w-2 rounded-full bg-rose-500"
-              ></span>
-            </button>
+            <AdminNotificationBell
+              :coaches="coaches"
+              @review="viewCoachDetails"
+            />
 
             <!-- Header User Info -->
             <div class="flex items-center gap-2">
@@ -132,8 +129,15 @@
               >
                 <td class="px-3 py-3 font-semibold text-slate-800">
                   <div class="flex items-center gap-2">
-                    <div class="grid h-8 w-8 place-items-center rounded-full bg-blue-500 font-semibold text-white">
-                      {{ getInitials(u.full_name || u.username) }}
+                    <div class="h-8 w-8 rounded-full overflow-hidden bg-blue-500">
+                      <template v-if="u.photo">
+                        <img :src="u.photo" class="h-full w-full object-cover" />
+                      </template>
+                      <template v-else>
+                        <div class="grid h-full w-full place-items-center font-semibold text-white">
+                          {{ getInitials(u.full_name || u.username) }}
+                        </div>
+                      </template>
                     </div>
                     {{ u.full_name || u.username }}
                   </div>
@@ -184,6 +188,7 @@ import { useToastStore } from '@/stores/toast'
 import DeleteModal from '@/components/DeleteModal.vue'
 import AdminSideBar from '@/components/AdminSideBar.vue'
 import { Bell, Menu } from 'lucide-vue-next'
+import AdminNotificationBell from '@/components/AdminNotificationBell.vue'
 
 const userStore = useUserStore()
 const toast = useToastStore()
