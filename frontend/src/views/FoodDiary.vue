@@ -1,6 +1,6 @@
 <template>
   <div class="max-w-[1400px] mx-auto p-6 font-sans">
-
+    
     <!-- Header Section -->
     <div class="mb-8 relative">
       <div class="mt-4 bg-[#fac3e1] p-8 rounded-xl text-white shadow-lg relative">

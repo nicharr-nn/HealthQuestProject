@@ -71,7 +71,8 @@
               Food Recipe
             </RouterLink>
           </li>
-          <li v-if="userStore.role === 'member' || userStore.role === 'coach'">
+          <!-- Show Food Post if member has accepted coach relationship -->
+          <li v-if="userStore.role === 'member' && hasAcceptedCoach">
             <RouterLink
               to="/food-post"
               class="font-body text-white hover:text-[#c7d2fe] transition-colors"
@@ -146,6 +147,17 @@
               Food Recipe
             </RouterLink>
           </li>
+          <!-- Show Food Post if member has accepted coach relationship -->
+          <li v-if="userStore.role === 'member' && hasAcceptedCoach">
+            <RouterLink
+              to="/food-post"
+              @click="closeMobileMenu"
+              class="block font-body text-white hover:text-[#c7d2fe] transition-colors py-2"
+              active-class="text-[#c7d2fe]"
+            >
+              Food Post
+            </RouterLink>
+          </li>
           <li>
             <RouterLink
               to="/profile"
@@ -172,14 +184,40 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 
 
 const mobileMenuOpen = ref(false)
-const userStore = useUserStore()             
+const userStore = useUserStore()
+const hasAcceptedCoach = ref(false)
 
+async function fetchMemberRequest() {
+  if (userStore.role === 'member') {
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/member/member-request/manage/', {
+        credentials: 'include'
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        hasAcceptedCoach.value = data.status === 'accepted'
+      } else if (response.status === 404) {
+        hasAcceptedCoach.value = false
+      } else {
+        console.error('Failed to fetch member request:', response.status)
+      }
+    } catch (error) {
+      console.error('Error fetching member request:', error)
+      hasAcceptedCoach.value = false
+    }
+  }
+}
+
+onMounted(() => {
+  fetchMemberRequest()
+})
 
 function toggleMobileMenu() {
   mobileMenuOpen.value = !mobileMenuOpen.value
