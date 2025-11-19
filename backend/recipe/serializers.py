@@ -12,7 +12,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
-    user_profile = serializers.StringRelatedField(read_only=True)
+    user_profile = serializers.SerializerMethodField()
     image = serializers.ImageField(use_url=True, required=False, allow_null=True)
     pdf_file = serializers.FileField(use_url=True, required=False, allow_null=True)
 
@@ -31,6 +31,11 @@ class RecipeSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["id", "user_profile", "created_at", "updated_at"]
+
+    def get_user_profile(self, obj):
+        user = obj.user_profile.user
+        full_name = f"{user.first_name} {user.last_name}".strip()
+        return full_name if full_name else user.username
 
     def create(self, validated_data):
         request = self.context["request"]
