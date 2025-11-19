@@ -667,9 +667,3 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
-img {
-  object-fit: cover;
-}
-
-</style>

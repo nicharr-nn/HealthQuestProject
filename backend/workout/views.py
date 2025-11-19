@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.db.models import Sum
+from django.db.models import Sum, Case, When, IntegerField, Value
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import status
@@ -25,7 +25,7 @@ from .xp_rules import calculate_xp, COMPLETION_BONUS
 User = get_user_model()
 
 
-@api_view(["GET", "POST"])
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def workout_programs(request):
     if request.method == "GET":
@@ -41,51 +41,89 @@ def workout_programs(request):
             serializer = WorkoutProgramSerializer(programs, many=True)
             return Response(serializer.data)
 
+        # coach sees only their own programs
+        if user_profile.role == "coach":
+            programs = WorkoutProgram.objects.filter(coach=user_profile)
+            serializer = WorkoutProgramSerializer(programs, many=True)
+            return Response(serializer.data)
+
+        # ✅ Get user's fitness goals for sorting
+        user_goals = user_profile.fitness_goals.values_list("goal_type", flat=True)
+        matching_categories = _get_matching_categories(user_goals)
+
+        # normal users and members see public programs filtered by level
         user_level = user_profile.get_current_level()
 
-        # Build query based on user's level
         level_filters = models.Q(level_access="all")
-        if user_level.level_rank >= 1:  # Bronze and above
+        if user_level.level_rank >= 1:
             level_filters |= models.Q(level_access="bronze")
-        if user_level.level_rank >= 2:  # Silver and above
+        if user_level.level_rank >= 2:
             level_filters |= models.Q(level_access="silver")
-        if user_level.level_rank >= 3:  # Gold and above
+        if user_level.level_rank >= 3:
             level_filters |= models.Q(level_access="gold")
 
-        # Role-based filtering
-        if user_profile.role == "coach":
-            programs = WorkoutProgram.objects.filter(coach=user_profile).distinct()
-        elif user_profile.role == "member":
-            # Members see: public programs matching their level + assigned programs
+        if user_profile.role == "member":
             member_obj = getattr(user_profile, "member_profile", None)
 
             if member_obj:
-                # Get assigned program IDs
-                assigned_program_ids = WorkoutAssignment.objects.filter(
+                assigned_ids = WorkoutAssignment.objects.filter(
                     member=member_obj
                 ).values_list("program_id", flat=True)
 
                 programs = WorkoutProgram.objects.filter(
                     (models.Q(is_public=True) & level_filters)
-                    | models.Q(id__in=assigned_program_ids)
+                    | models.Q(id__in=assigned_ids)
                 ).distinct()
             else:
-                # No member profile, only show public programs by level
-                programs = (
-                    WorkoutProgram.objects.filter(is_public=True)
-                    .filter(level_filters)
-                    .distinct()
+                programs = WorkoutProgram.objects.filter(is_public=True).filter(
+                    level_filters
                 )
-
-        else:  # Normal users
-            programs = (
-                WorkoutProgram.objects.filter(is_public=True)
-                .filter(level_filters)
-                .distinct()
+        else:
+            # normal user
+            programs = WorkoutProgram.objects.filter(is_public=True).filter(
+                level_filters
             )
+
+        # Sort by matching goals
+        if matching_categories:
+            # Create When conditions for each matching category
+            when_conditions = [
+                When(category=cat, then=Value(0)) for cat in matching_categories
+            ]
+
+            programs = programs.annotate(
+                goal_match=Case(
+                    *when_conditions,
+                    default=Value(1),
+                    output_field=IntegerField(),
+                )
+            ).order_by("goal_match", "-created_at")
+        else:
+            # No goals, sort by newest
+            programs = programs.order_by("-created_at")
 
         serializer = WorkoutProgramSerializer(programs, many=True)
         return Response(serializer.data)
+
+
+def _get_matching_categories(user_goals):
+    """
+    Convert user fitness goals to matching workout program categories.
+    Returns: set of category names that match user's goals
+    """
+    goal_to_categories = {
+        "lose_weight": ["weight_loss", "cardio"],
+        "build_muscle": ["muscle_building", "strength_training"],
+        "improve_endurance": ["endurance", "cardio"],
+        "general_fitness": ["full_body", "strength_training"],
+        "increase_flexibility": ["flexibility"],
+    }
+
+    matching_categories = set()
+    for goal in user_goals:
+        matching_categories.update(goal_to_categories.get(goal, []))
+
+    return matching_categories
 
 
 @api_view(["POST"])
@@ -122,7 +160,6 @@ def create_workout_programs(request):
 def workout_program_detail(request, id):
     """
     GET: Retrieve a specific workout program
-    PUT/PATCH: Update a workout program
     """
     program = get_object_or_404(WorkoutProgram, pk=id)
 
@@ -458,6 +495,11 @@ def complete_workout_day(request, id):
                         bonus_xp = COMPLETION_BONUS
                         leveled_up, prev_rank, new_rank = level.add_xp(bonus_xp)
 
+                else:  # completion workout program not assignment
+                    if program_just_completed:
+                        bonus_xp = COMPLETION_BONUS
+                        leveled_up, prev_rank, new_rank = level.add_xp(bonus_xp)
+
         elif profile.role == "normal":
             if program_just_completed:
                 # Check if we already awarded bonus for this program by
@@ -526,7 +568,24 @@ def list_my_assignments(request):
     if profile.role == "coach":
         assignments = WorkoutAssignment.objects.filter(program__coach=profile)
     elif profile.role == "member":
-        assignments = WorkoutAssignment.objects.filter(member__user=profile)
+        # assignments = WorkoutAssignment.objects.filter(member__user=profile)
+        assignments = (
+            WorkoutAssignment.objects.filter(member__user=profile)
+            .annotate(
+                status_priority=Case(
+                    When(status="in_progress", then=1),
+                    When(status="assigned", then=2),
+                    When(status="paused", then=3),
+                    When(status="completed", then=4),
+                    default=99,
+                )
+            )
+            .order_by(
+                "status_priority",
+                models.F("due_date").asc(nulls_last=True),  # Earliest due date first
+            )
+        )
+
     else:
         assignments = WorkoutAssignment.objects.none()
 

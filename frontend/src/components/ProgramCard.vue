@@ -22,14 +22,14 @@
             v-if="program.difficulty_level"
             class="bg-white px-3 py-1 rounded-full text-gray-700 shadow"
           >
-            {{ program.difficulty_level.toUpperCase() }}
+            {{ formatStatus(program.difficulty_level) }}
           </span>
 
           <span 
             v-if="program.category" 
             class="bg-white px-3 py-1 rounded-full text-gray-700 shadow"
           >
-            {{ program.category.toUpperCase() }}
+            {{ formatStatus(program.category) }}
           </span>
 
           <!-- Assignment specific badges -->
@@ -38,7 +38,7 @@
             class="bg-white px-3 py-1 rounded-full text-gray-700 shadow"
             :class="getStatusClass(assignment.status)"
           >
-            {{ assignment.status.toUpperCase() }}
+            {{ formatStatus(assignment.status) }}
           </span>
 
           <span
@@ -95,6 +95,12 @@ function getStatusClass(status) {
     completed: 'bg-green-100 text-green-800',
   }
   return classes[status?.toLowerCase()] || 'bg-gray-100 text-gray-800'
+}
+
+function formatStatus(data) {
+  if (!data) return ''
+  // Replace underscores with spaces and capitalize
+  return data.replace(/_/g, ' ').toUpperCase()
 }
 
 function formatDate(dateString) {

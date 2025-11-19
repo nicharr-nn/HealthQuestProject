@@ -1,4 +1,3 @@
-# member/models.py
 from django.db import models
 from users.models import UserProfile
 
