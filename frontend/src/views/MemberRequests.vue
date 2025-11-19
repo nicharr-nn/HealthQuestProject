@@ -124,7 +124,13 @@
           <div v-if="request.goals?.length" class="mb-4">
             <div class="text-xs font-semibold text-gray-500 uppercase mb-2">Goals:</div>
             <div class="flex flex-wrap gap-2">
-              <span v-for="goal in request.goals" :key="goal" class="bg-purple-100 text-purple-800 px-2.5 py-1 rounded-full text-xs font-medium">{{ goal }}</span>
+              <span 
+                v-for="goal in [...new Set(request.goals)]" 
+                :key="goal" 
+                class="bg-purple-100 text-purple-800 px-2.5 py-1 rounded-full text-xs font-medium"
+              >
+                {{ goal }}
+              </span>
             </div>
           </div>
 
