@@ -25,7 +25,7 @@ from .xp_rules import calculate_xp, COMPLETION_BONUS
 User = get_user_model()
 
 
-@api_view(["GET", "POST"])
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def workout_programs(request):
     if request.method == "GET":
@@ -41,47 +41,43 @@ def workout_programs(request):
             serializer = WorkoutProgramSerializer(programs, many=True)
             return Response(serializer.data)
 
+        # coach sees only their own programs
+        if user_profile.role == "coach":
+            programs = WorkoutProgram.objects.filter(coach=user_profile)
+            serializer = WorkoutProgramSerializer(programs, many=True)
+            return Response(serializer.data)
+
+        # normal users and members see public programs filtered by level
         user_level = user_profile.get_current_level()
 
-        # Build query based on user's level
         level_filters = models.Q(level_access="all")
-        if user_level.level_rank >= 1:  # Bronze and above
+        if user_level.level_rank >= 1:
             level_filters |= models.Q(level_access="bronze")
-        if user_level.level_rank >= 2:  # Silver and above
+        if user_level.level_rank >= 2:
             level_filters |= models.Q(level_access="silver")
-        if user_level.level_rank >= 3:  # Gold and above
+        if user_level.level_rank >= 3:
             level_filters |= models.Q(level_access="gold")
 
-        # Role-based filtering
-        if user_profile.role == "coach":
-            programs = WorkoutProgram.objects.filter(coach=user_profile).distinct()
-        elif user_profile.role == "member":
-            # Members see: public programs matching their level + assigned programs
+        if user_profile.role == "member":
             member_obj = getattr(user_profile, "member_profile", None)
 
             if member_obj:
-                # Get assigned program IDs
-                assigned_program_ids = WorkoutAssignment.objects.filter(
+                assigned_ids = WorkoutAssignment.objects.filter(
                     member=member_obj
                 ).values_list("program_id", flat=True)
 
                 programs = WorkoutProgram.objects.filter(
                     (models.Q(is_public=True) & level_filters)
-                    | models.Q(id__in=assigned_program_ids)
+                    | models.Q(id__in=assigned_ids)
                 ).distinct()
             else:
-                # No member profile, only show public programs by level
-                programs = (
-                    WorkoutProgram.objects.filter(is_public=True)
-                    .filter(level_filters)
-                    .distinct()
+                programs = WorkoutProgram.objects.filter(is_public=True).filter(
+                    level_filters
                 )
-
-        else:  # Normal users
-            programs = (
-                WorkoutProgram.objects.filter(is_public=True)
-                .filter(level_filters)
-                .distinct()
+        else:
+            # normal user
+            programs = WorkoutProgram.objects.filter(is_public=True).filter(
+                level_filters
             )
 
         serializer = WorkoutProgramSerializer(programs, many=True)
@@ -122,7 +118,6 @@ def create_workout_programs(request):
 def workout_program_detail(request, id):
     """
     GET: Retrieve a specific workout program
-    PUT/PATCH: Update a workout program
     """
     program = get_object_or_404(WorkoutProgram, pk=id)
 
@@ -455,6 +450,11 @@ def complete_workout_day(request, id):
 
                     # Award bonus only on first completion
                     if is_complete and not was_completed:
+                        bonus_xp = COMPLETION_BONUS
+                        leveled_up, prev_rank, new_rank = level.add_xp(bonus_xp)
+
+                else: # completion workout program not assignment
+                    if program_just_completed:
                         bonus_xp = COMPLETION_BONUS
                         leveled_up, prev_rank, new_rank = level.add_xp(bonus_xp)
 
