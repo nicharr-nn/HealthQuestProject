@@ -29,7 +29,7 @@ urlpatterns = [
     # member specific endpoints
     path("member-apply/", apply_as_member, name="apply-as-member"),
     path("member-profile/", get_member_profile, name="get-member-profile"),
-    path("member-request/manage/", manage_member_request, name="manage-member-request"),
+    path("member-request/", manage_member_request, name="manage-member-request"),
     # food post endpoints
     path("food-posts/", food_posts, name="food-posts"),
     path("food-posts/<int:id>/update/", food_post_update, name="food-post-update"),

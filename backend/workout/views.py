@@ -453,7 +453,7 @@ def complete_workout_day(request, id):
                         bonus_xp = COMPLETION_BONUS
                         leveled_up, prev_rank, new_rank = level.add_xp(bonus_xp)
 
-                else: # completion workout program not assignment
+                else:  # completion workout program not assignment
                     if program_just_completed:
                         bonus_xp = COMPLETION_BONUS
                         leveled_up, prev_rank, new_rank = level.add_xp(bonus_xp)
