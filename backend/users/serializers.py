@@ -68,6 +68,7 @@ class UserSerializer(serializers.ModelSerializer):
     profile = UserProfileSerializer(source="userprofile",
                                     required=False,
                                     allow_null=True)
+    photo = serializers.SerializerMethodField()
     is_admin = serializers.SerializerMethodField()
     is_staff = serializers.BooleanField(read_only=True)
     profile_complete = serializers.SerializerMethodField()
@@ -81,10 +82,16 @@ class UserSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "profile",
+            "photo",
             "is_admin",
             "is_staff",
             "profile_complete",
         ]
+    
+    def get_photo(self, obj):
+        if hasattr(obj, "userprofile") and obj.userprofile.photo:
+            return obj.userprofile.photo.url
+        return None
 
     def get_is_admin(self, obj):
         return obj.is_superuser or obj.is_staff or (
