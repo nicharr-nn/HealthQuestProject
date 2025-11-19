@@ -39,13 +39,7 @@
           </div>
 
           <div class="flex items-center gap-3">
-            <button class="relative rounded-md bg-slate-100 p-2" @click="showNotifications">
-              <Bell class="w-5 h-5 text-slate-700" />
-              <span
-                v-if="pendingCount > 0"
-                class="absolute right-1 top-1 inline-block h-2 w-2 rounded-full bg-rose-500"
-              ></span>
-            </button>
+            <AdminNotificationBell @review="viewCoachDetails" />
             <!-- Header User Info -->
             <div class="flex items-center gap-2">
               <!-- Avatar -->
@@ -264,6 +258,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
 import AdminSideBar from '@/components/AdminSideBar.vue'
 import { Bell, Menu } from 'lucide-vue-next'
+import AdminNotificationBell from '@/components/AdminNotificationBell.vue'
 
 const userStore = useUserStore()
 const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
