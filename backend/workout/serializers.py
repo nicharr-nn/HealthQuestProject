@@ -12,6 +12,8 @@ class WorkoutDaySerializer(serializers.ModelSerializer):
 class WorkoutProgramSerializer(serializers.ModelSerializer):
     days = WorkoutDaySerializer(many=True, required=False)
     assigned_member_id = serializers.SerializerMethodField()  # if assigned to a member
+    category_display = serializers.CharField(source='get_category_display', read_only=True)
+    coach_name = serializers.SerializerMethodField()
 
     class Meta:
         model = WorkoutProgram
@@ -41,6 +43,11 @@ class WorkoutProgramSerializer(serializers.ModelSerializer):
     def get_assigned_member_id(self, obj):
         assignment = WorkoutAssignment.objects.filter(program=obj).first()
         return assignment.member.member_id if assignment else None
+    
+    def get_coach_name(self, obj):
+        if obj.coach and hasattr(obj.coach, "user"):
+            return obj.coach.user.get_full_name() or obj.coach.user.username
+        return None
 
 
 class WorkoutAssignmentSerializer(serializers.ModelSerializer):

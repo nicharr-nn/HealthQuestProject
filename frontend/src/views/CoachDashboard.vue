@@ -181,7 +181,7 @@
               <div class="flex justify-between">
                 <span class="text-gray-500">Category:</span>
                 <span class="text-gray-700 font-medium">
-                  {{ program.category || 'Not specified' }}
+                  {{ program.category_display || 'Not specified' }}
                 </span>
               </div>
             </div>
