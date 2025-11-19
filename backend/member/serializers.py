@@ -56,6 +56,9 @@ class CoachMemberRelationshipSerializer(serializers.ModelSerializer):
 
 class FoodPostSerializer(serializers.ModelSerializer):
     author_name = serializers.SerializerMethodField()
+    author_first_name = serializers.SerializerMethodField()
+    member_id = serializers.SerializerMethodField()
+    author_photo = serializers.SerializerMethodField()
     coach_name = serializers.SerializerMethodField()
 
     class Meta:
@@ -68,15 +71,33 @@ class FoodPostSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
             "author_name",
+            "author_first_name",
+            "member_id",
             "coach_name",
+            "author_photo",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
 
     def get_author_name(self, obj):
-        return obj.user_profile.user.username
+        user = obj.user_profile.user
+        full_name = f"{user.first_name} {user.last_name}".strip()
+        return full_name if full_name else user.username
+
+    def get_author_first_name(self, obj):
+        return obj.user_profile.user.first_name or obj.user_profile.user.username
+
+    def get_author_photo(self, obj):
+        user_profile = getattr(obj, "user_profile", None)
+        if user_profile and user_profile.photo and hasattr(user_profile.photo, "url"):
+            return user_profile.photo.url
+        return None
 
     def get_coach_name(self, obj):
         return obj.coach.user.username if obj.coach else None
+    
+    def get_member_id(self, obj):
+        profile = obj.user_profile
+        return f"M-{profile.user.id:05d}"
 
     def create(self, validated_data):
         user = self.context["request"].user
