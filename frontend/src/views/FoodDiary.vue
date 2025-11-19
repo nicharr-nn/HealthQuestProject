@@ -54,10 +54,19 @@
         <div class="px-6 py-5 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
           <div class="flex items-center gap-3">
             <!-- Avatar -->
-            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 text-white flex items-center justify-center font-semibold text-sm flex-shrink-0">
-              {{ (post.author_name || memberDisplayName).charAt(0).toUpperCase() }}
+            <div class="w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm flex-shrink-0"
+              :class="!post.author_photo ? 'bg-gradient-to-br from-purple-500 to-indigo-500 text-white' : ''">
+              <template v-if="post.author_photo">
+                <img :src="getImageUrl(post.author_photo)" alt="Profile" class="w-full h-full object-cover rounded-full" />
+              </template>
+              <template v-else>
+                {{ (post.author_first_name || memberDisplayName).charAt(0).toUpperCase() }}
+              </template>
             </div>
-            <span class="font-semibold text-gray-900">{{ post.author_name || memberDisplayName }}</span>
+            <div class="flex flex-col leading-tight">
+              <span class="font-semibold text-gray-900">{{ post.author_first_name || memberDisplayName }}</span>
+              <span class="text-xs text-gray-500">ID: {{ post.member_id }}</span>
+            </div>
           </div>
           <span class="text-xs text-gray-500 font-medium">{{ formatTime(post.created_at) }}</span>
         </div>
@@ -263,18 +272,21 @@ const fetchMembers = async () => {
   }
 }
 
-// API Functions (Ready for backend integration)
 const fetchFoodPosts = async () => {
   loading.value = true
   try {
-    const response = await fetch('http://127.0.0.1:8000/api/member/food-posts/', {
-      credentials: 'include'
-    })
-    if (!response.ok) throw new Error(`Failed to fetch posts: ${response.status}`)
-    const data = await response.json()
+    let url = 'http://127.0.0.1:8000/api/member/food-posts/'
+    
+    if (props.memberId) {
+      url += `?member_id=${props.memberId}`
+    }
 
-    allPosts.value = data   // store full list
-    foodPosts.value = data  // display initially all posts
+    const response = await fetch(url, { credentials: 'include' })
+    if (!response.ok) throw new Error(`Failed to fetch posts: ${response.status}`)
+    
+    const data = await response.json()
+    foodPosts.value = data
+    allPosts.value = data
 
     // Fetch comments for each post
     for (const post of foodPosts.value) {
