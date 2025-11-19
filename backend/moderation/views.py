@@ -1,5 +1,6 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework import status
 from django.utils import timezone
@@ -157,6 +158,11 @@ def list_all_users(request):
             "email": u.email,
             "full_name": u.get_full_name(),
             "role": getattr(u.userprofile, "role", None),
+            "photo": (
+                request.build_absolute_uri(u.userprofile.photo.url)
+                if hasattr(u, "userprofile") and u.userprofile.photo
+                else None
+            ),
             "date_joined": u.date_joined,
             "is_active": u.is_active,
         }
@@ -221,3 +227,29 @@ def delete_user(request, user_id):
         },
         status=status.HTTP_200_OK,
     )
+
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def admin_logs(request):
+    logs = AdminModeration.objects.select_related('admin__user', 'coach').order_by('-moderated_at')
+    serialized_logs = [
+        {
+            "id": log.id,
+            "admin": {
+                "id": log.admin.id,
+                "user": {
+                    "id": log.admin.user.id,
+                    "username": log.admin.user.username
+                }
+            },
+            "coach": {"id": log.coach.id, "name": log.coach.name} if log.coach else None,
+            "content_type": log.content_type,
+            "action": log.action,
+            "get_action_display": log.get_action_display(),
+            "reason": log.reason,
+            "moderated_at": log.moderated_at.isoformat()
+        }
+        for log in logs
+    ]
+    return Response(serialized_logs)
