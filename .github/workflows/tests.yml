@@ -48,3 +48,7 @@ jobs:
           DATABASE_HOST: 127.0.0.1
         run: |
           python manage.py test
+      - name: Run pytest
+        working-directory: backend
+        run: |
+          pytest workout/tests/ -v
