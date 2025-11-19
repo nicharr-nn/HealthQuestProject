@@ -13,7 +13,7 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
             return "http://127.0.0.1:5173/admin"
 
         # Check if user has admin role in profile
-        if hasattr(user, 'userprofile') and user.userprofile.role == 'admin':
+        if hasattr(user, "userprofile") and user.userprofile.role == "admin":
             return "http://127.0.0.1:5173/admin"
 
         # Default redirect for regular users

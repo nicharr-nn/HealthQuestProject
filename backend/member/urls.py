@@ -14,7 +14,6 @@ from .views import (
     food_post_comments,
     food_post_comment_detail,
     uncommented_food_posts,
-    assign_program_to_member,
 )
 
 urlpatterns = [
@@ -25,19 +24,12 @@ urlpatterns = [
         name="coach-member-requests-detail",
     ),
     path("accepted/", accepted_members, name="accepted-members"),
-
     # coach can view member profile
     path("profile/<str:member_id>/", coach_member_profile, name="member-profile"),
-
     # member specific endpoints
     path("member-apply/", apply_as_member, name="apply-as-member"),
     path("member-profile/", get_member_profile, name="get-member-profile"),
     path("member-request/manage/", manage_member_request, name="manage-member-request"),
-    path(
-        "assign/",
-        assign_program_to_member,
-        name="assign-program-to-member",
-    ),
     # food post endpoints
     path("food-posts/", food_posts, name="food-posts"),
     path("food-posts/<int:id>/update/", food_post_update, name="food-post-update"),
@@ -64,7 +56,6 @@ urlpatterns = [
         uncommented_food_posts,
         name="uncommented-food-posts",
     ),
-
     # coach can remove an accepted member
     path("<str:member_id>/", coach_remove_member, name="coach-remove-member"),
 ]

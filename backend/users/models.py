@@ -218,24 +218,3 @@ class UserLevel(models.Model):
             return completed_workouts >= 15
 
         return False
-
-
-class Achievement(models.Model):
-    title = models.CharField(max_length=255)
-    description = models.TextField()
-    xp_reward = models.IntegerField(default=0)
-    level_required = models.IntegerField(default=1)  # minimum level_rank required
-
-    def __str__(self):
-        return f"{self.title} - Level {self.level_required} - {self.xp_reward} XP"
-
-
-class UserAchievement(models.Model):
-    user_profile = models.ForeignKey(
-        UserProfile, on_delete=models.CASCADE, related_name="achievements"
-    )
-    achievement = models.ForeignKey(Achievement, on_delete=models.CASCADE)
-    date_earned = models.DateField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.user_profile.user.username} - {self.achievement.title}"

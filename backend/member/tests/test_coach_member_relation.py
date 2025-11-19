@@ -150,10 +150,10 @@ class CoachMemberRelationshipAPITests(TestCase):
         self.relationship.status = "accepted"
         self.relationship.save()
 
-        self.client.force_authenticate(user=self.coach_user)
+        self.client.force_login(user=self.coach_user)
 
         # Use the correct URL name with hyphens
-        url = reverse("accepted-members")  # Changed to match your URL name
+        url = reverse("accepted-members")
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)

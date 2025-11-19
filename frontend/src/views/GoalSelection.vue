@@ -10,7 +10,7 @@
     
     <!-- Selected Goal Indicator -->
     <div v-if="selectedGoal" class="mt-4 text-center">
-      <div class="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-full">
+      <div class="inline-flex items-center gap-2 bg-red-100 text-red-600 px-4 py-2 rounded-full font-body">
         <span class="font-subtitle">{{ formatGoalName(selectedGoal) }} selected</span>
       </div>
     </div>
@@ -28,7 +28,6 @@
           duration="3 months"
           focus="Weight Loss"
           level="Beginner"
-          :benefits="['3 workout days/week', 'Weekly check-ins']"
         />
       </button>
 
@@ -43,7 +42,6 @@
           duration="6 months"
           focus="Strength Training"
           level="Intermediate"
-          :benefits="['4 workout days/week', 'Video-guided exercises']"
         />
       </button>
 
@@ -58,7 +56,6 @@
           duration="2 months"
           focus="Cardio + Stamina"
           level="All Levels"
-          :benefits="['5 cardio sessions/week', 'Endurance challenges']"
         />
       </button>
 
@@ -73,7 +70,6 @@
           duration="1 year"
           focus="Overall Wellness"
           level="All Levels"
-          :benefits="['Balanced workout plan', 'Monthly wellness check']"
         />
       </button>
     </div>
@@ -138,7 +134,7 @@ async function saveGoal() {
   
   try {
     const csrfToken = getCsrfToken();
-    const response = await fetch("http://127.0.0.1:8000/api/select-goal/", {
+    const response = await fetch("http://127.0.0.1:8000/api/user/select-goal/", {
       method: "POST",
       headers: { 
         "Content-Type": "application/json",

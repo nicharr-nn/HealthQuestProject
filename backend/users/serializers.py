@@ -65,9 +65,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    profile = UserProfileSerializer(source="userprofile",
-                                    required=False,
-                                    allow_null=True)
+    profile = UserProfileSerializer(
+        source="userprofile", required=False, allow_null=True
+    )
     is_admin = serializers.SerializerMethodField()
     is_staff = serializers.BooleanField(read_only=True)
     profile_complete = serializers.SerializerMethodField()
@@ -87,8 +87,10 @@ class UserSerializer(serializers.ModelSerializer):
         ]
 
     def get_is_admin(self, obj):
-        return obj.is_superuser or obj.is_staff or (
-            hasattr(obj, "userprofile") and obj.userprofile.role == "admin"
+        return (
+            obj.is_superuser
+            or obj.is_staff
+            or (hasattr(obj, "userprofile") and obj.userprofile.role == "admin")
         )
 
     def get_profile_complete(self, obj):

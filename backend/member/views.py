@@ -1,3 +1,4 @@
+from datetime import datetime
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -23,8 +24,9 @@ def coach_member_profile(request, member_id):
     coach_profile = getattr(user_profile, "coach_profile", None)
 
     if not coach_profile:
-        return Response({"error": "You are not a coach"},
-                        status=status.HTTP_403_FORBIDDEN)
+        return Response(
+            {"error": "You are not a coach"}, status=status.HTTP_403_FORBIDDEN
+        )
 
     member = get_object_or_404(Member, member_id=member_id)
 
@@ -166,6 +168,7 @@ def coach_remove_member(request, member_id):
     return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+# ==================== MEMBER ENDPOINTS ====================
 @api_view(["POST", "PATCH"])
 @permission_classes([IsAuthenticated])
 def apply_as_member(request):
@@ -392,6 +395,20 @@ def assign_program_to_member(request):
 
     # Optional due date
     due_date = request.data.get("due_date")
+
+    if due_date:
+        try:
+            due_date_obj = datetime.strptime(due_date, "%Y-%m-%d").date()
+            if due_date_obj <= datetime.now().date():
+                return Response(
+                    {"error": "Due date must be in the future"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        except ValueError:
+            return Response(
+                {"error": "Invalid due date format. Use YYYY-MM-DD"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
     # Prevent duplicates
     if WorkoutAssignment.objects.filter(member=member, program=program).exists():

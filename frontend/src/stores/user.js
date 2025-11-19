@@ -44,7 +44,7 @@ export const useUserStore = defineStore('user', {
     async init() {
       this.loading = true
       try {
-        const res = await fetch('http://127.0.0.1:8000/api/user-info/', {
+        const res = await fetch('http://127.0.0.1:8000/api/user/user-info/', {
           credentials: 'include',
           headers: { Accept: 'application/json' },
         })
@@ -57,6 +57,7 @@ export const useUserStore = defineStore('user', {
         const data = await res.json()
 
         // Basic user info
+        this.id = data.user?.id || null
         this.isAuthenticated = data.isAuthenticated
         this.user = data.user || null
         this.profile_complete = data.user?.profile_complete === true

@@ -1,18 +1,13 @@
 from rest_framework import serializers
-from .models import Recipe
-from users.models import UserProfile
-
-
-class UserProfileSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(source="user.username", read_only=True)
-
-    class Meta:
-        model = UserProfile
-        fields = ["id", "username"]
+from .models import Recipe, RecipeRating
 
 
 class RecipeSerializer(serializers.ModelSerializer):
     user_profile = serializers.StringRelatedField(read_only=True)
+    user_id = serializers.IntegerField(source="user_profile.user.id", read_only=True)
+    user_profile_username = serializers.CharField(
+        source="user_profile.username", read_only=True
+    )
     image = serializers.ImageField(use_url=True, required=False, allow_null=True)
     pdf_file = serializers.FileField(use_url=True, required=False, allow_null=True)
 
@@ -21,6 +16,8 @@ class RecipeSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "user_profile",
+            "user_id",
+            "user_profile_username",
             "title",
             "ingredients",
             "steps",
@@ -48,3 +45,15 @@ class RecipeSerializer(serializers.ModelSerializer):
 
         validated_data["user_profile"] = user_profile
         return super().create(validated_data)
+
+    def get_user_profile(self, obj):
+        # Keep returning the username for backward compatibility
+        return f"{obj.user_profile.first_name}- {obj.user_profile.role}"
+
+
+class RecipeRatingSerializer(serializers.ModelSerializer):
+    user = serializers.CharField(source="user_profile.user.username", read_only=True)
+
+    class Meta:
+        model = RecipeRating
+        fields = ["id", "user", "rating", "created_at"]

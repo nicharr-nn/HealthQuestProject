@@ -13,4 +13,7 @@ urlpatterns = [
     ),
     path("<int:id>/delete/", views.delete_recipe, name="delete-recipe"),
     path("<int:id>/update/", views.update_recipe, name="update-recipe"),
+    path("<int:id>/give-rating/", views.give_rating, name="give-recipe-rating"),
+    path("<int:id>/delete-rating/", views.delete_rating, name="delete-recipe-rating"),
+    path("<int:id>/get-rating/", views.get_rating, name="get-recipe-rating"),
 ]

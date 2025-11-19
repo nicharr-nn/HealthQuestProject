@@ -48,7 +48,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include("allauth.urls")),
     path("", home_view, name="home"),
-    path("api/", include("users.urls")),
+    path("api/user/", include("users.urls")),
     path("api/workout/", include("workout.urls")),
     path("api/coach/", include("coach.urls")),
     path("api/member/", include("member.urls")),

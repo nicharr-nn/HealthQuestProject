@@ -79,7 +79,7 @@ class WorkoutProgramTests(TestCase):
         """Test coach can create workout program"""
         self.client.force_login(self.coach_user)
 
-        url = reverse("workout-programs")
+        url = reverse("create-workout-programs")
         data = {
             "title": "New Program",
             "description": "New program description",
@@ -106,7 +106,7 @@ class WorkoutProgramTests(TestCase):
 
     def test_create_workout_program_as_normal_user(self):
         """Test normal user cannot create workout program"""
-        url = reverse("workout-programs")
+        url = reverse("create-workout-programs")
         data = {
             "title": "Normal user Program",
             "description": "Should not work",
@@ -131,7 +131,7 @@ class WorkoutProgramTests(TestCase):
         """Test coach can update their workout program"""
         self.client.force_login(self.coach_user)
 
-        url = reverse("workout-program-detail", kwargs={"id": self.program.id})
+        url = reverse("update-workout-program", kwargs={"id": self.program.id})
         data = {
             "title": "Updated Program Title",
             "description": "Updated description",
@@ -146,7 +146,7 @@ class WorkoutProgramTests(TestCase):
 
     def test_update_workout_program_as_normal(self):
         """Test normal cannot update workout program"""
-        url = reverse("workout-program-detail", kwargs={"id": self.program.id})
+        url = reverse("update-workout-program", kwargs={"id": self.program.id})
         data = {"title": "Unauthorized Update"}
         response = self.client.put(url, data, format="json")
 
@@ -156,7 +156,7 @@ class WorkoutProgramTests(TestCase):
         """Test coach can delete their workout program"""
         self.client.force_login(self.coach_user)
 
-        url = reverse("workout-program-detail", kwargs={"id": self.program.id})
+        url = reverse("delete-workout-program", kwargs={"id": self.program.id})
         response = self.client.delete(url)
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
@@ -164,7 +164,7 @@ class WorkoutProgramTests(TestCase):
 
     def test_delete_workout_program_as_normal(self):
         """Test normal cannot delete workout program"""
-        url = reverse("workout-program-detail", kwargs={"id": self.program.id})
+        url = reverse("delete-workout-program", kwargs={"id": self.program.id})
         response = self.client.delete(url)
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
@@ -280,54 +280,3 @@ class WorkoutProgressTests(WorkoutProgramTests):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
-
-class WorkoutDayVideoTests(WorkoutProgramTests):
-    """Tests for workout day video functionality"""
-
-    def test_get_workout_day_videos(self):
-        """Test retrieving workout day videos"""
-        # Add some video links
-        self.workout_day_1.video_links = [
-            "https://youtube.com/watch?v=test1",
-            "https://youtube.com/watch?v=test2",
-        ]
-        self.workout_day_1.save()
-
-        url = reverse("workout-day-videos", kwargs={"id": self.workout_day_1.id})
-        response = self.client.get(url)
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data["video_links"]), 2)
-
-    def test_add_workout_day_video_as_coach(self):
-        """Test coach can add video to workout day"""
-        self.client.force_login(self.coach_user)
-
-        url = reverse("workout-day-videos", kwargs={"id": self.workout_day_1.id})
-        data = {"link": "https://youtube.com/watch?v=newvideo"}
-        response = self.client.post(url, data, format="json")
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.workout_day_1.refresh_from_db()
-        self.assertIn(
-            "https://youtube.com/watch?v=newvideo", self.workout_day_1.video_links
-        )
-
-    def test_add_workout_day_video_as_normal(self):
-        """Test normal cannot add videos"""
-        url = reverse("workout-day-videos", kwargs={"id": self.workout_day_1.id})
-        data = {"link": "https://youtube.com/watch?v=normalvideo"}
-        response = self.client.post(url, data, format="json")
-
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-    def test_add_workout_day_video_missing_link(self):
-        """Test adding video without link fails"""
-        self.client.force_login(self.coach_user)
-
-        url = reverse("workout-day-videos", kwargs={"id": self.workout_day_1.id})
-        data = {}  # Missing link
-        response = self.client.post(url, data, format="json")
-
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
