@@ -1,11 +1,9 @@
 from rest_framework import serializers
-from .models import AdminModeration
+from .models import Admin
 
-
-class AdminModerationSerializer(serializers.ModelSerializer):
+class AdminSerializer(serializers.ModelSerializer):
     admin_name = serializers.CharField(source="admin.user.user.username",
                                        read_only=True)
-
     class Meta:
-        model = AdminModeration
+        model = Admin
         fields = "__all__"

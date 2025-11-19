@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.utils import timezone
 from coach.models import Coach
-from .models import Admin, AdminModeration
+from .models import Admin
 from recipe.models import Recipe
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
@@ -32,13 +32,6 @@ def approve_coach(request, coach_id):
     coach.approved_date = timezone.now()
     coach.save()
 
-    AdminModeration.objects.create(
-        admin=admin,
-        coach=coach,
-        action="approve_certification",
-        reason=request.data.get("reason", "Certification approved"),
-    )
-
     return Response(
         {"message": f"Coach {coach.user.user.username} approved."}
     )
@@ -55,18 +48,8 @@ def reject_coach(request, coach_id):
             status=status.HTTP_404_NOT_FOUND
         )
 
-    admin = Admin.objects.get(user=request.user)
-    reason = request.data.get("reason", "")
-
     coach.status_approval = "rejected"
     coach.save()
-
-    AdminModeration.objects.create(
-        admin=admin,
-        coach=coach,
-        action="reject_certification",
-        reason=reason or "Certification rejected",
-    )
 
     return Response(
         {"message": f"Coach {coach.user.user.username} rejected."}
@@ -208,13 +191,6 @@ def delete_user(request, user_id):
         fail_silently=False,
     )
 
-    AdminModeration.objects.create(
-        admin=admin,
-        content_type="user",
-        content_id=user.id,
-        action="delete_user",
-    )
-
     username = user.username
     user.delete()
 
@@ -227,29 +203,3 @@ def delete_user(request, user_id):
         },
         status=status.HTTP_200_OK,
     )
-
-
-@api_view(['GET'])
-@permission_classes([IsAdminUser])
-def admin_logs(request):
-    logs = AdminModeration.objects.select_related('admin__user', 'coach').order_by('-moderated_at')
-    serialized_logs = [
-        {
-            "id": log.id,
-            "admin": {
-                "id": log.admin.id,
-                "user": {
-                    "id": log.admin.user.id,
-                    "username": log.admin.user.username
-                }
-            },
-            "coach": {"id": log.coach.id, "name": log.coach.name} if log.coach else None,
-            "content_type": log.content_type,
-            "action": log.action,
-            "get_action_display": log.get_action_display(),
-            "reason": log.reason,
-            "moderated_at": log.moderated_at.isoformat()
-        }
-        for log in logs
-    ]
-    return Response(serialized_logs)
