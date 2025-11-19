@@ -10,7 +10,7 @@ This pull request includes the following changes:
 ## Type of Change
 - [X] feat (new functionality)
 - [X] fix (non-breaking change that fixes an issue)
-- [ ] refactor (code restructuring without changing functionality)
+- [X] refactor (code restructuring without changing functionality)
 - [X] style (code style improvements, formatting)
 - [X] test (adding or updating tests)
 
@@ -23,6 +23,9 @@ This pull request includes the following changes:
 ### Backend / Infrastructure
 - **Modify Model and API**
   - Updated the filtering criteria in `member/views.py` to include "paused" status for active workout assignments.
+  - Adjusted the logic in `workout/views.py` to ensure that 
+    1. workout programs are sorted based on the user's current fitness goals first then by date.
+    2. workout assignments sorted by status (in-progress, paused, completed) and then by due date.
 - **Fix Program Name Update**
   - Ensured that the member's `program_name` is updated correctly when a workout assignment is deleted or changed.
 - **Test Cases**

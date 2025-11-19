@@ -357,7 +357,6 @@ def manage_member_request(request):
 
     if request.method == "GET":
         _update_member_program_name(member)
-
         serializer = CoachMemberRelationshipSerializer(relationship)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
