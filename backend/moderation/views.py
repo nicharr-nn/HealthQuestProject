@@ -17,13 +17,22 @@ User = get_user_model()
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def approve_coach(request, coach_id):
+    # Check admin
+    if not Admin.objects.filter(user=request.user).exists():
+        return Response(
+            {"error": "You do not have permission to approve coaches."},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    # Find the coach
     try:
-        coach = Coach.objects.get(coach_id=coach_id)
+        coach = Coach.objects.get(pk=coach_id)
     except Coach.DoesNotExist:
         return Response({"error": "Coach not found"}, status=status.HTTP_404_NOT_FOUND)
 
     admin = Admin.objects.get(user=request.user)
 
+    # Approve the coach
     coach.status_approval = "approved"
     coach.approved_date = timezone.now()
     coach.save()
@@ -35,12 +44,23 @@ def approve_coach(request, coach_id):
         reason=request.data.get("reason", "Certification approved"),
     )
 
-    return Response({"message": f"Coach {coach.user.user.username} approved."})
+    return Response(
+        {"message": f"Coach {coach.user.user.username} approved."},
+        status=status.HTTP_200_OK
+    )
 
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def reject_coach(request, coach_id):
+    # Check admin
+    if not Admin.objects.filter(user=request.user).exists():
+        return Response(
+            {"error": "You do not have permission to reject coaches."},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    # Find coach
     try:
         coach = Coach.objects.get(pk=coach_id)
     except Coach.DoesNotExist:
@@ -49,6 +69,7 @@ def reject_coach(request, coach_id):
     admin = Admin.objects.get(user=request.user)
     reason = request.data.get("reason", "")
 
+    # Reject coach
     coach.status_approval = "rejected"
     coach.save()
 
@@ -59,7 +80,10 @@ def reject_coach(request, coach_id):
         reason=reason or "Certification rejected",
     )
 
-    return Response({"message": f"Coach {coach.user.user.username} rejected."})
+    return Response(
+        {"message": f"Coach {coach.user.user.username} rejected."},
+        status=status.HTTP_200_OK
+    )
 
 
 @api_view(["GET"])
@@ -92,8 +116,8 @@ def list_coaches_for_admin(request):
 
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
-def delete_recipe(request, id):
-    recipe = get_object_or_404(Recipe, pk=id)
+def delete_recipe(request, recipe_id):
+    recipe = get_object_or_404(Recipe, pk=recipe_id)
     user_profile = request.user.userprofile
     is_admin = hasattr(request.user, "admin_profile")
 
@@ -104,6 +128,15 @@ def delete_recipe(request, id):
         )
 
     recipe.delete()
+
+    admin = Admin.objects.get(user=request.user)
+    AdminModeration.objects.create(
+        admin=admin,
+        content_type="post",
+        content_id=recipe.id,
+        action="delete_post",
+        reason="Recipe deleted by admin" if is_admin else "Recipe deleted by owner",
+    )
     return Response({"detail": "Recipe deleted successfully."}, status=200)
 
 
@@ -116,13 +149,22 @@ def delete_workout(request, id):
     user_profile = request.user.userprofile
     is_admin = hasattr(request.user, "admin_profile")
 
-    if workout.coach.user != user_profile and not is_admin:
+    if workout.coach != user_profile and not is_admin:
         return Response(
             {"detail": "Permission denied. You can only delete your own workouts."},
             status=status.HTTP_403_FORBIDDEN,
         )
 
     workout.delete()
+
+    admin = Admin.objects.get(user=request.user)
+    AdminModeration.objects.create(
+        admin=admin,
+        content_type="post",
+        content_id=workout.id,
+        action="delete_post",
+        reason="Workout deleted by admin" if is_admin else "Workout deleted by owner",
+    )
     return Response({"detail": "Workout deleted successfully."}, status=200)
 
 
@@ -142,6 +184,11 @@ def list_all_users(request):
             "email": u.email,
             "full_name": u.get_full_name(),
             "role": getattr(u.userprofile, "role", None),
+            "photo": (
+                request.build_absolute_uri(u.userprofile.photo.url)
+                if hasattr(u, "userprofile") and u.userprofile.photo
+                else None
+            ),
             "date_joined": u.date_joined,
             "is_active": u.is_active,
         }

@@ -302,7 +302,7 @@ class RecipeTests(TestCase):
         # Coach should have 2 recipes (from setUp + one created here)
         self.assertEqual(len(response.data), 2)
         for recipe in response.data:
-            self.assertEqual(recipe["user_profile"], "coachuser - coach")
+            self.assertEqual(recipe["user_profile"], "coachuser")
         self.client.logout()
 
     def test_my_recipes_with_sorting(self):

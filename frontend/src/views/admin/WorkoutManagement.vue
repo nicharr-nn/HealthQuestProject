@@ -40,13 +40,7 @@
           </div>
 
           <div class="flex items-center gap-3">
-            <button class="relative rounded-md bg-slate-100 p-2" @click="showNotifications">
-              <Bell class="w-5 h-5 text-slate-700" />
-              <span
-                v-if="pendingCount > 0"
-                class="absolute right-1 top-1 inline-block h-2 w-2 rounded-full bg-rose-500"
-              ></span>
-            </button>
+            <AdminNotificationBell @review="viewCoachDetails" />
 
             <!-- Header User Info -->
             <div class="flex items-center gap-2">
@@ -139,9 +133,9 @@
                   <td class="px-3 py-3">
                     <div class="flex items-center gap-2">
                       <div class="grid h-6 w-6 place-items-center rounded-full bg-emerald-500 text-xs font-bold text-white">
-                        {{ getInitials(workout.coach_display || workout.coach_name) }}
+                        {{ getInitials(workout.coach_name) }}
                       </div>
-                      <span class="font-semibold">{{ workout.coach_display || workout.coach_name }}</span>
+                      <span class="font-semibold">{{ workout.coach_name }}</span>
                     </div>
                   </td>
                   <td class="px-3 py-3">
@@ -204,9 +198,9 @@
                   <div class="text-sm font-subtitle text-slate-700">Coach</div>
                   <div class="flex items-center gap-2 mt-1">
                     <div class="grid h-8 w-8 place-items-center rounded-full bg-emerald-500 text-xs font-bold text-white">
-                      {{ getInitials(workoutModal.workout?.coach_display || workoutModal.workout?.coach_name) }}
+                      {{ getInitials(workoutModal.workout?.coach_name) }}
                     </div>
-                    <span class="text-base font-medium ">{{ workoutModal.workout?.coach_display || workoutModal.workout?.coach_name }}</span>
+                    <span class="text-base font-medium">{{ workoutModal.workout?.coach_name }}</span>
                   </div>
                 </div>
                 <div>
@@ -284,7 +278,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
 import AdminSideBar from '@/components/AdminSideBar.vue'
-import { Bell, Menu } from 'lucide-vue-next'
+import { Menu } from 'lucide-vue-next'
+import AdminNotificationBell from '@/components/AdminNotificationBell.vue'
 import { useToastStore } from '@/stores/toast'
 
 const toast = useToastStore()
@@ -298,7 +293,6 @@ const activeSection = ref('workouts')
 
 // Search & notifications
 const searchQuery = ref('')
-const pendingCount = ref(0)
 
 // Workouts
 const workouts = ref([])
@@ -381,7 +375,7 @@ async function fetchWorkouts() {
 
     if (numericCoachIds.length > 0) {
       try {
-        const coachRes = await fetch(`${API_URL}/api/moderation/admin/coaches/`, { credentials: 'include' })
+        const coachRes = await fetch(`${API_URL}/api/moderation/coaches/`, { credentials: 'include' })
         if (coachRes.ok) {
           const list = await coachRes.json()
           const idToName = {}
@@ -495,11 +489,6 @@ function getDifficultyClass(difficulty) {
 function getInitials(name) {
   if (!name) return '?'
   return name.split(' ').map(n => n[0].toUpperCase()).join('')
-}
-
-// Dummy notifications handler
-function showNotifications() {
-  alert('Notifications clicked')
 }
 
 function openVideo(link) {

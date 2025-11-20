@@ -39,13 +39,7 @@
           </div>
 
           <div class="flex items-center gap-3">
-            <button class="relative rounded-md bg-slate-100 p-2" @click="showNotifications">
-              <Bell class="w-5 h-5 text-slate-700" />
-              <span
-                v-if="pendingCount > 0"
-                class="absolute right-1 top-1 inline-block h-2 w-2 rounded-full bg-rose-500"
-              ></span>
-            </button>
+            <AdminNotificationBell @review="viewCoachDetails" />
             <!-- Header User Info -->
             <div class="flex items-center gap-2">
               <!-- Avatar -->
@@ -271,7 +265,8 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import AdminSideBar from '@/components/AdminSideBar.vue'
-import { Bell, Menu } from 'lucide-vue-next'
+import AdminNotificationBell from '@/components/AdminNotificationBell.vue'
+import { Menu } from 'lucide-vue-next'
 import { useToastStore } from '@/stores/toast'
 
 const router = useRouter()
@@ -304,9 +299,6 @@ const filteredCoaches = computed(() => {
   return result
 })
 
-const pendingCount = computed(() => coaches.value.filter(c => c.status_approval === 'pending').length)
-
-
 function setSection(id) { activeSection.value = id; if(window.innerWidth < 768) sidebarOpen.value = false }
 function getInitials(name) { return name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) || '?' }
 function formatDate(date) { return date ? new Date(date).toLocaleDateString('en-US', {year:'numeric',month:'short',day:'numeric'}) : 'N/A' }
@@ -329,7 +321,7 @@ async function fetchCoaches() {
   error.value = null
   try {
     const params = coachFilter.value !== 'all' ? `?status=${coachFilter.value}` : ''
-    const res = await fetch(`${API_URL}/api/moderation/admin/coaches/${params}`, {
+    const res = await fetch(`${API_URL}/api/moderation/coaches/${params}`, {
       credentials: 'include',
       headers: { Accept: 'application/json' },
     })
@@ -343,7 +335,7 @@ async function fetchCoaches() {
 
 async function approveCoach(coach) {
   try {
-    const res = await fetch(`${API_URL}/api/moderation/admin/coaches/${coach.coach_id}/approve/`, {
+    const res = await fetch(`${API_URL}/api/moderation/coaches/${coach.coach_id}/approve/`, {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
@@ -360,7 +352,7 @@ async function approveCoach(coach) {
 async function rejectCoach(coach) {
   const reason = prompt('Reason for rejection (optional):')
   try {
-    const res = await fetch(`${API_URL}/api/moderation/admin/coaches/${coach.coach_id}/reject/`, {
+    const res = await fetch(`${API_URL}/api/moderation/coaches/${coach.coach_id}/reject/`, {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
@@ -374,8 +366,6 @@ async function rejectCoach(coach) {
     toast.error('Failed to reject coach')
   }
 }
-
-function showNotifications() { alert(`${pendingCount.value} pending coach applications`) }
 
 onMounted(async () => {
   if (!userStore.profile) {

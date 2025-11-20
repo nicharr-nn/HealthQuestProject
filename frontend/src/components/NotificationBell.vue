@@ -72,8 +72,8 @@
           <!-- Pending Feedback Section -->
           <div v-if="pendingFeedback.length > 0" class="border-b border-gray-200">
             <div class="flex items-center gap-2 px-5 py-3 bg-gray-50 border-b border-gray-200">
-              <icons.SpoonKnife class="w-4 h-4 text-gray-700" />
-              <span class="text-xs font-semibold text-gray-700 uppercase flex-1">Food Posts Need Feedback</span>
+              <icons.Utensils class="w-4 h-4 text-gray-700" />
+              <span class="text-xs font-semibold text-gray-700 uppercase flex-1">Food Posts</span>
               <span class="bg-blue-500 text-white text-[11px] font-bold px-2 py-0.5 rounded-full">
                 {{ pendingFeedback.length }}
               </span>
@@ -82,10 +82,10 @@
               v-for="post in pendingFeedback"
               :key="'post-' + post.id"
               @click="goToFoodDiary(post.member_id)"
-              class="flex items-start gap-3 px-5 py-4 cursor-pointer border-b last:border-b-0 hover:bg-gray-50"
+              class="flex items-start gap-3 px-5 py-4 cursor-pointer border-b border-gray-100 last:border-b-0 hover:bg-gray-50"
             >
               <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <icons.SpoonKnife class="w-5 h-5 text-yellow-500" />
+                <icons.User class="w-5 h-5 text-yellow-500" />
               </div>
               <div class="flex-1 min-w-0">
                 <p class="text-gray-700 text-sm mb-1">
@@ -95,7 +95,7 @@
               </div>
               <img
                 v-if="post.image"
-                :src="post.image"
+                :src="getImageUrl(post.image)"
                 class="w-12 h-12 rounded-lg object-cover flex-shrink-0"
                 alt="Food thumbnail"
               />
@@ -130,7 +130,10 @@ const bellContainer = ref(null)
 
 // Computed
 const totalCount = computed(() => {
-  return pendingRequests.value.length + pendingFeedback.value.length
+  return (
+    pendingRequests.value.length +
+    pendingFeedback.value.length 
+  )
 })
 
 const hasNotifications = computed(() => {
@@ -154,7 +157,7 @@ const loadNotifications = async () => {
   try {
     await Promise.all([
       loadPendingRequests(),
-      loadPendingFeedback()
+      loadPendingFeedback(),
     ])
   } finally {
     loading.value = false
@@ -219,6 +222,13 @@ const handleClickOutside = (event) => {
   if (bellContainer.value && !bellContainer.value.contains(event.target)) {
     closeDropdown()
   }
+}
+
+// Get image URL
+const getImageUrl = (url) => {
+  if (!url) return null
+  if (url.startsWith('http')) return url
+  return `http://127.0.0.1:8000${url}`
 }
 
 // Lifecycle

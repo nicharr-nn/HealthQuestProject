@@ -3,11 +3,9 @@ from .models import Recipe, RecipeRating
 
 
 class RecipeSerializer(serializers.ModelSerializer):
-    user_profile = serializers.StringRelatedField(read_only=True)
-    user_id = serializers.IntegerField(source="user_profile.user.id", read_only=True)
-    user_profile_username = serializers.CharField(
-        source="user_profile.username", read_only=True
-    )
+    user_profile = serializers.SerializerMethodField()
+    user_id = serializers.SerializerMethodField()
+    user_profile_username = serializers.SerializerMethodField()
     image = serializers.ImageField(use_url=True, required=False, allow_null=True)
     pdf_file = serializers.FileField(use_url=True, required=False, allow_null=True)
 
@@ -27,7 +25,32 @@ class RecipeSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "user_profile", "created_at", "updated_at"]
+        read_only_fields = [
+            "id",
+            "user_profile",
+            "user_id",
+            "user_profile_username",
+            "created_at",
+            "updated_at",
+        ]
+
+    def get_user_profile(self, obj):
+        """Return a display name for the recipe owner ("First Last" or username)."""
+        user = obj.user_profile.user
+        full_name = f"{user.first_name} {user.last_name}".strip()
+        return full_name if full_name else user.username
+
+    def get_user_id(self, obj):
+        try:
+            return obj.user_profile.user.id
+        except AttributeError:
+            return None
+
+    def get_user_profile_username(self, obj):
+        try:
+            return obj.user_profile.user.username
+        except AttributeError:
+            return None
 
     def create(self, validated_data):
         request = self.context["request"]
@@ -45,10 +68,6 @@ class RecipeSerializer(serializers.ModelSerializer):
 
         validated_data["user_profile"] = user_profile
         return super().create(validated_data)
-
-    def get_user_profile(self, obj):
-        # Keep returning the username for backward compatibility
-        return f"{obj.user_profile.first_name}- {obj.user_profile.role}"
 
 
 class RecipeRatingSerializer(serializers.ModelSerializer):

@@ -15,22 +15,20 @@
         </span>
 
         <!-- Member Selector in right-bottom corner -->
-        <div v-if="!props.memberId" class="absolute bottom-4 right-4">
-          <select
-            @change="onMemberSelect"
-            v-model="selectedMemberId"
-            class="bg-[#9c547b] text-white px-4 py-2 rounded-lg shadow-md font-semibold hover:bg-[#7a3d63] cursor-pointer focus:outline-none"
-          >
-            <option value="">All Members</option>
-            <option
-              v-for="member in members"
-              :key="member.memberId"
-              :value="member.memberId"
-              class="text-black"
-            >
-              {{ member.name }}
-            </option>
-          </select>
+        <div class="absolute bottom-4 right-4">
+          <div class="group relative">
+            <!-- Input -->
+            <input
+              type="text"
+              v-model="memberSearchQuery"
+              @input="onMemberSearch"
+              placeholder="Search members..."
+              class="w-10 group-hover:w-64 transition-all duration-300 ease-in-out bg-white text-gray-900 px-2 py-2 rounded-lg shadow-md font-semibold focus:outline-none focus:ring-2 focus:ring-[#9c547b] pl-10"
+            />
+
+            <!-- Magnifying glass icon -->
+            <Search class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size="20" />
+          </div>
         </div>
       </div>
     </div>
@@ -43,22 +41,36 @@
 
     <!-- Empty State -->
     <div v-else-if="foodPosts.length === 0" class="text-center py-16 bg-white border-2 border-dashed border-gray-200 rounded-xl">
-      <div class="text-6xl mb-4">🍽️</div>
+      <Utensils class="w-12 h-12 text-gray-400 mx-auto mb-4" />
       <h3 class="text-2xl font-bold text-gray-700 mb-2">No Food Posts Yet</h3>
-      <p class="text-gray-500">{{ memberDisplayName }} hasn't posted any meals yet.</p>
+      <p class="text-gray-500">Looks like there is nothing here yet</p>
     </div>
 
     <!-- Food Posts Grid -->
     <div v-else class="grid gap-6">
       <div v-for="post in foodPosts" :key="post.id" class="bg-white rounded-xl overflow-hidden shadow hover:shadow-xl border-2 border-transparent hover:border-blue-500 transition">
         
-        <!-- Post Header -->
-        <div class="px-6 py-5 bg-gray-50 border-b border-gray-200">
-          <div class="flex justify-between items-center">
-            <h3 class="font-bold text-lg text-gray-900">{{ post.title }}</h3>
-            <span class="text-xs text-gray-500 font-medium">{{ formatTime(post.created_at) }}</span>
+        <!-- Post Header: Member Info -->
+        <div class="px-6 py-5 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <!-- Avatar -->
+            <div class="w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm flex-shrink-0"
+              :class="!post.author_photo ? 'bg-gradient-to-br from-purple-500 to-indigo-500 text-white' : ''">
+              <template v-if="post.author_photo">
+                <img :src="getImageUrl(post.author_photo)" alt="Profile" class="w-full h-full object-cover rounded-full" />
+              </template>
+              <template v-else>
+                {{ (post.author_first_name || memberDisplayName).charAt(0).toUpperCase() }}
+              </template>
+            </div>
+            <div class="flex flex-col leading-tight">
+              <span class="font-semibold text-gray-900">{{ post.author_first_name || memberDisplayName }}</span>
+              <span class="text-xs text-gray-500">ID: {{ post.member_id }}</span>
+            </div>
           </div>
+          <span class="text-xs text-gray-500 font-medium">{{ formatTime(post.created_at) }}</span>
         </div>
+
 
         <!-- Post Body -->
         <div class="grid md:grid-cols-2">
@@ -70,15 +82,17 @@
             >
               <img :src="getImageUrl(post.image)" :alt="post.title" class="w-full h-full object-cover" />
             </div>
-            <div v-else class="w-full h-48 flex items-center justify-center bg-gray-100 text-gray-400 text-sm">📸 No image uploaded</div>
+            <div v-else class="w-full h-48 flex items-center justify-center bg-gray-100 text-gray-400 text-sm">No image uploaded</div>
 
             <div class="p-5">
+              <h3 class="font-bold text-lg text-gray-900 mb-2">{{ post.title }}</h3>
               <p class="text-gray-700 text-sm leading-relaxed whitespace-pre-line">{{ post.content }}</p>
             </div>
           </div>
 
           <!-- Right Side - Comments -->
-          <div class="bg-[#ffe8f5] p-6 flex flex-col">
+          <div class="bg-[#ffe8f5] p-6 flex flex-col h-full">
+            <!-- Header -->
             <div class="mb-4">
               <h4 class="text-xl font-semibold mb-3">
                 Coach Comments
@@ -86,9 +100,10 @@
               </h4>
             </div>
 
+            <!-- Scrollable Comments -->
             <div
               v-if="hasComments(post.id)"
-              class="flex flex-col gap-3 mb-4 overflow-y-auto"
+              class="flex-1 flex flex-col gap-3 overflow-y-auto mb-4"
               style="max-height: 400px;"
             >
               <div
@@ -111,15 +126,20 @@
               </div>
             </div>
 
-            <div v-else class="text-center py-4 text-orange-800 italic bg-white rounded mb-4">
-              <p>No feedback yet. Be the first to comment!</p>
-            </div>          
+            <div v-else class="flex-1 flex flex-col justify-center items-center text-gray-500 italic mb-4">
+              No comments yet.
+            </div>
+
             <!-- Add Comment Form -->
-            <div class="bg-white p-4 rounded-lg shadow">
-              <textarea v-model="commentTexts[post.id]" :placeholder="`Write a comment...`"
+            <div class="bg-white p-4 rounded-lg shadow mt-auto">
+              <textarea
+                v-model="commentTexts[post.id]"
+                :placeholder="`Write a comment...`"
                 class="w-full border-2 border-gray-200 rounded p-3 text-sm resize-y focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-200 mb-3"
-                rows="3" maxlength="500">
-              </textarea>
+                rows="3"
+                maxlength="500"
+                @keydown.enter.prevent="handleEnter($event, post.id)"
+              ></textarea>
               <div class="flex flex-col md:flex-row md:justify-between items-start md:items-center gap-3">
                 <span class="text-xs text-gray-500 font-medium">{{ getCharCount(post.id) }}/500</span>
                 <button @click="addComment(post.id)" :disabled="!canSubmitComment(post.id) || submittingComment[post.id]"
@@ -128,7 +148,6 @@
                 </button>
               </div>
             </div>
-
           </div>
         </div>
       </div>
@@ -163,6 +182,7 @@ import { ref, onMounted } from 'vue'
 import { useToastStore } from '@/stores/toast'
 
 const toast = useToastStore()
+import { Search, Utensils } from 'lucide-vue-next'
 
 // Props
 const props = defineProps({
@@ -182,8 +202,6 @@ const comments = ref({}) // { postId: [comments] }
 const commentTexts = ref({}) // { postId: 'text' }
 const submittingComment = ref({}) // { postId: boolean }
 const loading = ref(false)
-const selectedDate = ref(new Date())
-const viewingAll = ref(false)
 
 // Edit Modal State
 const showEditModal = ref(false)
@@ -192,9 +210,11 @@ const editingCommentId = ref(null)
 const editingCommentText = ref('')
 
 const members = ref([])
-const selectedMemberId = ref('') // <-- default to All Members
+const selectedMemberId = ref('')
 const memberId = ref('') // <-- default to all members
 const memberDisplayName = ref('All Members')
+const memberSearchQuery = ref('')
+const allPosts = ref([]) 
 
 // Helper Functions
 const getImageUrl = (path) => {
@@ -253,42 +273,35 @@ const fetchMembers = async () => {
   }
 }
 
-// API Functions (Ready for backend integration)
 const fetchFoodPosts = async () => {
   loading.value = true
   try {
-    const token = localStorage.getItem('access_token') || ''
-    const headers = token ? { Authorization: `Bearer ${token}` } : {}
-
-    let url = `http://127.0.0.1:8000/api/member/food-posts/?member_id=${props.memberId}`
-
-    if (!viewingAll.value) {
-      const dateStr = selectedDate.value.toISOString().split('T')[0]
-      url += `&date=${dateStr}`
+    let url = 'http://127.0.0.1:8000/api/member/food-posts/'
+    
+    if (props.memberId) {
+      url += `?member_id=${props.memberId}`
     }
 
-    const response = await fetch(url, {
-      headers,
-      credentials: 'include'
-    })
-
+    const response = await fetch(url, { credentials: 'include' })
     if (!response.ok) throw new Error(`Failed to fetch posts: ${response.status}`)
-
+    
     const data = await response.json()
     foodPosts.value = data
+    allPosts.value = data
 
     // Fetch comments for each post
     for (const post of foodPosts.value) {
       await fetchComments(post.id)
     }
   } catch (error) {
-    console.error('Error fetching food posts:', error)
-    // For development: show empty state instead of error
+    console.error(error)
     foodPosts.value = []
+    allPosts.value = []
   } finally {
     loading.value = false
   }
 }
+
 
 const fetchComments = async (postId) => {
   try {
@@ -395,16 +408,25 @@ const closeEditModal = () => {
   editingCommentText.value = ''
 }
 
-// Member select
-const onMemberSelect = () => {
-  memberId.value = selectedMemberId.value || ''
-  if (memberId.value) {
-    const member = members.value.find(m => m.memberId === memberId.value)
-    memberDisplayName.value = member?.name || 'Member'
-  } else {
-    memberDisplayName.value = 'All Members'
+const onMemberSearch = () => {
+  const query = memberSearchQuery.value.trim().toLowerCase()
+
+  if (!query) {
+    // Show all posts
+    foodPosts.value = [...allPosts.value]
+    return
   }
-  fetchFoodPosts()
+
+  // Filter posts by author name
+  foodPosts.value = allPosts.value.filter(post =>
+    (post.author_name || '').toLowerCase().includes(query)
+  )
+}
+
+const handleEnter = (event, postId) => {
+  if (!event.shiftKey) {
+    addComment(postId)
+  }
 }
 
 onMounted(async () => {

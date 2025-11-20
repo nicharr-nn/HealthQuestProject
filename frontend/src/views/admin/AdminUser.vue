@@ -39,13 +39,10 @@
           </div>
 
           <div class="flex items-center gap-3">
-            <button class="relative rounded-md bg-slate-100 p-2" @click="showNotifications">
-              <Bell class="w-5 h-5 text-slate-700" />
-              <span
-                v-if="pendingCount > 0"
-                class="absolute right-1 top-1 inline-block h-2 w-2 rounded-full bg-rose-500"
-              ></span>
-            </button>
+            <AdminNotificationBell
+              :coaches="coaches"
+              @review="viewCoachDetails"
+            />
 
             <!-- Header User Info -->
             <div class="flex items-center gap-2">
@@ -132,8 +129,15 @@
               >
                 <td class="px-3 py-3 font-semibold text-slate-800">
                   <div class="flex items-center gap-2">
-                    <div class="grid h-8 w-8 place-items-center rounded-full bg-blue-500 font-semibold text-white">
-                      {{ getInitials(u.full_name || u.username) }}
+                    <div class="h-8 w-8 rounded-full overflow-hidden bg-blue-500">
+                      <template v-if="u.photo">
+                        <img :src="u.photo" class="h-full w-full object-cover" />
+                      </template>
+                      <template v-else>
+                        <div class="grid h-full w-full place-items-center font-semibold text-white">
+                          {{ getInitials(u.full_name || u.username) }}
+                        </div>
+                      </template>
                     </div>
                     {{ u.full_name || u.username }}
                   </div>
@@ -183,7 +187,8 @@ import { useUserStore } from '@/stores/user'
 import { useToastStore } from '@/stores/toast'
 import DeleteModal from '@/components/DeleteModal.vue'
 import AdminSideBar from '@/components/AdminSideBar.vue'
-import { Bell, Menu } from 'lucide-vue-next'
+import { Menu } from 'lucide-vue-next'
+import AdminNotificationBell from '@/components/AdminNotificationBell.vue'
 
 const userStore = useUserStore()
 const toast = useToastStore()
@@ -193,8 +198,6 @@ const users = ref([])
 const search = ref('')
 const filterRole = ref('')
 const filtered = ref([])
-
-const pendingCount = ref(0)
 
 const showDeleteModal = ref(false)
 const userToDeleteId = ref(null)
@@ -217,7 +220,7 @@ async function confirmDelete() {
   if (!userToDeleteId.value) return
   toast.info("Deleting user...")
   try {
-    const res = await fetch(`http://127.0.0.1:8000/api/moderation/admin/users/${userToDeleteId.value}/delete/`, {
+    const res = await fetch(`http://127.0.0.1:8000/api/moderation/users/${userToDeleteId.value}/delete/`, {
       method: "DELETE",
       credentials: "include"
     })
@@ -243,7 +246,7 @@ function roleClass(role) { if(role==='normal') return "bg-purple-100 text-purple
 
 async function fetchUsers() {
   try {
-    const res = await fetch("http://127.0.0.1:8000/api/moderation/admin/users/", { credentials: "include" })
+    const res = await fetch("http://127.0.0.1:8000/api/moderation/users/", { credentials: "include" })
     users.value = await res.json()
     filtered.value = users.value
   } catch (error) { toast.error("Error fetching users: " + error.message) }
@@ -257,10 +260,6 @@ function applyFilters() {
 }
 
 function logout() { userStore.logout?.(); window.location.href='/' }
-
-function showNotifications() {
-  alert(`${pendingCount.value} notifications`)
-}
 
 onMounted(fetchUsers)
 </script>

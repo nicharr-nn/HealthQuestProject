@@ -39,13 +39,7 @@
           </div>
 
           <div class="flex items-center gap-3">
-            <button class="relative rounded-md bg-slate-100 p-2" @click="showNotifications">
-              <Bell class="w-5 h-5 text-slate-700" />
-              <span
-                v-if="pendingCount > 0"
-                class="absolute right-1 top-1 inline-block h-2 w-2 rounded-full bg-rose-500"
-              ></span>
-            </button>
+            <AdminNotificationBell @review="viewCoachDetails" />
             <!-- Header User Info -->
             <div class="flex items-center gap-2">
               <!-- Avatar -->
@@ -89,13 +83,6 @@
         <div class="rounded-xl bg-white p-5 shadow-sm">
           <div class="mb-4 flex items-center justify-between">
             <h3 class="text-base font-semibold font-subtitle">All Recipes ({{ recipes.length }})</h3>
-            <div class="flex items-center gap-3 font-subtitle">
-              <select class="rounded-md border border-slate-200 px-3 py-2 text-sm " v-model="recipeAccessFilter">
-                <option value="all">All Access Levels</option>
-                <option value="silver">Silver</option>
-                <option value="gold">Gold</option>
-              </select>
-            </div>
           </div>
 
           <div v-if="loadingRecipes" class="text-center py-8 text-slate-500">
@@ -108,7 +95,7 @@
                 <tr class="border-b border-slate-200">
                   <th class="px-3 py-2 text-left font-subtitle">Recipe</th>
                   <th class="px-3 py-2 text-left font-subtitle">Author</th>
-                  <th class="px-3 py-2 text-left font-subtitle">Access Level</th>
+                  <!-- <th class="px-3 py-2 text-left font-subtitle">Access Level</th> -->
                   <th class="px-3 py-2 text-left font-subtitle">Created</th>
                   <th class="px-3 py-2 text-left font-subtitle">Actions</th>
                 </tr>
@@ -137,14 +124,14 @@
                     </div>
                   </td>
                   <td class="px-3 py-3 font-semibold">{{ recipe.user_profile }}</td>
-                  <td class="px-3 py-3 font-semibold">
+                  <!-- <td class="px-3 py-3 font-semibold">
                     <span
                       class="rounded-full px-2 py-0.5 text-[11px] font-semibold capitalize"
                       :class="recipe.access_level === 'gold' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-800'"
                     >
                       {{ recipe.access_level }}
                     </span>
-                  </td>
+                  </td> -->
                   <td class="px-3 py-3 font-semibold">{{ formatDate(recipe.created_at) }}</td>
                   <td class="px-3 py-3 font-semibold">
                     <div class="flex gap-2">
@@ -263,7 +250,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
 import AdminSideBar from '@/components/AdminSideBar.vue'
-import { Bell, Menu } from 'lucide-vue-next'
+import { Menu } from 'lucide-vue-next'
+import AdminNotificationBell from '@/components/AdminNotificationBell.vue'
 import { useToastStore } from '@/stores/toast'
 
 const userStore = useUserStore()
@@ -273,7 +261,6 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
 const sidebarOpen = ref(true)
 const activeSection = ref('recipes')
 const searchQuery = ref('')
-const pendingCount = ref(0)
 const recipeAccessFilter = ref('all')
 const loadingRecipes = ref(false)
 const error = ref(null)
