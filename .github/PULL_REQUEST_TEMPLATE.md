@@ -1,10 +1,14 @@
 ## Description
 This pull request includes the following changes:
-- add test for coach viewing their created programs only
-- add test for member and coach comments on foodPost
-- fix the issue where member's program_name is not updated when a assignment is deleted or changed
-- fix format data to show in ProgramCard.vue
-- fix bonus point not added when member completes a workout program
+- add due date in creating workout program
+- add more api for delete and update workout assignment
+- add ProgramCard component
+- add more test cases for workout and member app
+- remove unused api and models
+- seperate functions which have many responsibilities
+- fix bugs in creating and editing workout program
+- fix bugs in UserProfile updated photo url
+- add rating in food-recipe
 
 
 ## Type of Change
@@ -17,20 +21,25 @@ This pull request includes the following changes:
 
 ### Build / Frontend
 - **Adjust code styles**
-  - Modified `ProgramCard.vue` to have consistent formatting for status, category, and difficulty level by replacing underscores with spaces and capitalizing words.
-- **Update Status Filtering Logic**
-  - Added the filtering logic in `member/views.py` to include status filtering
+  - Modified `CreateWorkoutProgram.vue` to have dropdown for selecting member_id and due date selection.
+
 ### Backend / Infrastructure
 - **Modify Model and API**
-  - Updated the filtering criteria in `member/views.py` to include "paused" status for active workout assignments.
-  - Adjusted the logic in `workout/views.py` to ensure that 
-    1. workout programs are sorted based on the user's current fitness goals first then by date.
-    2. workout assignments sorted by status (in-progress, paused, completed) and then by due date.
-- **Fix Program Name Update**
-  - Ensured that the member's `program_name` is updated correctly when a workout assignment is deleted or changed.
+  - Changed logic in member/views.py to update member's program_name when a workout program is assigned.
+  - Split complete-workout-day API into two endpoints: one for checking completion status and another for marking completion.
+  - Add 2 new API endpoints in workout/urls.py for managing and deleting workout assignments.
+  - Add function get_status in models.py to determine assignment status.
+  - add logic to handle due_date in workout assignment creation and update.
+  - add logic to handle change member_id or change visibility when updating workout assignments.
+  - add rating api in recipe app.
+- **Serializer Update**
+  - Updated `WorkoutAssignmentSerializer` to include `status` field.
+- **Delete UserAchivement, Achivement model**
 - **Test Cases**
-  - Added test cases in `backend/member/tests/test_workoutprogram.py` to verify that coaches can only view their created programs.
-  - Added test cases in `backend/member/tests/test_foodcomment.py` to verify that both members and coaches can comment on FoodPosts, and the comments reflect the correct author information.
+  - Added more unit tests for the workout assignments
+  - Fix coach can't see the programs they created because of filter level_access
+  - Fix other coach can't see programs created by other coaches
+  - Added test cases for food reating api
 
 ## Testing Checklist
 - [X] Unit tests added for new model and API endpoints
@@ -48,5 +57,7 @@ This pull request includes the following changes:
 - [X] Existing migrations modified
 
 ## Steps to check
-1. Test member can see their assignment's name updated when assignment is deleted or changed.
-2. Test existing functionalities to ensure no regressions (e.g., coach comments on FoodPost, member completes program and gain bonus point etc.).
+1. docker-compose exec backend python manage.py migrate
+2. Test the frontend changes by navigating to the Create Workout Program page and Workout Page in the application.
+3. Test existing functionalities to ensure no regressions (e.g., coach comments on FoodPost, member completes program and gain bonus point).
+4. Test edge cases for workout program updates (e.g., change private to public program, update due date).

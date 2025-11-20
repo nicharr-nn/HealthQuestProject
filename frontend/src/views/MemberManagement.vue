@@ -84,10 +84,12 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowLeft, FileUser } from 'lucide-vue-next'
+import { useToastStore } from '@/stores/toast'
 
 const router = useRouter()
 const members = ref([])
 const loading = ref(true)
+const toast = useToastStore()
 
 function goBackToDashboard() {
   router.push('/coach-dashboard')
@@ -130,7 +132,7 @@ async function removeMember(member) {
     members.value = members.value.filter(m => m.memberId !== member.memberId)
   } catch (err) {
     console.error(err)
-    alert('Failed to remove member')
+    toast.error('Failed to remove member')
   }
 }
 

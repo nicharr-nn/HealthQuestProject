@@ -93,8 +93,10 @@
 <script setup>
 import { reactive, ref, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
+import { useToastStore } from '@/stores/toast'
 
 const userStore = useUserStore()
+const toast = useToastStore()
 
 const coachForm = reactive({ bio: '' })
 const selectedFile = ref(null)
@@ -143,12 +145,12 @@ onMounted(async () => {
 // Submit coach application
 async function submitApplication() {
   if (!selectedFile.value && !hasSubmitted.value) {
-    alert('Please upload a Certification PDF.')
+    toast.error('Please upload a Certification PDF.')
     return
   }
 
   if (coachForm.bio.length > 250) {
-    alert('Short Bio cannot exceed 250 characters.')
+    toast.error('Short Bio cannot exceed 250 characters.')
     return
   }
 
@@ -178,10 +180,10 @@ async function submitApplication() {
     isResubmitting.value = false
     selectedFileName.value = selectedFile.value?.name || null
     selectedFile.value = null
-    alert('Application submitted! Status is now pending.')
+    toast.info('Application submitted! Status is now pending.')
   } catch (err) {
     console.error(err)
-    alert('Upload failed')
+    toast.error('Upload failed')
   }
 }
 
@@ -225,7 +227,7 @@ async function saveProfile() {
   if (googleName.value !== originalName.value) payload.name = googleName.value
 
   if (Object.keys(payload).length === 0) {
-    alert("No changes detected.")
+    toast.info("No changes detected.")
     return
   }
 
@@ -240,7 +242,7 @@ async function saveProfile() {
     if (!response.ok) throw new Error("Failed to update profile")
 
     const data = await response.json()
-    alert("Profile updated successfully!")
+    toast.success("Profile updated successfully!")
     coachForm.bio = data.bio
     googleName.value = data.name
 
@@ -249,7 +251,7 @@ async function saveProfile() {
     isEditingProfile.value = false
   } catch (err) {
     console.error(err)
-    alert("Could not update profile")
+    toast.error("Could not update profile")
   }
 }
 </script>

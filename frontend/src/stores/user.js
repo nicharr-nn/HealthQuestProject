@@ -103,13 +103,7 @@ export const useUserStore = defineStore('user', {
           this.coach_profile = null
           this.approved = false
         }
-
-        console.log('User initialized:', {
-          role: this.role,
-          isAdmin: this.isAdmin,
-          approved: this.approved,
-          profile_complete: this.profile_complete,
-        })
+        
 
       } catch (err) {
         console.error('Failed to fetch user info:', err)

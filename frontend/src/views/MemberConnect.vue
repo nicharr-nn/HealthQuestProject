@@ -241,9 +241,7 @@ async function loadMemberData() {
     })
 
     if (relationshipResponse.ok) {
-      const relationshipData = await relationshipResponse.json()
-      console.log('Coach Relationship Data:', relationshipData)
-      
+      const relationshipData = await relationshipResponse.json()      
       if (relationshipData.message === 'No coach request found.') {
         coachStatus.value = ''
       } else {

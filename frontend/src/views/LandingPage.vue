@@ -1,9 +1,16 @@
 <template>
   <div class="min-h-screen">
-    <!-- Use the Navbar component -->    
+
     <!-- Home Section -->
     <section id="home" class="grid grid-cols-1 md:grid-cols-2 min-h-screen">
-      <div class="bg-cover bg-center" style="background-image: url(src/images/left_box.png)">
+      <div class="relative bg-cover bg-center" style="background-image: url(src/images/left_box.png)">
+        <div class="absolute inset-0 flex items-center justify-center p-8 md:p-12 lg:p-16">
+          <img 
+            src="@/images/pure.jpg" 
+            alt="Featured Image" 
+            class="max-w-full max-h-full object-contain rounded-lg"
+          />
+        </div>
       </div>
       <div class="bg-[#FAF4E6] text-[#846757] p-8 md:p-12 lg:p-16">
         <h1 class="font-display text-6xl md:text-8xl lg:text-[100px] leading-tight mb-6">
@@ -44,7 +51,7 @@
           <div class="bg-[#FAF4E6] rounded-lg p-6 md:basis-1/2">
             <h3 class="text-[#846757] font-bold text-2xl mb-4 border-b-2 border-[#846757]">Gamified Experience</h3>
             <ul class="list-disc list-inside text-[#846757] text-lg space-y-2">
-              <li>Level up your character</li>
+              <li>Encourage healthy habits via level tracking</li>
               <li>Complete epic quests</li>
               <li>Earn achievements for every healthy choice you make</li>
               <li>Unlock new features as you progress</li>
@@ -55,17 +62,50 @@
     </section>
 
     <!-- Contact Section -->
-    <section id="contract" class="bg-[#FAF4E6] text-[#846757] py-16 px-4 font-body">
+    <section id="contact" class="bg-[#FAF4E6] text-[#846757] py-16 px-4 font-body">
       <div class="max-w-7xl mx-auto text-center">
         <h2 class="text-3xl md:text-4xl font-subtitle  mb-4">Contact Us</h2>
         <p class="text-lg md:text-xl mb-8">
           Get in touch with us! We'd love to hear from you.
         </p>
-        <!-- Replace the contact section grid and its items -->
+
         <div class="flex flex-col md:grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div class="h-80 w-full bg-blue-200 rounded-xl flex items-center justify-center text-2xl text-[#846757]">01</div>
-          <div class="h-80 w-full bg-blue-200 rounded-xl flex items-center justify-center text-2xl text-[#846757]">02</div>
-          <div class="h-80 w-full bg-blue-200 rounded-xl flex items-center justify-center text-2xl text-[#846757]">03</div>
+          <div class="h-80 w-full bg-blue-200 rounded-xl flex flex-col items-center justify-center p-4">
+            <div class="w-48 aspect-square overflow-hidden rounded-lg">
+              <img 
+                src="@/images/nicha.jpg" 
+                alt="Contact Us" 
+                class="w-full h-full object-cover"
+              />
+            </div>
+            <p class="text-[#846757] mt-4">Nicha Ruangrit<br>
+              Email: nicha.rua@ku.th
+            </p>
+          </div>
+          <div class="h-80 w-full bg-blue-200 rounded-xl flex flex-col items-center justify-center p-4">
+            <div class="w-48 aspect-square overflow-hidden rounded-lg">
+              <img 
+                src="@/images/phavida.jpg" 
+                alt="Contact Us" 
+                class="w-full h-full object-cover"
+              />
+            </div>
+            <p class="text-[#846757] mt-4">Phavida Rattanamongkolkul<br>
+              Email: phavida.r@ku.th
+            </p>
+          </div>          
+          <div class="h-80 w-full bg-blue-200 rounded-xl flex flex-col items-center justify-center p-4">
+            <div class="w-48 aspect-square overflow-hidden rounded-lg">
+              <img 
+                src="@/images/punnapa.jpg" 
+                alt="Contact Us" 
+                class="w-full h-full object-cover"
+              />
+            </div>
+            <p class="text-[#846757] mt-4">Punnapa Pramotekul<br>
+              Email: punnapa.pr@ku.th
+            </p>
+          </div>
           <div class="h-80 w-full bg-blue-200 rounded-xl flex flex-col items-center justify-center p-4">
             <div class="w-48 aspect-square overflow-hidden rounded-lg">
               <img 

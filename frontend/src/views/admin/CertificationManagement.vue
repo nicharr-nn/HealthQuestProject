@@ -272,10 +272,11 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import AdminSideBar from '@/components/AdminSideBar.vue'
 import { Bell, Menu } from 'lucide-vue-next'
+import { useToastStore } from '@/stores/toast'
 
 const router = useRouter()
 const userStore = useUserStore()
-
+const toast = useToastStore()
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
 const sidebarOpen = ref(true)
@@ -352,7 +353,7 @@ async function approveCoach(coach) {
     closeModal()
   } catch(err) {
     console.error(err)
-    alert('Failed to approve coach')
+    toast.error('Failed to approve coach')
   }
 }
 
@@ -370,7 +371,7 @@ async function rejectCoach(coach) {
     closeModal()
   } catch(err) {
     console.error(err)
-    alert('Failed to reject coach')
+    toast.error('Failed to reject coach')
   }
 }
 
