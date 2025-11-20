@@ -36,10 +36,8 @@ class AdminWorkoutTests(AdminTestBase):
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertTrue(
-            WorkoutProgram.objects.filter(
-                pk=self.workout_program.pk
-                ).exists()
-            )
+            WorkoutProgram.objects.filter(pk=self.workout_program.pk).exists()
+        )
 
     def test_delete_nonexistent_workout(self):
         """Test deleting a nonexistent workout program returns 404."""
@@ -55,7 +53,5 @@ class AdminWorkoutTests(AdminTestBase):
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertTrue(
-            WorkoutProgram.objects.filter(
-                pk=self.workout_program.pk
-            ).exists()
+            WorkoutProgram.objects.filter(pk=self.workout_program.pk).exists()
         )

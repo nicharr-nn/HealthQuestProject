@@ -54,7 +54,7 @@ class CoachAPITests(TestCase):
         self.assertEqual(coach.bio, "New bio")
 
     def test_patch_upload_certification_updates(self):
-        """"Test patching certification updates coach profile."""
+        """ "Test patching certification updates coach profile."""
         coach = Coach.objects.create(user=self.profile1, bio="Original Bio")
         file = SimpleUploadedFile(
             "new.pdf",

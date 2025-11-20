@@ -29,9 +29,7 @@ class AdminTestBase(TestCase):
         self.coach_profile.role = "coach"
         self.coach_profile.save()
         self.coach = Coach.objects.create(
-            user=self.coach_profile,
-            public_id="C-0001",
-            status_approval="pending"
+            user=self.coach_profile, public_id="C-0001", status_approval="pending"
         )
 
         # Member user

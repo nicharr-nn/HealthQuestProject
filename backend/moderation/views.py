@@ -21,7 +21,7 @@ def approve_coach(request, coach_id):
     if not Admin.objects.filter(user=request.user).exists():
         return Response(
             {"error": "You do not have permission to approve coaches."},
-            status=status.HTTP_403_FORBIDDEN
+            status=status.HTTP_403_FORBIDDEN,
         )
 
     # Find the coach
@@ -46,7 +46,7 @@ def approve_coach(request, coach_id):
 
     return Response(
         {"message": f"Coach {coach.user.user.username} approved."},
-        status=status.HTTP_200_OK
+        status=status.HTTP_200_OK,
     )
 
 
@@ -57,7 +57,7 @@ def reject_coach(request, coach_id):
     if not Admin.objects.filter(user=request.user).exists():
         return Response(
             {"error": "You do not have permission to reject coaches."},
-            status=status.HTTP_403_FORBIDDEN
+            status=status.HTTP_403_FORBIDDEN,
         )
 
     # Find coach
@@ -82,7 +82,7 @@ def reject_coach(request, coach_id):
 
     return Response(
         {"message": f"Coach {coach.user.user.username} rejected."},
-        status=status.HTTP_200_OK
+        status=status.HTTP_200_OK,
     )
 
 

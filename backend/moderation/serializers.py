@@ -13,8 +13,9 @@ class AdminModerationSerializer(serializers.ModelSerializer):
 
 
 class AdminSerializer(serializers.ModelSerializer):
-    admin_name = serializers.CharField(source="admin.user.user.username",
-                                       read_only=True)
+    admin_name = serializers.CharField(
+        source="admin.user.user.username", read_only=True
+    )
 
     class Meta:
         model = Admin

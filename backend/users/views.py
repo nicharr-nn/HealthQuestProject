@@ -28,26 +28,23 @@ def user_info(request):
             return Response({"isAuthenticated": False, "user": None})
 
 
-@api_view(['DELETE'])
+@api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def delete_account(request):
     """Delete/deactivate current user's account"""
     try:
         user = request.user
-        
+
         user.delete()
         user.save()
-        
+
         return Response(
-            {'message': 'Account deleted successfully'},
-            status=status.HTTP_200_OK
+            {"message": "Account deleted successfully"}, status=status.HTTP_200_OK
         )
-        
+
     except Exception as e:
-        return Response(
-            {'error': str(e)},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])

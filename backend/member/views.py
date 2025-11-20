@@ -477,9 +477,7 @@ def food_posts(request):
             posts = FoodPost.objects.filter(coach=profile)
 
             if member_id:
-                posts = posts.filter(
-                    user_profile__member_profile__member_id=member_id
-                )
+                posts = posts.filter(user_profile__member_profile__member_id=member_id)
 
             if date_str:
                 try:

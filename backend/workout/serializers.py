@@ -13,9 +13,8 @@ class WorkoutProgramSerializer(serializers.ModelSerializer):
     days = WorkoutDaySerializer(many=True, required=False)
     assigned_member_id = serializers.SerializerMethodField()  # if assigned to a member
     category_display = serializers.CharField(
-        source='get_category_display',
-        read_only=True
-        )
+        source="get_category_display", read_only=True
+    )
     coach_name = serializers.SerializerMethodField()
 
     class Meta:
