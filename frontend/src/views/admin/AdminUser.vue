@@ -199,8 +199,6 @@ const search = ref('')
 const filterRole = ref('')
 const filtered = ref([])
 
-const pendingCount = ref(0)
-
 const showDeleteModal = ref(false)
 const userToDeleteId = ref(null)
 const userToDeleteName = ref('')

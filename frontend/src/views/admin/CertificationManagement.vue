@@ -298,9 +298,6 @@ const filteredCoaches = computed(() => {
   return result
 })
 
-const pendingCount = computed(() => coaches.value.filter(c => c.status_approval === 'pending').length)
-
-
 function setSection(id) { activeSection.value = id; if(window.innerWidth < 768) sidebarOpen.value = false }
 function getInitials(name) { return name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) || '?' }
 function formatDate(date) { return date ? new Date(date).toLocaleDateString('en-US', {year:'numeric',month:'short',day:'numeric'}) : 'N/A' }
