@@ -257,9 +257,6 @@ const fetchMembers = async () => {
 const fetchFoodPosts = async () => {
   loading.value = true
   try {
-    const token = localStorage.getItem('access_token') || ''
-    const headers = token ? { Authorization: `Bearer ${token}` } : {}
-
     let url = `http://127.0.0.1:8000/api/member/food-posts/?member_id=${props.memberId}`
 
     if (!viewingAll.value) {
@@ -268,7 +265,6 @@ const fetchFoodPosts = async () => {
     }
 
     const response = await fetch(url, {
-      headers,
       credentials: 'include'
     })
 
@@ -292,11 +288,7 @@ const fetchFoodPosts = async () => {
 
 const fetchComments = async (postId) => {
   try {
-    const token = localStorage.getItem('access_token') || ''
-    const headers = token ? { Authorization: `Bearer ${token}` } : {}
-
     const response = await fetch(`http://127.0.0.1:8000/api/member/food-posts/${postId}/comments/`, {
-      headers,
       credentials: 'include'
     })
 
@@ -317,11 +309,9 @@ const addComment = async (postId) => {
   submittingComment.value[postId] = true
 
   try {
-    const token = localStorage.getItem('access_token') || ''
     const response = await fetch(`http://127.0.0.1:8000/api/member/food-posts/${postId}/comments/`, {
       method: 'POST',
       headers: {
-        'Authorization': token ? `Bearer ${token}` : '',
         'Content-Type': 'application/json'
       },
       credentials: 'include',
@@ -355,13 +345,11 @@ const updateComment = async () => {
   if (!editingCommentText.value.trim()) return
 
   try {
-    const token = localStorage.getItem('access_token') || ''
     const response = await fetch(
       `http://127.0.0.1:8000/api/member/food-posts/${editingPostId.value}/comments/${editingCommentId.value}/`,
       {
         method: 'PUT',
         headers: {
-          'Authorization': token ? `Bearer ${token}` : '',
           'Content-Type': 'application/json'
         },
         credentials: 'include',

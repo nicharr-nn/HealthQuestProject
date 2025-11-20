@@ -155,7 +155,6 @@ const recipeSteps = ref('')
 const imageFile = ref(null)
 
 const uploading = ref(false)
-const token = localStorage.getItem('access_token') || ''
 
 const editMode = ref(false)
 const editingId = ref(null)
@@ -282,7 +281,6 @@ const submitRating = async (rating) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: token ? `Bearer ${token}` : '',
           'X-CSRFToken': getCsrfToken(),
         },
         body: JSON.stringify({ rating }),
@@ -317,7 +315,6 @@ const removeRatingFromModal = async () => {
       {
         method: 'DELETE',
         headers: {
-          Authorization: token ? `Bearer ${token}` : '',
           'X-CSRFToken': getCsrfToken(),
         },
         credentials: 'include',
@@ -406,7 +403,6 @@ const submitRecipe = async (data) => {
     uploading.value = true
     const response = await fetch(url, {
       method,
-      headers: { Authorization: token ? `Bearer ${token}` : '' },
       body: formData,
       credentials: 'include',
     })
@@ -439,15 +435,11 @@ const isOwner = (menu) => {
 const fetchRecipeRating = async (recipeId) => {
   try {
     const response = await fetch(`http://127.0.0.1:8000/api/recipe/${recipeId}/get-rating/`, {
-      headers: {
-        Authorization: token ? `Bearer ${token}` : '',
-      },
       credentials: 'include',
     })
 
     if (response.ok) {
       const data = await response.json()
-
       
       const menuIndex = menus.value.findIndex((m) => m.id === recipeId)
       if (menuIndex !== -1) {
@@ -475,7 +467,6 @@ async function fetchMenus(onlyMine = false) {
     const url = params.toString() ? `${baseUrl}?${params}` : baseUrl
 
     const response = await fetch(url, {
-      headers: { Authorization: token ? `Bearer ${token}` : '' },
       credentials: 'include',
     })
 
