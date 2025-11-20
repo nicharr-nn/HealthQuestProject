@@ -65,7 +65,7 @@ def reject_coach(request, coach_id):
         coach = Coach.objects.get(pk=coach_id)
     except Coach.DoesNotExist:
         return Response({"error": "Coach not found"}, status=status.HTTP_404_NOT_FOUND)
-    
+
     admin = Admin.objects.get(user=request.user)
     reason = request.data.get("reason", "")
 
@@ -126,7 +126,7 @@ def delete_recipe(request, recipe_id):
             {"detail": "Permission denied. You can only delete your own recipes."},
             status=status.HTTP_403_FORBIDDEN,
         )
-    
+
     recipe.delete()
 
     admin = Admin.objects.get(user=request.user)
