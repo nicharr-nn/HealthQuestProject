@@ -5,7 +5,6 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from django.apps import apps
-from rest_framework import status
 
 from .serializers import UserProfileSerializer, UserSerializer
 
@@ -30,20 +29,30 @@ def user_info(request):
 
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
-def delete_account(request):
-    """Delete/deactivate current user's account"""
-    try:
-        user = request.user
+def delete_account(request, user_id):
+    """Delete user account"""
+    user = request.user
 
-        user.delete()
-        user.save()
+    if request.method == "DELETE":
+        # Verify it matches authenticated user (or user is admin)
+        if user.id != user_id and not user.is_staff:
+            return Response(
+                {"detail": "You can only delete your own account."}, status=403
+            )
 
-        return Response(
-            {"message": "Account deleted successfully"}, status=status.HTTP_200_OK
-        )
+        try:
+            # Get the user to delete
+            user_to_delete = User.objects.get(id=user_id)
 
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            # Delete the user
+            user_to_delete.delete()
+
+            return Response({"message": "Account deleted permanently"}, status=200)
+
+        except User.DoesNotExist:
+            return Response({"detail": "User not found."}, status=404)
+        except Exception as e:
+            return Response({"detail": f"Error deleting account: {str(e)}"}, status=500)
 
 
 @api_view(["POST"])
