@@ -3,6 +3,7 @@ from rest_framework import status
 from django.contrib.auth.models import User
 from .test_admin import AdminTestBase
 
+
 class AdminListingTests(AdminTestBase):
     """Tests for admin listing users and coaches."""
 

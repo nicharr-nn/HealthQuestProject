@@ -4,6 +4,7 @@ from rest_framework.test import APIClient
 from moderation.models import Admin
 from coach.models import Coach
 
+
 class AdminTestBase(TestCase):
     """Base setup for admin, coach, and member users."""
 

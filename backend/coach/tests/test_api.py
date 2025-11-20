@@ -30,7 +30,11 @@ class CoachAPITests(TestCase):
 
     def test_post_upload_certification_creates_coach(self):
         """Test uploading certification creates a new coach profile."""
-        file = SimpleUploadedFile("cert.pdf", b"filecontent", content_type="application/pdf")
+        file = SimpleUploadedFile(
+            "cert.pdf",
+            b"filecontent",
+            content_type="application/pdf",
+        )
         payload = {"bio": "This is my bio", "certification_doc": file}
 
         response = self.client.post(self.upload_url, payload, format="multipart")
@@ -52,7 +56,11 @@ class CoachAPITests(TestCase):
     def test_patch_upload_certification_updates(self):
         """"Test patching certification updates coach profile."""
         coach = Coach.objects.create(user=self.profile1, bio="Original Bio")
-        file = SimpleUploadedFile("new.pdf", b"newcontent", content_type="application/pdf")
+        file = SimpleUploadedFile(
+            "new.pdf",
+            b"newcontent",
+            content_type="application/pdf",
+        )
         payload = {"bio": "Updated Bio", "certification_doc": file}
 
         response = self.client.patch(self.upload_url, payload, format="multipart")
@@ -75,7 +83,6 @@ class CoachAPITests(TestCase):
         response = self.client.get(self.status_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["coach"]["bio"], "A Bio")
-
 
     def test_coach_status_no_coach(self):
         """Test retrieving coach status when no coach profile exists."""
@@ -104,5 +111,12 @@ class CoachAPITests(TestCase):
         """Test uploading a large certification document."""
         content = b"a" * (5 * 1024 * 1024)  # 5 MB
         file = SimpleUploadedFile("cert.pdf", content, content_type="application/pdf")
-        response = self.client.post(self.upload_url, {"certification_doc": file}, format="multipart")
-        self.assertIn(response.status_code, [status.HTTP_201_CREATED, status.HTTP_400_BAD_REQUEST])
+        response = self.client.post(
+            self.upload_url,
+            {"certification_doc": file},
+            format="multipart",
+        )
+        self.assertIn(
+            response.status_code,
+            [status.HTTP_201_CREATED, status.HTTP_400_BAD_REQUEST],
+        )

@@ -3,6 +3,7 @@ from rest_framework import status
 from workout.models import WorkoutProgram
 from .test_admin import AdminTestBase
 
+
 class AdminWorkoutTests(AdminTestBase):
     """Tests for admin workout management actions."""
 
@@ -34,7 +35,11 @@ class AdminWorkoutTests(AdminTestBase):
         url = reverse("delete_workout", kwargs={"id": self.workout_program.pk})
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertTrue(WorkoutProgram.objects.filter(pk=self.workout_program.pk).exists())
+        self.assertTrue(
+            WorkoutProgram.objects.filter(
+                pk=self.workout_program.pk
+                ).exists()
+            )
 
     def test_delete_nonexistent_workout(self):
         """Test deleting a nonexistent workout program returns 404."""
@@ -49,4 +54,8 @@ class AdminWorkoutTests(AdminTestBase):
         url = reverse("delete_workout", kwargs={"id": self.workout_program.pk})
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertTrue(WorkoutProgram.objects.filter(pk=self.workout_program.pk).exists())
+        self.assertTrue(
+            WorkoutProgram.objects.filter(
+                pk=self.workout_program.pk
+            ).exists()
+        )

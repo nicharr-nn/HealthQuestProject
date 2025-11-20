@@ -10,12 +10,18 @@ class CoachTests(TestCase):
     def setUp(self):
         """Set up test users and profiles."""
         self.user1 = User.objects.create_user(
-            username="coachuser1", password="pass123", first_name="John", last_name="Health"
+            username="coachuser1",
+            password="pass123",
+            first_name="John",
+            last_name="Health",
         )
         self.profile1, _ = UserProfile.objects.get_or_create(user=self.user1)
 
         self.user2 = User.objects.create_user(
-            username="coachuser2", password="pass123", first_name="Jane", last_name="Quest"
+            username="coachuser2",
+            password="pass123",
+            first_name="Jane",
+            last_name="Quest",
         )
         self.profile2, _ = UserProfile.objects.get_or_create(user=self.user2)
 
@@ -70,7 +76,8 @@ class CoachTests(TestCase):
         self.assertEqual(serializer.data["name"], "Jane Quest")
 
     def test_serializer_fallback_to_username(self):
-        """Test that the serializer falls back to username if name fields are missing."""
+        """Test that the serializer falls back 
+        to username if name fields are missing."""
         self.user2.first_name = ""
         self.user2.last_name = ""
         self.user2.save()

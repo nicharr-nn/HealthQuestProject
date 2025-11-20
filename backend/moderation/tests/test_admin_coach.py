@@ -2,6 +2,7 @@ from django.urls import reverse
 from rest_framework import status
 from .test_admin import AdminTestBase
 
+
 class AdminCoachTests(AdminTestBase):
     """Tests for admin actions on coach approvals."""
 
