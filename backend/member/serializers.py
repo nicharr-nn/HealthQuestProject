@@ -94,7 +94,7 @@ class FoodPostSerializer(serializers.ModelSerializer):
 
     def get_coach_name(self, obj):
         return obj.coach.user.username if obj.coach else None
-    
+
     def get_member_id(self, obj):
         profile = obj.user_profile
         return f"M-{profile.user.id:05d}"

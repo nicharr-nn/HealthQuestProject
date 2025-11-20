@@ -87,7 +87,7 @@ class UserSerializer(serializers.ModelSerializer):
             "is_staff",
             "profile_complete",
         ]
-    
+
     def get_photo(self, obj):
         if hasattr(obj, "userprofile") and obj.userprofile.photo:
             return obj.userprofile.photo.url
