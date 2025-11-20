@@ -321,7 +321,7 @@ async function fetchCoaches() {
   error.value = null
   try {
     const params = coachFilter.value !== 'all' ? `?status=${coachFilter.value}` : ''
-    const res = await fetch(`${API_URL}/api/moderation/admin/coaches/${params}`, {
+    const res = await fetch(`${API_URL}/api/moderation/coaches/${params}`, {
       credentials: 'include',
       headers: { Accept: 'application/json' },
     })
@@ -335,7 +335,7 @@ async function fetchCoaches() {
 
 async function approveCoach(coach) {
   try {
-    const res = await fetch(`${API_URL}/api/moderation/admin/coaches/${coach.coach_id}/approve/`, {
+    const res = await fetch(`${API_URL}/api/moderation/coaches/${coach.coach_id}/approve/`, {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
@@ -352,7 +352,7 @@ async function approveCoach(coach) {
 async function rejectCoach(coach) {
   const reason = prompt('Reason for rejection (optional):')
   try {
-    const res = await fetch(`${API_URL}/api/moderation/admin/coaches/${coach.coach_id}/reject/`, {
+    const res = await fetch(`${API_URL}/api/moderation/coaches/${coach.coach_id}/reject/`, {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },

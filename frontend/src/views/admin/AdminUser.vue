@@ -220,7 +220,7 @@ async function confirmDelete() {
   if (!userToDeleteId.value) return
   toast.info("Deleting user...")
   try {
-    const res = await fetch(`http://127.0.0.1:8000/api/moderation/admin/users/${userToDeleteId.value}/delete/`, {
+    const res = await fetch(`http://127.0.0.1:8000/api/moderation/users/${userToDeleteId.value}/delete/`, {
       method: "DELETE",
       credentials: "include"
     })
@@ -246,7 +246,7 @@ function roleClass(role) { if(role==='normal') return "bg-purple-100 text-purple
 
 async function fetchUsers() {
   try {
-    const res = await fetch("http://127.0.0.1:8000/api/moderation/admin/users/", { credentials: "include" })
+    const res = await fetch("http://127.0.0.1:8000/api/moderation/users/", { credentials: "include" })
     users.value = await res.json()
     filtered.value = users.value
   } catch (error) { toast.error("Error fetching users: " + error.message) }

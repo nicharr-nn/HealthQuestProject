@@ -375,7 +375,7 @@ async function fetchWorkouts() {
 
     if (numericCoachIds.length > 0) {
       try {
-        const coachRes = await fetch(`${API_URL}/api/moderation/admin/coaches/`, { credentials: 'include' })
+        const coachRes = await fetch(`${API_URL}/api/moderation/coaches/`, { credentials: 'include' })
         if (coachRes.ok) {
           const list = await coachRes.json()
           const idToName = {}
