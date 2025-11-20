@@ -76,7 +76,7 @@ class CoachTests(TestCase):
         self.assertEqual(serializer.data["name"], "Jane Quest")
 
     def test_serializer_fallback_to_username(self):
-        """Test that the serializer falls back 
+        """Test that the serializer falls back
         to username if name fields are missing."""
         self.user2.first_name = ""
         self.user2.last_name = ""
