@@ -51,7 +51,6 @@ def reject_coach(request, coach_id):
             status=status.HTTP_403_FORBIDDEN
         )
 
-
     # Find coach
     try:
         coach = Coach.objects.get(pk=coach_id)
