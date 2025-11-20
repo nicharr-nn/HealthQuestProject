@@ -83,6 +83,11 @@ router.beforeEach(async (to, from, next) => {
   const isApproved = userStore.approved === true
   const profileComplete = userStore.profile_complete
 
+  // --- Redirect unauthenticated users to landing page ---
+  if (!userStore.user && to.path !== '/') {
+    return next('/')
+  }
+
   // --- Redirect admin users away from onboarding pages ---
   if (isAdmin && ['/select-role', '/about-you'].includes(to.path)) {
     return next('/admin-user')
@@ -108,7 +113,6 @@ router.beforeEach(async (to, from, next) => {
   if (to.meta.requiresAdmin && !isAdmin) {
     return next('/dashboard')
   }
-  
 
   // --- Coach-only pages ---
   if (to.meta.requiresCoach) {
