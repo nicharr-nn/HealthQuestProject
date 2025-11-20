@@ -265,7 +265,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import AdminSideBar from '@/components/AdminSideBar.vue'
-import { Bell, Menu } from 'lucide-vue-next'
+import { Menu } from 'lucide-vue-next'
 import AdminNotificationBell from '@/components/AdminNotificationBell.vue'
 
 const router = useRouter()
@@ -368,8 +368,6 @@ async function rejectCoach(coach) {
     alert('Failed to reject coach')
   }
 }
-
-function showNotifications() { alert(`${pendingCount.value} pending coach applications`) }
 
 onMounted(async () => {
   if (!userStore.profile) {

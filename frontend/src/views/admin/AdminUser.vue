@@ -187,7 +187,7 @@ import { useUserStore } from '@/stores/user'
 import { useToastStore } from '@/stores/toast'
 import DeleteModal from '@/components/DeleteModal.vue'
 import AdminSideBar from '@/components/AdminSideBar.vue'
-import { Bell, Menu } from 'lucide-vue-next'
+import { Menu } from 'lucide-vue-next'
 import AdminNotificationBell from '@/components/AdminNotificationBell.vue'
 
 const userStore = useUserStore()
@@ -262,10 +262,6 @@ function applyFilters() {
 }
 
 function logout() { userStore.logout?.(); window.location.href='/' }
-
-function showNotifications() {
-  alert(`${pendingCount.value} notifications`)
-}
 
 onMounted(fetchUsers)
 </script>

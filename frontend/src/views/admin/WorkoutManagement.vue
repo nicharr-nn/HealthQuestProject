@@ -290,7 +290,6 @@ const activeSection = ref('workouts')
 
 // Search & notifications
 const searchQuery = ref('')
-const pendingCount = ref(0)
 
 // Workouts
 const workouts = ref([])
@@ -487,11 +486,6 @@ function getDifficultyClass(difficulty) {
 function getInitials(name) {
   if (!name) return '?'
   return name.split(' ').map(n => n[0].toUpperCase()).join('')
-}
-
-// Dummy notifications handler
-function showNotifications() {
-  alert('Notifications clicked')
 }
 
 function openVideo(link) {

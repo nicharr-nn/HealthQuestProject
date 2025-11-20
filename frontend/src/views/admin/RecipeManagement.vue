@@ -250,7 +250,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
 import AdminSideBar from '@/components/AdminSideBar.vue'
-import { Bell, Menu } from 'lucide-vue-next'
+import { Menu } from 'lucide-vue-next'
 import AdminNotificationBell from '@/components/AdminNotificationBell.vue'
 
 const userStore = useUserStore()
@@ -259,7 +259,6 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
 const sidebarOpen = ref(true)
 const activeSection = ref('recipes')
 const searchQuery = ref('')
-const pendingCount = ref(0)
 const recipeAccessFilter = ref('all')
 const loadingRecipes = ref(false)
 const error = ref(null)

@@ -199,8 +199,6 @@ const comments = ref({}) // { postId: [comments] }
 const commentTexts = ref({}) // { postId: 'text' }
 const submittingComment = ref({}) // { postId: boolean }
 const loading = ref(false)
-const selectedDate = ref(new Date())
-const viewingAll = ref(false)
 
 // Edit Modal State
 const showEditModal = ref(false)
