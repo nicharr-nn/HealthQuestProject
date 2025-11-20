@@ -98,6 +98,10 @@ class Recipe(models.Model):
     def average_rating(self):
         return self.ratings.aggregate(Avg("rating"))["rating__avg"] or 0
 
+    @property
+    def rating_count(self):
+        return self.ratings.count()
+
     def save(self, *args, **kwargs):
         if self.pk:
             old = Recipe.objects.get(pk=self.pk)
@@ -119,12 +123,17 @@ class RecipeRating(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     rating = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(5)]
-    )  # expected 1–5
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ("recipe", "user_profile")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["recipe", "user_profile"], name="one_rating_per_user"
+            )
+        ]
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"{self.user_profile.user.username} → {self.recipe.title}: {self.rating}"
+        return f"""{self.user_profile.user.username}
+        rated {self.recipe.title}: {self.rating}"""

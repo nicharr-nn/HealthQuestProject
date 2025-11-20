@@ -94,8 +94,10 @@ class UserSerializer(serializers.ModelSerializer):
         return None
 
     def get_is_admin(self, obj):
-        return obj.is_superuser or obj.is_staff or (
-            hasattr(obj, "userprofile") and obj.userprofile.role == "admin"
+        return (
+            obj.is_superuser
+            or obj.is_staff
+            or (hasattr(obj, "userprofile") and obj.userprofile.role == "admin")
         )
 
     def get_profile_complete(self, obj):

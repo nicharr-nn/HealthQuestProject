@@ -49,9 +49,9 @@
             </div>
             
             <!-- Program Information -->
-            <div v-if="memberProfile?.program_name" class="mt-4 pt-4 border-t border-indigo-100">
+            <div v-if="memberProfile?.program_name" class="mt-4 pt-4 border-t border-[#ff9ba6]">
               <p class="text-sm text-gray-600 mb-1">Your Assigned Program</p>
-              <p class="text-lg font-semibold text-indigo-700">{{ memberProfile.program_name }}</p>
+              <p class="text-lg font-bold text-gray-800">{{ memberProfile.program_name }}</p>
             </div>
           </div>
 
@@ -236,7 +236,7 @@ async function loadMemberData() {
     }
 
     // Load coach relationship
-    const relationshipResponse = await fetch(`${API_BASE}member-request/manage/`, {
+    const relationshipResponse = await fetch(`${API_BASE}member-request/`, {
       credentials: 'include',
     })
 
@@ -382,7 +382,7 @@ async function cancelCoachRequest() {
   requestLoading.value = true
 
   try {
-    const response = await fetch(`${API_BASE}member-request/manage/`, {
+    const response = await fetch(`${API_BASE}member-request/`, {
       method: 'DELETE',
       credentials: 'include',
     })

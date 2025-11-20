@@ -421,7 +421,7 @@ async function deleteWorkout(id) {
   if (!confirm("Are you sure you want to delete this workout program?")) return;
 
   try {
-    const res = await fetch(`${API_URL}/api/workout/programs/${id}/`, {
+    const res = await fetch(`${API_URL}/api/workout/programs/${id}/delete/`, {
       method: "DELETE",
       credentials: "include",
       headers: {

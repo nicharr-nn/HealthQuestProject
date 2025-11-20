@@ -59,6 +59,7 @@ class WorkoutAssignmentSerializer(serializers.ModelSerializer):
     coach_name = serializers.CharField(
         source="program.coach.user.username", read_only=True
     )
+    status = serializers.SerializerMethodField()
 
     class Meta:
         model = WorkoutAssignment
@@ -74,3 +75,7 @@ class WorkoutAssignmentSerializer(serializers.ModelSerializer):
             "completed_date",
         ]
         read_only_fields = fields
+
+    def get_status(self, obj):
+        """Return dynamic status based on progress, completion, or overdue state."""
+        return obj.get_status()

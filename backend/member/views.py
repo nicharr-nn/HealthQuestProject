@@ -1,3 +1,4 @@
+from datetime import datetime
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -14,6 +15,7 @@ from .serializers import (
 from coach.models import Coach
 from workout.models import WorkoutProgram, WorkoutAssignment
 from workout.serializers import WorkoutAssignmentSerializer
+from django.db import models
 
 
 @api_view(["GET"])
@@ -24,8 +26,9 @@ def coach_member_profile(request, member_id):
     coach_profile = getattr(user_profile, "coach_profile", None)
 
     if not coach_profile:
-        return Response({"error": "You are not a coach"},
-                        status=status.HTTP_403_FORBIDDEN)
+        return Response(
+            {"error": "You are not a coach"}, status=status.HTTP_403_FORBIDDEN
+        )
 
     member = get_object_or_404(Member, member_id=member_id)
 
@@ -167,6 +170,7 @@ def coach_remove_member(request, member_id):
     return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+# ==================== MEMBER ENDPOINTS ====================
 @api_view(["POST", "PATCH"])
 @permission_classes([IsAuthenticated])
 def apply_as_member(request):
@@ -301,6 +305,32 @@ def get_member_profile(request):
         )
 
 
+# helper function
+def _update_member_program_name(member):
+    """Update member's program_name to reflect active assignment"""
+
+    active_assignment = (
+        WorkoutAssignment.objects.filter(
+            member=member, status__in=["in_progress", "assigned", "paused"]
+        )
+        .order_by(
+            models.Case(
+                models.When(status="in_progress", then=1),
+                models.When(status="assigned", then=2),
+                models.When(status="paused", then=3),
+                default=99,
+            )
+        )
+        .first()
+    )
+
+    if active_assignment:
+        member.program_name = active_assignment.program.title
+    else:
+        member.program_name = None
+    member.save(update_fields=["program_name"])
+
+
 @api_view(["GET", "PATCH", "DELETE"])
 @permission_classes([IsAuthenticated])
 def manage_member_request(request):
@@ -327,6 +357,7 @@ def manage_member_request(request):
         )
 
     if request.method == "GET":
+        _update_member_program_name(member)
         serializer = CoachMemberRelationshipSerializer(relationship)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -393,6 +424,20 @@ def assign_program_to_member(request):
 
     # Optional due date
     due_date = request.data.get("due_date")
+
+    if due_date:
+        try:
+            due_date_obj = datetime.strptime(due_date, "%Y-%m-%d").date()
+            if due_date_obj <= datetime.now().date():
+                return Response(
+                    {"error": "Due date must be in the future"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        except ValueError:
+            return Response(
+                {"error": "Invalid due date format. Use YYYY-MM-DD"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
     # Prevent duplicates
     if WorkoutAssignment.objects.filter(member=member, program=program).exists():

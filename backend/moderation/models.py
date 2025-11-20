@@ -4,8 +4,9 @@ from coach.models import Coach
 
 
 class Admin(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE,
-                                related_name="admin_profile")
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="admin_profile"
+    )
 
     def __str__(self):
         return f"Moderator: {self.user.username}"

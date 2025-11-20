@@ -30,10 +30,7 @@ def approve_coach(request, coach_id):
     try:
         coach = Coach.objects.get(pk=coach_id)
     except Coach.DoesNotExist:
-        return Response(
-            {"error": "Coach not found"},
-            status=status.HTTP_404_NOT_FOUND
-        )
+        return Response({"error": "Coach not found"}, status=status.HTTP_404_NOT_FOUND)
 
     # Approve the coach
     coach.status_approval = "approved"
@@ -62,10 +59,7 @@ def reject_coach(request, coach_id):
     try:
         coach = Coach.objects.get(pk=coach_id)
     except Coach.DoesNotExist:
-        return Response(
-            {"error": "Coach not found"},
-            status=status.HTTP_404_NOT_FOUND
-        )
+        return Response({"error": "Coach not found"}, status=status.HTTP_404_NOT_FOUND)
 
     # Reject coach
     coach.status_approval = "rejected"
@@ -91,16 +85,11 @@ def list_coaches_for_admin(request):
     data = [
         {
             "coach_id": coach.coach_id,
-            "name": (
-                coach.user.user.get_full_name() or
-                coach.user.user.username
-            ),
+            "name": (coach.user.user.get_full_name() or coach.user.user.username),
             "email": coach.user.user.email,
             "bio": getattr(coach, "bio", ""),
             "certification_doc": (
-                coach.certification_doc.url
-                if coach.certification_doc
-                else None
+                coach.certification_doc.url if coach.certification_doc else None
             ),
             "status_approval": coach.status_approval,
             "created_at": coach.created_at,
@@ -170,7 +159,8 @@ def list_all_users(request):
             "date_joined": u.date_joined,
             "is_active": u.is_active,
         }
-        for u in users if u.userprofile.role != "admin"
+        for u in users
+        if u.userprofile.role != "admin"
     ]
 
     return Response(data)
@@ -183,17 +173,13 @@ def delete_user(request, user_id):
         admin = Admin.objects.get(user=request.user)
     except Admin.DoesNotExist:
         return Response(
-            {"error": "You are not an admin"},
-            status=status.HTTP_403_FORBIDDEN
+            {"error": "You are not an admin"}, status=status.HTTP_403_FORBIDDEN
         )
 
     try:
         user = User.objects.get(pk=user_id)
     except User.DoesNotExist:
-        return Response(
-            {"error": "User not found"},
-            status=status.HTTP_404_NOT_FOUND
-        )
+        return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
     subject = "Account Deletion Notification"
     message = (
@@ -216,11 +202,6 @@ def delete_user(request, user_id):
     user.delete()
 
     return Response(
-        {
-            "message": (
-                f"User '{username}' deleted, "
-                "email sent and action logged."
-            )
-        },
+        {"message": (f"User '{username}' deleted, email sent and action logged.")},
         status=status.HTTP_200_OK,
     )
