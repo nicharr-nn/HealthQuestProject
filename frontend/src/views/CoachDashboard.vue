@@ -215,8 +215,10 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import NotificationBell from '@/components/NotificationBell.vue'
 import * as icons from 'lucide-vue-next'
+import { useToastStore } from "@/stores/toast";
 
 const router = useRouter()
+const toast = useToastStore();
 
 const loading = ref(true)
 const showCreateProgram = ref(false)
@@ -338,7 +340,7 @@ async function deleteProgram(programId) {
         editingProgram.value = null
         showCreateProgram.value = false
       }
-      alert('Program deleted successfully!')
+      toast.success('Program deleted successfully!')
     } else {
       const text = await res.text()
       let body = text
@@ -348,12 +350,11 @@ async function deleteProgram(programId) {
         console.warn('Failed to parse response as JSON:', err)
       }
       console.error('Delete program failed:', res.status, body)
-      const message = body?.detail || body?.error || body || `HTTP ${res.status}`
-      alert('Failed to delete program: ' + JSON.stringify(message))
+
     }
   } catch (err) {
     console.error('Error deleting program:', err)
-    alert('Failed to delete program')
+    toast.error('Failed to delete program')
   }
 }
 

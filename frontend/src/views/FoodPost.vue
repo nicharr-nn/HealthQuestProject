@@ -18,10 +18,31 @@
     <div
       v-for="post in foodPosts"
       :key="post.id"
-      class="max-w-5xl mx-auto bg-purple-200 shadow-lg rounded-2xl my-8 grid lg:grid-cols-[1.5fr_1fr] overflow-hidden"
+      class="max-w-5xl mx-auto bg-purple-200 shadow-lg rounded-2xl my-8 grid lg:grid-cols-[10%_1.5fr_1fr] overflow-hidden"
     >
-      <!-- Left side (image, name, content) -->
-      <div class="bg-[#e2dbff] flex flex-col font-body">
+      <!-- Left side - Buttons -->
+      <div class="flex lg:flex-col lg:w-full w-full order-3 lg:order-1">
+        <!-- Edit Button -->
+        <button
+          @click="openEditModal(post)"
+          class="bg-yellow-200 hover:bg-yellow-300 text-white flex-1 lg:h-full px-5 py-3 lg:py-2 font-semibold cursor-pointer text-lg sm:text-xl flex items-center justify-center rounded-bl-xl lg:rounded-tl-xl lg:rounded-bl-none"
+          title="Edit post"
+        >
+          ✍🏻
+        </button>
+
+        <!-- Delete Button -->
+        <button
+          @click="openDeleteModal(post)"
+          class="bg-red-300 hover:bg-red-400 text-white flex-1 lg:h-full px-5 py-3 lg:py-2 font-semibold cursor-pointer text-lg sm:text-xl flex items-center justify-center rounded-br-xl lg:rounded-bl-xl lg:rounded-br-none"
+          title="Delete post"
+        >
+          🗑️
+        </button>
+      </div>
+
+      <!-- Middle - Image, name, content -->
+      <div class="bg-[#e2dbff] flex flex-col font-body order-1 lg:order-2">
         <!-- Image Section -->
         <div class="flex flex-col items-center text-center p-6 text-[#846757]">
           <h3 class="text-3xl font-semibold mb-4">{{ post.title }}</h3>
@@ -57,32 +78,18 @@
         </div>
 
         <!-- Content Section -->
-        <div class="flex-1 p-6 flex flex-col justify-between">
-          <div class="text-center mb-6">
+        <div class="flex-1 p-6 flex flex-col justify-center">
+          <div class="text-center">
             <p class="text-[#846757] whitespace-pre-line">
               {{ post.content }}
             </p>
           </div>
 
-          <div class="flex justify-center gap-3">
-            <button
-              @click="openEditModal(post)"
-              class="cursor-pointer bg-yellow-400 hover:bg-yellow-500 text-white px-5 py-2 rounded-lg font-semibold shadow-md"
-            >
-              Edit
-            </button>
-            <button
-              @click="openDeleteModal(post)"
-              class="cursor-pointer bg-red-400 hover:bg-red-500 text-white px-5 py-2 rounded-lg font-semibold shadow-md"
-            >
-              Delete
-            </button>
-          </div>
         </div>
       </div>
 
-      <!-- Right side (Comments) -->
-      <div class="bg-[#E6F3E6] p-6 flex flex-col justify-between font-body">
+      <!-- Right side - Comments -->
+      <div class="bg-[#E6F3E6] p-6 flex flex-col justify-between font-body order-2 lg:order-3 rounded-tr-xl lg:rounded-tr-xl lg:rounded-br-xl">
         <h4 class="text-xl font-semibold mb-3">Coach Comments</h4>
         <div class="flex-1 overflow-y-auto space-y-2 mb-4 max-h-90">
           <div
@@ -348,7 +355,7 @@ const addComment = async (postId) => {
     newComment.value = ''
   } catch (err) {
     console.error(err)
-    toast.success('Failed to post comment: ' + err.message)
+    toast.error('Failed to post comment: ' + err.message)
   }
 }
 

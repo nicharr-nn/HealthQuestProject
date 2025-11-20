@@ -203,7 +203,9 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowLeft, ClipboardPen } from 'lucide-vue-next'
+import { useToastStore } from '@/stores/toast'
 
+const toast = useToastStore()
 const router = useRouter()
 const requests = ref([])
 const activeTab = ref('all')
@@ -279,7 +281,7 @@ async function updateRequestStatus(relationshipId, status) {
     if (req) req.status = status
   } catch (err) {
     console.error(err)
-    alert('Failed to update request status')
+    toast.error('Failed to update request status')
   }
 }
 

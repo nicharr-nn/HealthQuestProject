@@ -4,13 +4,13 @@
       <div class="flex justify-between items-center h-16">
         <!-- Left: Brand -->
         <div class="flex items-center">
-        <RouterLink to="/" class="font-subtitle text-2xl text-white">HealthQuest</RouterLink>
+          <RouterLink to="/" class="font-subtitle text-2xl text-white">HealthQuest</RouterLink>
         </div>
 
-        <div class="hidden md:flex space-x-4">
-          <a href="#home" class="hover:bg-[#F3C6C1] px-3 py-2 rounded font-body">Home</a>
-          <a href="#about" class="hover:bg-[#F3C6C1] px-3 py-2 rounded font-body">About</a>
-          <a href="#contact" class="hover:bg-[#F3C6C1] px-3 py-2 rounded font-body">Contact</a>
+        <div class="hidden md:flex space-x-4 scroll-behavior-smooth">
+          <a @click.prevent="scrollToSection('home')" class="hover:bg-[#F3C6C1] px-3 py-2 rounded font-body cursor-pointer">Home</a>
+          <a @click.prevent="scrollToSection('about')" class="hover:bg-[#F3C6C1] px-3 py-2 rounded font-body cursor-pointer">About</a>
+          <a @click.prevent="scrollToSection('contact')" class="hover:bg-[#F3C6C1] px-3 py-2 rounded font-body cursor-pointer">Contact</a>
         </div>
 
         <button
@@ -47,9 +47,9 @@
       v-if="isOpen"
       class="md:hidden bg-[#88ACEA] px-4 pb-3 space-y-2"
     >
-      <a href="#home" class="block hover:bg-[#F3C6C1] px-3 py-2 rounded font-body">Home</a>
-      <a href="#about" class="block hover:bg-[#F3C6C1] px-3 py-2 rounded font-body">About</a>
-      <a href="#contact" class="block hover:bg-[#F3C6C1] px-3 py-2 rounded font-body">Contact</a>
+      <a @click="scrollToSection('home')" class="block hover:bg-[#F3C6C1] px-3 py-2 rounded font-body cursor-pointer">Home</a>
+      <a @click="scrollToSection('about')" class="block hover:bg-[#F3C6C1] px-3 py-2 rounded font-body cursor-pointer">About</a>
+      <a @click="scrollToSection('contact')" class="block hover:bg-[#F3C6C1] px-3 py-2 rounded font-body cursor-pointer">Contact</a>
     </div>
   </nav>
 </template>
@@ -58,4 +58,15 @@
 import { ref } from 'vue'
 
 const isOpen = ref(false)
+
+const scrollToSection = (sectionId) => {
+  const element = document.getElementById(sectionId)
+  if (element) {
+    element.scrollIntoView({ 
+      behavior: 'smooth',
+      block: 'start'
+    })
+    isOpen.value = false
+  }
+}
 </script>

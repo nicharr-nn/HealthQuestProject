@@ -53,8 +53,10 @@ import RoleCard from '../components/RoleCard.vue'
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import { useToastStore } from '@/stores/toast'
 
 const userStore = useUserStore()
+const toast = useToastStore()
 
 const router = useRouter()
 
@@ -106,11 +108,11 @@ async function selectRole(role) {
     } else {
       const error = await response.json()
       console.error('Error setting role:', error)
-      alert('Failed to set role')
+      toast.error('Failed to set role')
     }
   } catch (error) {
     console.error(error)
-    alert('Error setting role')
+    toast.error('Error setting role')
   }
 }
 

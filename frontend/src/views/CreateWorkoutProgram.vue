@@ -39,7 +39,7 @@
           <!-- Description with Character Counter -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1.5" for="description">
-              Description
+              Description <span class="text-red-500">*</span>
             </label>
             <textarea
               id="description"
@@ -54,6 +54,7 @@
               maxlength="180"
               placeholder="Describe the goals, target audience, and overview of your program"
               @input="validateDescription"
+              required
             />
             <div class="flex justify-between items-center mt-1.5">
               <span v-if="descriptionError" class="text-xs text-red-500">
@@ -355,7 +356,7 @@
               Day {{ day }}
               {{
                 workoutProgram.WorkoutDays[day]?.length
-                  ? `(${workoutProgram.WorkoutDays[day].length} workouts)`
+                  ? `(${workoutProgram.WorkoutDays[day].length} workout${workoutProgram.WorkoutDays[day].length !== 1 ? 's' : ''})`
                   : ''
               }}
             </option>
@@ -595,9 +596,11 @@
 <script setup>
 import { reactive, ref, computed, watch, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useToastStore } from '@/stores/toast'
 
 const router = useRouter()
 const route = useRoute()
+const toast = useToastStore()
 
 const coachUserProfileId = ref(null)
 const editingProgramId = ref(null)
@@ -787,7 +790,7 @@ async function fetchCoachMembers() {
     }
   } catch (error) {
     console.error('Failed to fetch coach members:', error)
-    alert('Failed to load members. Please try again.')
+    toast.error('Failed to load members. Please try again.')
     coachMembers.value = []
   } finally {
     isLoadingMembers.value = false
@@ -840,6 +843,7 @@ const canSubmitProgram = computed(() => {
     workoutProgram.title &&
     workoutProgram.difficulty_level &&
     workoutProgram.duration &&
+    workoutProgram.description &&
     Object.keys(workoutProgram.WorkoutDays).length > 0 &&
     !descriptionError.value
 
@@ -894,23 +898,23 @@ function validatevideo_link() {
 
 function saveDayWorkout() {
   if (!currentWorkout.title?.trim()) {
-    alert('Please enter a workout title')
+    toast.error('Please enter a workout title')
     return
   }
 
   if (!currentWorkout.duration || currentWorkout.duration <= 0) {
-    alert('Duration must be a positive number')
+    toast.error('Duration must be a positive number')
     return
   }
 
   if (currentWorkout.duration < 5) {
-    alert('Duration must be at least 5 minutes')
+    toast.error('Duration must be at least 5 minutes')
     currentWorkout.duration = 5
     return
   }
 
   if (currentWorkout.duration > 180) {
-    alert('Duration cannot exceed 180 minutes')
+    toast.error('Duration cannot exceed 180 minutes')
     currentWorkout.duration = 180
     return
   }
@@ -920,11 +924,11 @@ function saveDayWorkout() {
   if (currentWorkout.video_link && currentWorkout.video_link.trim() !== '') {
     validatevideo_link()
     if (youtubeError.value) {
-      alert('Please fix the YouTube URL error before saving')
+      toast.error('Please fix the YouTube URL error before saving')
       return
     }
   } else {
-    alert('Please enter a YouTube video URL')
+    toast.error('Please enter a YouTube video URL')
     return
   }
 
@@ -1082,7 +1086,7 @@ async function loadExistingProgram(programId) {
     }
   } catch (error) {
     console.error('Error loading existing program:', error)
-    alert('Failed to load program data. Please try again.')
+    toast.error('Failed to load program data. Please try again.')
   }
 }
 
@@ -1148,7 +1152,7 @@ async function handleAssignment(programId, isUpdate) {
 
   const method = isUpdate ? 'PATCH' : 'POST'
   const url = `http://127.0.0.1:8000/api/workout/assignment-manage/${programId}/`
-  console.log(`Assignment request: ${method} ${url}`, assignmentPayload)
+
 
   try {
     const response = await fetch(url, {
@@ -1165,16 +1169,15 @@ async function handleAssignment(programId, isUpdate) {
       const error = await response.json()
       console.error('Assignment error:', error)
 
-      alert(`Program saved, but assignment failed: ${error.error || 'Unknown error'}`)
       return null
     }
 
     const data = await response.json()
-    console.log(`Assignment ${method === 'POST' ? 'created' : 'updated'}:`, data.message)
+
     return data.assignment
   } catch (error) {
     console.error('Assignment request failed:', error)
-    alert('Program saved, but assignment request failed')
+
     return null
   }
 }
@@ -1193,7 +1196,7 @@ async function deleteAssignmentIfExists(programId) {
     )
 
     if (response.ok || response.status === 404) {
-      console.log('Assignment deleted or not found (program is now public)')
+
       return true
     }
 
@@ -1208,22 +1211,22 @@ async function deleteAssignmentIfExists(programId) {
 
 async function submitProgram() {
   if (!canSubmitProgram.value) {
-    alert('Please fill in all required fields and add at least one daily workout')
+    toast.info('Please fill in all required fields and add at least one daily workout')
     return
   }
 
   if (descriptionError.value) {
-    alert('Please fix the description error before submitting')
+    toast.error('Please fix the description error before submitting')
     return
   }
 
   if (!workoutProgram.is_public && !workoutAssignment.member_id) {
-    alert('Please select a member for private programs')
+    toast.error('Please select a member for private programs')
     return
   }
 
   if (workoutAssignment.due_date && !validateDueDate()) {
-    alert('Please fix the due date error')
+    toast.error('Please fix the due date error')
     return
   }
 
@@ -1242,7 +1245,7 @@ async function submitProgram() {
   }
 
   if (!coachUserProfileId.value) {
-    alert('Coach profile not found. Please confirm your coach profile.')
+    toast.error('Coach profile not found. Please confirm your coach profile.')
     return
   }
 
@@ -1292,8 +1295,7 @@ async function submitProgram() {
     })
 
     if (!programResponse.ok) {
-      const error = await programResponse.json()
-      alert('Failed to save program: ' + JSON.stringify(error))
+      await programResponse.json()
       return
     }
 
@@ -1309,17 +1311,17 @@ async function submitProgram() {
     if (isPrivateNow && workoutAssignment.member_id) {
       // Case 1: Program is PRIVATE (new or staying private)
       // → Create or update assignment
-      console.log('Creating/updating assignment for private program')
+
       await handleAssignment(programId, isEditing)
     } else if (isEditing && wasPrivateBefore && isPublicNow) {
       // Case 2: Program was PRIVATE, now changed to PUBLIC
       // → Delete the existing assignment
-      console.log('Program changed from private to public, deleting assignment')
+
       await deleteAssignmentIfExists(programId)
     } else if (isPublicNow) {
       // Case 3: Program is PUBLIC (new or staying public)
       // → Do nothing with assignments
-      console.log('Program is public, no assignment action needed')
+
     }
 
     emit('programCreated', programData)
@@ -1330,11 +1332,11 @@ async function submitProgram() {
         ? ` Assignment ${editingProgramId.value ? 'updated' : 'created'} for member.`
         : ''
 
-    alert(`Program ${action} successfully!${assignmentMsg}`)
+    toast.success(`Program ${action} successfully!${assignmentMsg}`)
     router.push('/coach-dashboard')
   } catch (error) {
     console.error('Error saving program:', error)
-    alert('Failed to save program: ' + error.message)
+
   }
 }
 </script>
