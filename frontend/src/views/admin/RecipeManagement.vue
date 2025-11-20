@@ -83,13 +83,6 @@
         <div class="rounded-xl bg-white p-5 shadow-sm">
           <div class="mb-4 flex items-center justify-between">
             <h3 class="text-base font-semibold font-subtitle">All Recipes ({{ recipes.length }})</h3>
-            <div class="flex items-center gap-3 font-subtitle">
-              <select class="rounded-md border border-slate-200 px-3 py-2 text-sm " v-model="recipeAccessFilter">
-                <option value="all">All Access Levels</option>
-                <option value="silver">Silver</option>
-                <option value="gold">Gold</option>
-              </select>
-            </div>
           </div>
 
           <div v-if="loadingRecipes" class="text-center py-8 text-slate-500">
@@ -102,7 +95,7 @@
                 <tr class="border-b border-slate-200">
                   <th class="px-3 py-2 text-left font-subtitle">Recipe</th>
                   <th class="px-3 py-2 text-left font-subtitle">Author</th>
-                  <th class="px-3 py-2 text-left font-subtitle">Access Level</th>
+                  <!-- <th class="px-3 py-2 text-left font-subtitle">Access Level</th> -->
                   <th class="px-3 py-2 text-left font-subtitle">Created</th>
                   <th class="px-3 py-2 text-left font-subtitle">Actions</th>
                 </tr>
@@ -131,14 +124,14 @@
                     </div>
                   </td>
                   <td class="px-3 py-3 font-semibold">{{ recipe.user_profile }}</td>
-                  <td class="px-3 py-3 font-semibold">
+                  <!-- <td class="px-3 py-3 font-semibold">
                     <span
                       class="rounded-full px-2 py-0.5 text-[11px] font-semibold capitalize"
                       :class="recipe.access_level === 'gold' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-800'"
                     >
                       {{ recipe.access_level }}
                     </span>
-                  </td>
+                  </td> -->
                   <td class="px-3 py-3 font-semibold">{{ formatDate(recipe.created_at) }}</td>
                   <td class="px-3 py-3 font-semibold">
                     <div class="flex gap-2">
