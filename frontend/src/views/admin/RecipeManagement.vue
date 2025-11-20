@@ -264,8 +264,10 @@ import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
 import AdminSideBar from '@/components/AdminSideBar.vue'
 import { Bell, Menu } from 'lucide-vue-next'
+import { useToastStore } from '@/stores/toast'
 
 const userStore = useUserStore()
+const toast = useToastStore()
 const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
 
 const sidebarOpen = ref(true)
@@ -350,16 +352,16 @@ const deleteRecipe = async (id) => {
     })
 
     if (response.status === 200 || response.status === 204) {
-      alert('Recipe deleted successfully!')
+      toast.success('Recipe deleted successfully!')
       await fetchRecipes()
     } else {
-      const data = await response.json().catch(() => ({}))
-      alert('Delete failed: ' + (data.detail || response.statusText))
+      await response.json().catch(() => ({}))
     }
   } catch (err) {
     console.error(err)
-    alert('Error connecting to backend: ' + err.message)
+    
   }
+
 }
 
 // Fetch recipes

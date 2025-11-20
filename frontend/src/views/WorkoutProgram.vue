@@ -247,6 +247,9 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { useToastStore } from '@/stores/toast'
+
+const toast = useToastStore()
 
 const route = useRoute()
 const programId = route.params.id
@@ -427,7 +430,7 @@ async function getCurrentXp() {
 
 async function completeDay(dayId) {
   if (!allWorkoutsComplete(dayId)) {
-    alert('Please complete all workouts first!')
+    toast.error('Please complete all workouts first!')
     return
   }
 
@@ -447,19 +450,19 @@ async function completeDay(dayId) {
     const after = await getCurrentXp()
 
     xp.value = Math.max(0, (after || 0) - (before || 0))
-    console.log('XP before:', before, 'after:', after, 'earned:', xp.value)
+
 
     // hide or move to next day automatically
     const nextDay = days.value.find((d) => !dayCompletionStates.value[d.id])
     if (nextDay) {
       selectedDay.value = nextDay.id
     } else {
-      alert(`🎉 You completed all days in this program! You earned ${xp.value} XP!`)
+      toast.success(`🎉 You completed all days in this program! You earned ${xp.value} XP!`)
     }
-    alert(`🎉 Congratulations! You earned ${xp.value} XP!`)
+    toast.success(`🎉 Congratulations! You earned ${xp.value} XP!`)
   } catch (err) {
     console.error(err)
-    alert('Failed to complete day. Please try again.')
+    toast.error('Failed to complete day. Please try again.')
   } finally {
     isCompletingDay.value = false
   }

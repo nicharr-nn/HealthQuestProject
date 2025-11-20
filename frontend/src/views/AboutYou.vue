@@ -97,10 +97,12 @@
 import { ref, reactive } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from '@/stores/user'
+import { useToastStore } from "@/stores/toast";
 
 const router = useRouter();
 const loading = ref(false);
 const userStore = useUserStore();
+const toast = useToastStore();
 
 const form = reactive({
   height: "",
@@ -185,7 +187,7 @@ function validateForm() {
 
 async function submitProfile() {
   if (!validateForm()) {
-    alert("Please fix the errors in the form");
+    toast.error("Please fix the errors in the form");
     return;
   }
 
@@ -215,7 +217,7 @@ async function submitProfile() {
 
 if (response.ok) {
   const res = await response.json()
-  console.log("Profile updated:", res)
+
 
   const profile = res.data
   userStore.setRole(profile.role) 
@@ -230,7 +232,7 @@ if (response.ok) {
 
   } catch (error) {
     console.error("Error updating profile:", error);
-    alert("Failed to update profile. Please try again.");
+    toast.error("Failed to update profile. Please try again.");
   } finally {
     loading.value = false;
   }

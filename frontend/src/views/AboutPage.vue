@@ -36,13 +36,13 @@ async function fetchUserInfo() {
 
     // Parse the JSON response directly
     const data = await response.json()
-    console.log('Parsed response:', data)
+
 
     if (data.isAuthenticated && data.user) {
       user.value = data.user
     } else {
       user.value = null
-      console.log('User not authenticated.')
+
     }
   } catch (err) {
     console.error('Error fetching user info:', err)

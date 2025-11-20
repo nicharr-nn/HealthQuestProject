@@ -285,6 +285,9 @@ import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
 import AdminSideBar from '@/components/AdminSideBar.vue'
 import { Bell, Menu } from 'lucide-vue-next'
+import { useToastStore } from '@/stores/toast'
+
+const toast = useToastStore()
 
 const userStore = useUserStore()
 const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
@@ -445,19 +448,19 @@ async function deleteWorkout(id) {
       }
 
       if (res.status === 403) {
-        alert((body && (body.detail || body.error)) || "You don't have permission to delete this program")
+        toast.error((body && (body.detail || body.error)) || "You don't have permission to delete this program")
       } else {
-        alert((body && (body.error || body.detail)) || "Failed to delete workout")
+        toast.error((body && (body.error || body.detail)) || "Failed to delete workout")
       }
       return;
     }
 
     // Remove from local list
     workouts.value = workouts.value.filter(w => w.id !== id);
-    alert("Workout program deleted successfully");
+    toast.success("Workout program deleted successfully");
   } catch (err) {
     console.error("Delete workout error:", err);
-    alert("Failed to delete workout");
+    toast.error("Failed to delete workout");
   }
 }
 

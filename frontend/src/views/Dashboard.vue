@@ -284,7 +284,7 @@ export default {
         })
         if (!res.ok) {
           if (res.status === 404) {
-            console.log('No member profile found')
+
             memberProfile.value = null
             return
           }
@@ -295,7 +295,7 @@ export default {
         }
         const data = await res.json()
         memberProfile.value = data
-        console.log('Member profile loaded:', data)
+
       } catch (err) {
         console.error('Error loading member profile:', err)
         memberError.value = err.message || String(err)

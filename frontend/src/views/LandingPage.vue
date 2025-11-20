@@ -6,7 +6,7 @@
       <div class="relative bg-cover bg-center" style="background-image: url(src/images/left_box.png)">
         <div class="absolute inset-0 flex items-center justify-center p-8 md:p-12 lg:p-16">
           <img 
-            src="@/images/presenter.png" 
+            src="@/images/pure.jpg" 
             alt="Featured Image" 
             class="max-w-full max-h-full object-contain rounded-lg"
           />

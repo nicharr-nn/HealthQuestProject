@@ -14,6 +14,7 @@ from .serializers import (
 from coach.models import Coach
 from workout.models import WorkoutProgram, WorkoutAssignment
 from workout.serializers import WorkoutAssignmentSerializer
+from django.db import models
 
 
 @api_view(["GET"])
@@ -303,6 +304,32 @@ def get_member_profile(request):
         )
 
 
+# helper function
+def _update_member_program_name(member):
+    """Update member's program_name to reflect active assignment"""
+
+    active_assignment = (
+        WorkoutAssignment.objects.filter(
+            member=member, status__in=["in_progress", "assigned", "paused"]
+        )
+        .order_by(
+            models.Case(
+                models.When(status="in_progress", then=1),
+                models.When(status="assigned", then=2),
+                models.When(status="paused", then=3),
+                default=99,
+            )
+        )
+        .first()
+    )
+
+    if active_assignment:
+        member.program_name = active_assignment.program.title
+    else:
+        member.program_name = None
+    member.save(update_fields=["program_name"])
+
+
 @api_view(["GET", "PATCH", "DELETE"])
 @permission_classes([IsAuthenticated])
 def manage_member_request(request):
@@ -329,6 +356,7 @@ def manage_member_request(request):
         )
 
     if request.method == "GET":
+        _update_member_program_name(member)
         serializer = CoachMemberRelationshipSerializer(relationship)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

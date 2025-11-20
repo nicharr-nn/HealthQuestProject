@@ -236,14 +236,12 @@ async function loadMemberData() {
     }
 
     // Load coach relationship
-    const relationshipResponse = await fetch(`${API_BASE}member-request/manage/`, {
+    const relationshipResponse = await fetch(`${API_BASE}member-request/`, {
       credentials: 'include',
     })
 
     if (relationshipResponse.ok) {
-      const relationshipData = await relationshipResponse.json()
-      console.log('Coach Relationship Data:', relationshipData)
-      
+      const relationshipData = await relationshipResponse.json()      
       if (relationshipData.message === 'No coach request found.') {
         coachStatus.value = ''
       } else {
@@ -382,7 +380,7 @@ async function cancelCoachRequest() {
   requestLoading.value = true
 
   try {
-    const response = await fetch(`${API_BASE}member-request/manage/`, {
+    const response = await fetch(`${API_BASE}member-request/`, {
       method: 'DELETE',
       credentials: 'include',
     })

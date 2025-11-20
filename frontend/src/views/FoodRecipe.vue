@@ -309,9 +309,7 @@ const removeRatingFromModal = async () => {
     return
   }
 
-  if (!confirm('Are you sure you want to remove your rating?')) {
-    return
-  }
+  
 
   try {
     const response = await fetch(

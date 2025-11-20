@@ -121,8 +121,8 @@ class WorkoutAssignment(models.Model):
         Member,
         on_delete=models.CASCADE,
         related_name="assignments",
-        null=True,  # removed after testing
-        blank=True,  # removed after testing
+        null=True,
+        blank=True,
     )
 
     program = models.ForeignKey(
@@ -170,7 +170,7 @@ class WorkoutAssignment(models.Model):
         """
         today = timezone.now().date()
 
-        # Completed check (uses your existing logic)
+        # Completed check
         total_days = self.program.days.values("day_number").distinct().count()
         completed_days = (
             WorkoutDayCompletion.objects.filter(

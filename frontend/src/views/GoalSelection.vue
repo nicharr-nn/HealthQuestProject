@@ -96,11 +96,13 @@ import GoalCard from '../components/GoalCard.vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { ref } from 'vue'
+import { useToastStore } from '@/stores/toast'
 
 const userStore = useUserStore()
 const router = useRouter()
 const selectedGoal = ref(null)
 const isLoading = ref(false)
+const toast = useToastStore()
 
 function getCsrfToken() {
   const value = `; ${document.cookie}`;
@@ -111,7 +113,7 @@ function getCsrfToken() {
 function selectGoal(goal) {
   selectedGoal.value = goal;
   userStore.setGoal(goal);
-  console.log("Selected goal:", goal);
+
 }
 
 function formatGoalName(goalType) {
@@ -126,7 +128,7 @@ function formatGoalName(goalType) {
 
 async function saveGoal() {
   if (!selectedGoal.value) {
-    alert("Please select a goal first");
+    toast.error("Please select a goal first");
     return;
   }
 
@@ -148,8 +150,7 @@ async function saveGoal() {
     });
 
     if (response.ok) {
-      const goalData = await response.json();
-      console.log("Goal set successfully:", goalData);
+      await response.json();
       router.push("/about-you");
     } else if (response.status === 400) {
       const error = await response.json();
@@ -157,19 +158,19 @@ async function saveGoal() {
       
       // Handle specific error for non-normal users
       if (error.user_profile && error.user_profile.role !== 'normal' && error.user_profile.role !== 'member') {
-        alert("Only normal and member users can set fitness goals. Please contact support if you believe this is an error.");
+        
         router.push("/about-you");
       } else {
-        alert("Failed to set goal: " + (error.detail || JSON.stringify(error)));
+        toast.error("Failed to set goal: " + (error.detail || JSON.stringify(error)));
       }
     } else {
       const error = await response.text();
       console.error("Error setting goal:", error);
-      alert("Failed to set goal. Please try again.");
+      toast.error("Failed to set goal. Please try again.");
     }
   } catch (error) {
     console.error("Network error:", error);
-    alert("Network error. Please check your connection and try again.");
+    toast.error("Network error. Please check your connection and try again.");
   } finally {
     isLoading.value = false;
   }

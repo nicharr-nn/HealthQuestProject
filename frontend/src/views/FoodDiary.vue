@@ -160,6 +160,9 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useToastStore } from '@/stores/toast'
+
+const toast = useToastStore()
 
 // Props
 const props = defineProps({
@@ -339,10 +342,10 @@ const addComment = async (postId) => {
     // Clear input
     commentTexts.value[postId] = ''
 
-    alert('Comment posted successfully!')
+    toast.success('Comment posted successfully!')
   } catch (error) {
     console.error('Error adding comment:', error)
-    alert('Failed to post comment: ' + error.message)
+
   } finally {
     submittingComment.value[postId] = false
   }
@@ -378,10 +381,10 @@ const updateComment = async () => {
     }
 
     closeEditModal()
-    alert('Comment updated successfully!')
+    toast.success('Comment updated successfully!')
   } catch (error) {
     console.error('Error updating comment:', error)
-    alert('Failed to update comment: ' + error.message)
+
   }
 }
 

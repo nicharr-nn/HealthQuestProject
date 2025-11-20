@@ -94,7 +94,7 @@ async function fetchWorkoutAssignments() {
     })
     if (!response.ok) throw new Error(`Failed to fetch assignments: ${response.status}`)
     assignments.value = await response.json()
-    console.log('Assignments loaded:', assignments.value)
+
   } catch (err) {
     console.error('Error fetching assignments:', err)
     error.value = 'Could not load your assignments.'
@@ -102,7 +102,7 @@ async function fetchWorkoutAssignments() {
 }
 
 function selectProgram(programId) {
-  console.log('Navigating to program:', programId)
+
   router.push(`/workout/${programId}`)
 }
 
@@ -110,8 +110,8 @@ onMounted(async () => {
   loading.value = true
   try {
     userRole.value = userStore.role || userStore.profile?.role || null
-    console.log('User role resolved:', userRole.value)
 
+    
     if (userRole.value === 'member') {
       await fetchWorkoutAssignments()
       await fetchPrograms()
