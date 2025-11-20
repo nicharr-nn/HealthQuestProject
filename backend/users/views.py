@@ -5,6 +5,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from django.apps import apps
+from rest_framework import status
 
 from .serializers import UserProfileSerializer, UserSerializer
 
@@ -27,31 +28,26 @@ def user_info(request):
             return Response({"isAuthenticated": False, "user": None})
 
 
-@api_view(["DELETE"])
+@api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_account(request):
-    """Delete user account"""
-    user = request.user
-
-    if request.method == "DELETE":
-        # require user_id for security
-        user_id = request.data.get("user_id")
-
-        if user_id is None:
-            return Response(
-                {"detail": "User ID is required for account deletion."}, status=400
-            )
-
-        # Verify it matches authenticated user
-        if str(user.id) != str(user_id):
-            return Response(
-                {"detail": "You can only delete your own account."}, status=403
-            )
-
-        # User is authenticated and owns the account
+    """Delete/deactivate current user's account"""
+    try:
+        user = request.user
+        
         user.delete()
-        return Response({"message": "Account deleted permanently"})
-
+        user.save()
+        
+        return Response(
+            {'message': 'Account deleted successfully'},
+            status=status.HTTP_200_OK
+        )
+        
+    except Exception as e:
+        return Response(
+            {'error': str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
