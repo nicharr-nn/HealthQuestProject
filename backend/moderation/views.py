@@ -1,6 +1,5 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework import status
 from django.utils import timezone
@@ -18,28 +17,16 @@ User = get_user_model()
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def approve_coach(request, coach_id):
+    # Check admin
     try:
-        coach = Coach.objects.get(coach_id=coach_id)
-    except Coach.DoesNotExist:
+        admin = Admin.objects.get(user=request.user)
+    except Admin.DoesNotExist:
         return Response(
-            {"error": "Coach not found"},
-            status=status.HTTP_404_NOT_FOUND
+            {"error": "You do not have permission to approve coaches."},
+            status=status.HTTP_403_FORBIDDEN
         )
 
-    admin = Admin.objects.get(user=request.user)
-
-    coach.status_approval = "approved"
-    coach.approved_date = timezone.now()
-    coach.save()
-
-    return Response(
-        {"message": f"Coach {coach.user.user.username} approved."}
-    )
-
-
-@api_view(["POST"])
-@permission_classes([IsAuthenticated])
-def reject_coach(request, coach_id):
+    # Find the coach
     try:
         coach = Coach.objects.get(pk=coach_id)
     except Coach.DoesNotExist:
@@ -48,11 +35,45 @@ def reject_coach(request, coach_id):
             status=status.HTTP_404_NOT_FOUND
         )
 
+    # Approve the coach
+    coach.status_approval = "approved"
+    coach.approved_date = timezone.now()
+    coach.save()
+
+    return Response(
+        {"message": f"Coach {coach.user.user.username} approved."},
+        status=status.HTTP_200_OK
+    )
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def reject_coach(request, coach_id):
+    # Check admin
+    try:
+        admin = Admin.objects.get(user=request.user)
+    except Admin.DoesNotExist:
+        return Response(
+            {"error": "You do not have permission to reject coaches."},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    # Find coach
+    try:
+        coach = Coach.objects.get(pk=coach_id)
+    except Coach.DoesNotExist:
+        return Response(
+            {"error": "Coach not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    # Reject coach
     coach.status_approval = "rejected"
     coach.save()
 
     return Response(
-        {"message": f"Coach {coach.user.user.username} rejected."}
+        {"message": f"Coach {coach.user.user.username} rejected."},
+        status=status.HTTP_200_OK
     )
 
 
@@ -91,8 +112,8 @@ def list_coaches_for_admin(request):
 
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
-def delete_recipe(request, id):
-    recipe = get_object_or_404(Recipe, pk=id)
+def delete_recipe(request, recipe_id):
+    recipe = get_object_or_404(Recipe, pk=recipe_id)
     user_profile = request.user.userprofile
     is_admin = hasattr(request.user, "admin_profile")
 
@@ -115,7 +136,7 @@ def delete_workout(request, id):
     user_profile = request.user.userprofile
     is_admin = hasattr(request.user, "admin_profile")
 
-    if workout.coach.user != user_profile and not is_admin:
+    if workout.coach != user_profile and not is_admin:
         return Response(
             {"detail": "Permission denied. You can only delete your own workouts."},
             status=status.HTTP_403_FORBIDDEN,
