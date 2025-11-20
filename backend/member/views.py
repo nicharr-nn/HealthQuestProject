@@ -3,7 +3,6 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from datetime import datetime
 from .models import Member, CoachMemberRelationship, FoodPost, FoodPostComment
 from django.shortcuts import get_object_or_404
 from .serializers import (
@@ -476,7 +475,7 @@ def food_posts(request):
             date_str = request.query_params.get("date")
 
             posts = FoodPost.objects.filter(coach=profile)
-            
+
             if member_id:
                 posts = posts.filter(
                     user_profile__member_profile__member_id=member_id

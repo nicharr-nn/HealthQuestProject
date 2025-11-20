@@ -47,10 +47,6 @@ class RecipeSerializer(serializers.ModelSerializer):
         validated_data["user_profile"] = user_profile
         return super().create(validated_data)
 
-    def get_user_profile(self, obj):
-        # Keep returning the username for backward compatibility
-        return f"{obj.user_profile.first_name}- {obj.user_profile.role}"
-
 
 class RecipeRatingSerializer(serializers.ModelSerializer):
     user = serializers.CharField(source="user_profile.user.username", read_only=True)

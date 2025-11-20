@@ -18,9 +18,7 @@ User = get_user_model()
 @permission_classes([IsAuthenticated])
 def approve_coach(request, coach_id):
     # Check admin
-    try:
-        admin = Admin.objects.get(user=request.user)
-    except Admin.DoesNotExist:
+    if not Admin.objects.filter(user=request.user).exists():
         return Response(
             {"error": "You do not have permission to approve coaches."},
             status=status.HTTP_403_FORBIDDEN
@@ -47,13 +45,12 @@ def approve_coach(request, coach_id):
 @permission_classes([IsAuthenticated])
 def reject_coach(request, coach_id):
     # Check admin
-    try:
-        admin = Admin.objects.get(user=request.user)
-    except Admin.DoesNotExist:
+    if not Admin.objects.filter(user=request.user).exists():
         return Response(
             {"error": "You do not have permission to reject coaches."},
             status=status.HTTP_403_FORBIDDEN
         )
+
 
     # Find coach
     try:
@@ -169,9 +166,7 @@ def list_all_users(request):
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def delete_user(request, user_id):
-    try:
-        admin = Admin.objects.get(user=request.user)
-    except Admin.DoesNotExist:
+    if not Admin.objects.filter(user=request.user).exists():
         return Response(
             {"error": "You are not an admin"}, status=status.HTTP_403_FORBIDDEN
         )
