@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.utils import timezone
 from coach.models import Coach
-from .models import Admin
+from .models import Admin, AdminModeration
 from recipe.models import Recipe
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
@@ -30,10 +30,19 @@ def approve_coach(request, coach_id):
     except Coach.DoesNotExist:
         return Response({"error": "Coach not found"}, status=status.HTTP_404_NOT_FOUND)
 
+    admin = Admin.objects.get(user=request.user)
+
     # Approve the coach
     coach.status_approval = "approved"
     coach.approved_date = timezone.now()
     coach.save()
+
+    AdminModeration.objects.create(
+        admin=admin,
+        coach=coach,
+        action="approve_certification",
+        reason=request.data.get("reason", "Certification approved"),
+    )
 
     return Response(
         {"message": f"Coach {coach.user.user.username} approved."},
@@ -56,10 +65,20 @@ def reject_coach(request, coach_id):
         coach = Coach.objects.get(pk=coach_id)
     except Coach.DoesNotExist:
         return Response({"error": "Coach not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+    admin = Admin.objects.get(user=request.user)
+    reason = request.data.get("reason", "")
 
     # Reject coach
     coach.status_approval = "rejected"
     coach.save()
+
+    AdminModeration.objects.create(
+        admin=admin,
+        coach=coach,
+        action="reject_certification",
+        reason=reason or "Certification rejected",
+    )
 
     return Response(
         {"message": f"Coach {coach.user.user.username} rejected."},
@@ -107,8 +126,17 @@ def delete_recipe(request, recipe_id):
             {"detail": "Permission denied. You can only delete your own recipes."},
             status=status.HTTP_403_FORBIDDEN,
         )
-
+    
     recipe.delete()
+
+    admin = Admin.objects.get(user=request.user)
+    AdminModeration.objects.create(
+        admin=admin,
+        content_type="post",
+        content_id=recipe.id,
+        action="delete_post",
+        reason="Recipe deleted by admin" if is_admin else "Recipe deleted by owner",
+    )
     return Response({"detail": "Recipe deleted successfully."}, status=200)
 
 
@@ -128,6 +156,15 @@ def delete_workout(request, id):
         )
 
     workout.delete()
+
+    admin = Admin.objects.get(user=request.user)
+    AdminModeration.objects.create(
+        admin=admin,
+        content_type="post",
+        content_id=workout.id,
+        action="delete_post",
+        reason="Workout deleted by admin" if is_admin else "Workout deleted by owner",
+    )
     return Response({"detail": "Workout deleted successfully."}, status=200)
 
 
@@ -165,7 +202,9 @@ def list_all_users(request):
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def delete_user(request, user_id):
-    if not Admin.objects.filter(user=request.user).exists():
+    try:
+        admin = Admin.objects.get(user=request.user)
+    except Admin.DoesNotExist:
         return Response(
             {"error": "You are not an admin"}, status=status.HTTP_403_FORBIDDEN
         )
@@ -190,6 +229,13 @@ def delete_user(request, user_id):
         settings.DEFAULT_FROM_EMAIL,
         [user.email],
         fail_silently=False,
+    )
+
+    AdminModeration.objects.create(
+        admin=admin,
+        content_type="user",
+        content_id=user.id,
+        action="delete_user",
     )
 
     username = user.username
