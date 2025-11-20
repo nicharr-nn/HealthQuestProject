@@ -51,7 +51,7 @@
           <div class="bg-[#FAF4E6] rounded-lg p-6 md:basis-1/2">
             <h3 class="text-[#846757] font-bold text-2xl mb-4 border-b-2 border-[#846757]">Gamified Experience</h3>
             <ul class="list-disc list-inside text-[#846757] text-lg space-y-2">
-              <li>Level up your character</li>
+              <li>Encourage healthy habits via level tracking</li>
               <li>Complete epic quests</li>
               <li>Earn achievements for every healthy choice you make</li>
               <li>Unlock new features as you progress</li>
@@ -62,7 +62,7 @@
     </section>
 
     <!-- Contact Section -->
-    <section id="contract" class="bg-[#FAF4E6] text-[#846757] py-16 px-4 font-body">
+    <section id="contact" class="bg-[#FAF4E6] text-[#846757] py-16 px-4 font-body">
       <div class="max-w-7xl mx-auto text-center">
         <h2 class="text-3xl md:text-4xl font-subtitle  mb-4">Contact Us</h2>
         <p class="text-lg md:text-xl mb-8">
