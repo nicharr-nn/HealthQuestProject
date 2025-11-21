@@ -40,6 +40,28 @@ def coach_member_profile(request, member_id):
     profile = member.user
     user = profile.user
 
+    # Calculate progress if member has assignments
+    total_days = 0
+    completed_days = 0
+    progress = 0
+    assignments = WorkoutAssignment.objects.filter(member=member).select_related("program")
+    if assignments.exists():
+        for assignment in assignments:
+            program_days = assignment.program.days.values("day_number").distinct().count()
+            total_days += program_days
+            program_completed = (
+                WorkoutDayCompletion.objects.filter(
+                    user_profile=profile,
+                    workout_day__program=assignment.program
+                )
+                .values("workout_day__day_number")
+                .distinct()
+                .count()
+            )
+            completed_days += program_completed
+        if total_days > 0:
+            progress = round((completed_days / total_days) * 100, 1)
+
     data = {
         "user": {
             "id": user.id,
@@ -54,6 +76,11 @@ def coach_member_profile(request, member_id):
         "weight": profile.weight,
         "location": profile.location,
         "photo": profile.photo.url if profile.photo else None,
+        "experienceLevel": member.experience_level,
+        "programName": member.program_name,
+        "joinedAt": member.submitted_at,
+        "message": member.message,
+        "progress": progress,
     }
 
     return Response(data, status=status.HTTP_200_OK)

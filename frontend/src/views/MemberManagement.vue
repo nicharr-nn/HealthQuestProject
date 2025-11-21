@@ -69,12 +69,20 @@
           </div>
 
           <div class="flex gap-2 flex-wrap pt-4 border-t border-gray-200">
+            <button class="border border-gray-300 rounded-lg px-3 py-1.5 text-xs font-semibold hover:bg-gray-50 transition-all" @click="viewDetails(member)">View Details</button>
             <button class="border border-gray-300 rounded-lg px-3 py-1.5 text-xs font-semibold hover:bg-gray-50 transition-all" @click="viewFoodDiary(member)">View Food Diary</button>
             <button class="bg-red-500 text-white border-red-500 rounded-lg px-3 py-1.5 text-xs font-semibold hover:bg-red-600 transition-all" @click="removeMember(member)">Remove</button>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Member Detail Modal -->
+    <MemberDetailModal
+      :show="showDetailModal"
+      :member-id="selectedMemberId"
+      @close="closeDetailModal"
+    />
   </div>
 </template>
 
@@ -82,13 +90,26 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowLeft, FileUser } from 'lucide-vue-next'
+import MemberDetailModal from '@/components/MemberDetailModal.vue'
 
 const router = useRouter()
 const members = ref([])
 const loading = ref(true)
+const showDetailModal = ref(false)
+const selectedMemberId = ref(null)
 
 function goBackToDashboard() {
   router.push('/coach-dashboard')
+}
+
+function viewDetails(member) {
+  selectedMemberId.value = member.memberId
+  showDetailModal.value = true
+}
+
+function closeDetailModal() {
+  showDetailModal.value = false
+  selectedMemberId.value = null
 }
 
 function formatDate(dateStr) {
