@@ -14,7 +14,6 @@ from .views import (
     food_post_comments,
     food_post_comment_detail,
     uncommented_food_posts,
-    assign_program_to_member,
     member_progress_overview,
 )
 

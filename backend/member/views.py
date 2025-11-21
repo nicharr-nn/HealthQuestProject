@@ -47,10 +47,14 @@ def coach_member_profile(request, member_id):
     total_days = 0
     completed_days = 0
     progress = 0
-    assignments = WorkoutAssignment.objects.filter(member=member).select_related("program")
+    assignments = WorkoutAssignment.objects.filter(
+        member=member
+        ).select_related("program")
     if assignments.exists():
         for assignment in assignments:
-            program_days = assignment.program.days.values("day_number").distinct().count()
+            program_days = assignment.program.days.values(
+                "day_number"
+                ).distinct().count()
             total_days += program_days
             program_completed = (
                 WorkoutDayCompletion.objects.filter(
@@ -752,7 +756,9 @@ def member_progress_overview(request):
 
             # Calculate total days in all assigned programs
             for assignment in assignments:
-                program_days = assignment.program.days.values("day_number").distinct().count()
+                program_days = assignment.program.days.values(
+                    "day_number"
+                    ).distinct().count()
                 total_days += program_days
 
                 # Count completed days for this program
