@@ -1,21 +1,44 @@
 <template>
   <div class="max-w-[1200px] mx-auto p-6">
     <div class="flex justify-between items-start mb-8 gap-5">
+      <!-- Header content -->
       <div>
-        <h1 class="text-3xl font-bold text-gray-900 mb-2 font-subtitle">Coach Dashboard</h1>
-        <p class="text-gray-600 text-base mb-3 font-body">Manage your workout programs and track your coaching progress</p>
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Coach Dashboard</h1>
+        <p class="text-gray-500 text-base mb-3">
+          Manage your workout programs and track your coaching progress
+        </p>
 
-        <div class="flex items-center gap-2 py-2 px-3 bg-blue-50 border border-blue-500 rounded-lg w-fit">
-          <span class="text-xs text-gray-600 font-medium">Your Coach ID:</span>
-          <span class="text-sm text-blue-800 font-bold font-mono tracking-wide">{{ coachID }}</span>
-          <button class="bg-blue-500 text-white px-2 py-1 rounded-md text-xs font-semibold hover:bg-blue-600 hover:scale-105 transition-all" @click="copyCoachID" title="Copy Coach ID">📋 Copy</button>
+        <div class="flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-500 rounded-lg w-fit">
+          <span class="text-xs text-gray-500 font-medium">Your Coach ID:</span>
+          <span class="text-sm text-blue-900 font-bold font-mono tracking-wide">{{ coachID }}</span>
+
+          <div class="relative">
+            <!-- Popup -->
+            <transition name="fade">
+              <div
+                v-if="copied"
+                class="absolute -top-9 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs px-2 py-1 rounded-md shadow-md"
+              >
+                Copied!
+              </div>
+            </transition>
+
+            <!-- Clipboard Icon -->
+            <Clipboard
+              size="20"
+              class="text-blue-600 hover:text-blue-700 cursor-pointer transition"
+              @click="copyCoachID"
+              title="Copy"
+            />
+          </div>
         </div>
       </div>
 
-      <div class="flex-shrink-0 flex items-center gap-4">
+      <!-- Header actions -->
+      <div class="flex items-center gap-4 shrink-0">
         <NotificationBell v-if="isApproved" />
         <button
-          class="border border-gray-300 rounded-lg px-4 py-2 font-semibold bg-gray-900 text-white hover:brightness-105 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          class="px-4 py-2 rounded-lg text-white bg-blue-600 font-semibold hover:bg-blue-700 transition disabled:opacity-50"
           @click="router.push('/create-workout-program')"
           :disabled="!isApproved"
         >
@@ -25,22 +48,27 @@
     </div>
 
     <!-- Loading -->
-    <div v-if="loading" class="text-gray-500 text-center py-8">
-      Loading dashboard...
-    </div>
+    <div v-if="loading" class="text-center text-gray-600">Loading dashboard...</div>
 
-    <!-- Approval Status (only if not approved) -->
-    <div v-if="!isApproved" class="bg-white border border-gray-200 rounded-2xl p-6 mb-8 shadow-sm">
-      <div class="flex items-center gap-4 p-5 rounded-xl mb-5" :class="approvalStatus === 'pending' ? 'bg-yellow-50 border border-yellow-400' : 'bg-red-50 border border-red-500'">
+    <!-- Approval Status -->
+    <div v-if="!isApproved" class="bg-white border border-gray-200 rounded-2xl p-6 mb-8 shadow">
+      <div
+        class="flex items-center gap-4 p-5 rounded-xl mb-5"
+        :class="{
+          'bg-yellow-100 border border-yellow-500': approvalStatus === 'pending',
+          'bg-red-100 border border-red-500': approvalStatus === 'rejected'
+        }"
+      >
         <div class="text-2xl">
-          <span v-if="approvalStatus === 'pending'">⏳</span>
-          <span v-else-if="approvalStatus === 'rejected'">❌</span>
+          <icon.Loader class="animate-spin" v-if="approvalStatus === 'pending'" />
+          <icon.XCircle v-else-if="approvalStatus === 'rejected'" />
         </div>
+
         <div class="flex-1">
-          <div class="font-semibold text-base text-gray-700 mb-1">
+          <div class="font-semibold text-gray-700 text-base mb-1">
             {{ approvalStatus === 'pending' ? 'Application Under Review' : 'Application Rejected' }}
           </div>
-          <div class="text-gray-600 leading-relaxed">
+          <div class="text-gray-500 leading-relaxed">
             {{ approvalStatus === 'pending'
               ? "Your application is being reviewed. You can create programs once approved."
               : "Please contact support or resubmit your application." }}
@@ -51,91 +79,127 @@
 
     <!-- Dashboard Content -->
     <div v-else>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 mb-8">
-        <div class="bg-white border border-gray-200 rounded-xl p-6 text-center shadow-sm transition-all">
-          <div class="text-3xl font-bold text-blue-500 mb-2">{{ programs.length }}</div>
-          <div class="text-gray-600 font-medium">Total Programs</div>
-        </div>
-        <div class="bg-white border border-gray-200 rounded-xl p-6 text-center shadow-sm transition-all">
-          <div class="text-3xl font-bold text-blue-500 mb-2">{{ totalSessions }}</div>
-          <div class="text-gray-600 font-medium">Total Sessions</div>
-        </div>
-        <div class="bg-white border border-gray-200 rounded-xl p-6 text-center shadow-sm transition-all">
-          <div class="text-3xl font-bold text-blue-500 mb-2">{{ programsWithVideos }}</div>
-          <div class="text-gray-600 font-medium">Programs with Videos</div>
+      <!-- Stats Grid -->
+      <div class="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-5 mb-8">
+        <div class="bg-white border border-gray-200 rounded-xl p-6 text-center shadow transition">
+          <div class="text-3xl font-bold text-blue-600 mb-2">{{ programs.length }}</div>
+          <div class="text-gray-500 font-medium">Total Programs</div>
         </div>
 
-        <div class="bg-white border border-gray-200 rounded-xl p-6 text-center shadow-sm cursor-pointer hover:-translate-y-0.5 hover:shadow-lg hover:border-blue-500 transition-all" @click="router.push('/view-member')">
-          <div class="text-3xl font-bold text-blue-500 mb-2">{{ memberCount }}</div>
-          <div class="text-gray-600 font-medium">My Members</div>
-          <div class="mt-2 text-xs text-blue-500 font-semibold">View All →</div>
+        <div class="bg-white border border-gray-200 rounded-xl p-6 text-center shadow transition">
+          <div class="text-3xl font-bold text-blue-600 mb-2">{{ totalSessions }}</div>
+          <div class="text-gray-500 font-medium">Total Sessions</div>
         </div>
 
-        <div class="bg-white border border-gray-200 rounded-xl p-6 text-center shadow-sm cursor-pointer hover:-translate-y-0.5 hover:shadow-lg hover:border-blue-500 transition-all" @click="router.push('/view-request')">
-          <div class="text-3xl font-bold text-blue-500 mb-2">{{ pendingRequestCount }}</div>
-          <div class="text-gray-600 font-medium">Pending Requests</div>
-          <div class="mt-2 text-xs text-blue-500 font-semibold">View All →</div>
+        <div class="bg-white border border-gray-200 rounded-xl p-6 text-center shadow transition">
+          <div class="text-3xl font-bold text-blue-600 mb-2">{{ programsWithVideos }}</div>
+          <div class="text-gray-500 font-medium">Programs with Videos</div>
+        </div>
+
+        <div
+          class="bg-white border border-gray-200 rounded-xl p-6 text-center shadow cursor-pointer hover:-translate-y-1 hover:shadow-xl hover:border-blue-600 transition"
+          @click="router.push('/view-member')"
+        >
+          <div class="text-3xl font-bold text-blue-600 mb-2">{{ memberCount }}</div>
+          <div class="text-gray-500 font-medium">My Members</div>
+          <div class="mt-2 text-blue-600 text-xs font-semibold">View All →</div>
+        </div>
+
+        <div
+          class="bg-white border border-gray-200 rounded-xl p-6 text-center shadow cursor-pointer hover:-translate-y-1 hover:shadow-xl hover:border-blue-600 transition"
+          @click="router.push('/view-request')"
+        >
+          <div class="text-3xl font-bold text-blue-600 mb-2">{{ pendingRequestCount }}</div>
+          <div class="text-gray-500 font-medium">Pending Requests</div>
+          <div class="mt-2 text-blue-600 text-xs font-semibold">View All →</div>
         </div>
       </div>
 
-      <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+      <!-- Member Progress Overview Section -->
+      <MemberProgressOverview class="mb-8" />
+
+      <!-- Programs Section -->
+      <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow">
         <div class="flex justify-between items-center mb-6">
           <h2 class="text-xl font-semibold text-gray-900">Your Workout Programs</h2>
         </div>
 
-        <!-- Empty state -->
+        <!-- Empty -->
         <div v-if="filteredPrograms.length === 0" class="text-center py-12 px-6">
           <div class="text-6xl mb-4">🏋️‍♂️</div>
           <div class="text-xl font-semibold text-gray-700 mb-3">No programs yet</div>
-          <div class="text-gray-600 mb-6 leading-relaxed max-w-md mx-auto">
+          <div class="text-gray-500 leading-relaxed max-w-md mx-auto mb-6">
             Start creating your first workout program to help your clients achieve their goals!
           </div>
-          <button class="border border-gray-300 rounded-lg px-4 py-2 font-semibold bg-gray-900 text-white hover:brightness-105 transition-all" @click="router.push('/create-workout-program')">
+          <button
+            class="px-4 py-2 rounded-lg text-white bg-blue-600 font-semibold hover:bg-blue-700 transition"
+            @click="router.push('/create-workout-program')"
+          >
             Create Your First Program
           </button>
         </div>
 
-        <!-- Programs grid -->
-        <div v-else class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
-          <div v-for="program in filteredPrograms" :key="program.id" class="border border-gray-200 rounded-xl p-5 bg-gray-50 hover:border-blue-500 hover:shadow-lg transition-all">
-            <div class="flex justify-between items-start mb-3">
-              <div class="text-lg font-semibold text-gray-900 flex-1">{{ program.title }}</div>
-              <div class="px-2 py-1 rounded-md text-xs font-medium uppercase" :class="{
-                'bg-green-100 text-green-800': program.difficulty_level === 'beginner',
-                'bg-yellow-100 text-yellow-900': program.difficulty_level === 'intermediate',
-                'bg-red-100 text-red-900': program.difficulty_level === 'advanced'
-              }">
+        <!-- Programs Grid -->
+        <div
+          v-else
+          class="grid grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-5"
+        >
+          <div
+            v-for="program in filteredPrograms"
+            :key="program.id"
+            class="border border-gray-200 rounded-xl p-5 bg-gray-50 hover:border-blue-600 hover:shadow-xl transition"
+          >
+            <!-- Header -->
+            <div class="flex justify-between mb-3">
+              <div class="text-lg font-semibold text-gray-900">
+                {{ program.title }}
+              </div>
+
+              <div
+                class="px-2 py-1 rounded-md text-xs font-medium uppercase"
+                :class="{
+                  'bg-green-100 text-green-700': program.difficulty_level === 'beginner',
+                  'bg-yellow-100 text-yellow-700': program.difficulty_level === 'intermediate',
+                  'bg-red-100 text-red-700': program.difficulty_level === 'advanced'
+                }"
+              >
                 {{ program.difficulty_level }}
               </div>
             </div>
 
-            <div class="text-gray-600 mb-4 leading-relaxed text-sm">
+            <!-- Description -->
+            <div class="text-gray-500 mb-4 text-sm leading-relaxed">
               {{ truncate(program.description, 120) || 'No description provided' }}
             </div>
 
-            <!-- Program metadata -->
-            <div class="grid gap-2 mb-4">
-              <div class="flex justify-between text-xs">
-                <span class="text-gray-600">Duration:</span>
-                <span class="text-gray-700 font-medium">{{ program.duration }} day{{ program.duration === 1 ? '' : 's' }}</span>
+            <!-- Metadata -->
+            <div class="grid gap-2 mb-4 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-500">Duration:</span>
+                <span class="text-gray-700 font-medium">
+                  {{ program.duration }} day{{ program.duration === 1 ? '' : 's' }}
+                </span>
               </div>
-              <div class="flex justify-between text-xs">
-                <span class="text-gray-600">Category:</span>
-                <span class="text-gray-700 font-medium">{{ program.category || 'Not specified' }}</span>
+
+              <div class="flex justify-between">
+                <span class="text-gray-500">Category:</span>
+                <span class="text-gray-700 font-medium">
+                  {{ program.category || 'Not specified' }}
+                </span>
               </div>
             </div>
 
-            <!-- Actions for each program -->
+            <!-- Actions -->
             <div class="flex gap-2 flex-wrap">
               <button
-                class="border border-gray-300 rounded-lg px-3 py-1.5 text-xs font-semibold bg-blue-500 text-white hover:bg-blue-600 transition-all"
+                class="px-3 py-2 text-xs rounded-md bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
                 @click="editProgram(program.id)"
               >
                 Edit
               </button>
 
               <button
-                class="border border-red-500 rounded-lg px-3 py-1.5 text-xs font-semibold bg-red-500 text-white hover:bg-red-600 transition-all"
+                class="px-3 py-2 text-xs rounded-md bg-red-500 text-white font-semibold hover:bg-red-600 transition"
                 @click="deleteProgram(program.id)"
               >
                 Delete
@@ -152,6 +216,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import NotificationBell from '@/components/NotificationBell.vue'
+import MemberProgressOverview from '@/components/MemberProgressOverview.vue'
+import * as icons from 'lucide-vue-next'
 
 const router = useRouter()
 
@@ -163,6 +229,9 @@ const coachID = ref('')
 const memberCount = ref(0)
 const editingProgram = ref(null)
 const pendingRequestCount = ref(0)
+const copied = ref(false)
+
+const { Clipboard } = icons
 
 const isApproved = computed(() => approvalStatus.value === 'approved')
 const totalSessions = computed(() =>
@@ -176,10 +245,13 @@ const filteredPrograms = computed(() => programs.value)
 function copyCoachID() {
   if (coachID.value) {
     navigator.clipboard.writeText(coachID.value)
-    alert('Coach ID copied to clipboard!')
+    copied.value = true
+
+    setTimeout(() => {
+      copied.value = false
+    }, 1500)
   }
 }
-
 
 async function loadCoachStatus() {
   try {
@@ -195,7 +267,6 @@ async function loadCoachStatus() {
     const data = await res.json()
     const status = data?.coach?.status_approval ?? data?.status_approval ?? null
     approvalStatus.value = status === 'approved' ? 'approved' : status === 'rejected' ? 'rejected' : 'pending'
-
     coachID.value = data?.coach?.public_id ?? ''
   } catch (err) {
     console.error('Error loading coach status', err)
@@ -203,6 +274,7 @@ async function loadCoachStatus() {
     coachID.value = ''
   }
 }
+
 const API_BASE = 'http://127.0.0.1:8000/api/workout/programs/'
 
 async function loadPrograms() {
@@ -214,12 +286,10 @@ async function loadPrograms() {
     } else if (data.results && Array.isArray(data.results)) {
       programs.value = data.results
     } else if (data.id) {
-      // API returned a single program (not an array)
       programs.value = [data]
     } else {
       programs.value = []
     }
-
   } catch {
     programs.value = []
   }
@@ -230,8 +300,7 @@ async function loadMemberCount() {
     const res = await fetch('http://127.0.0.1:8000/api/member/coach-requests/', { credentials: 'include' })
     if (!res.ok) throw new Error('Failed to fetch requests')
     const data = await res.json()
-
-    memberCount.value = data.filter((r) => r.status === 'accepted').length
+    memberCount.value = data.filter(r => r.status === 'accepted').length
   } catch (err) {
     console.error('Failed to load member count', err)
     memberCount.value = 0
@@ -243,8 +312,8 @@ async function loadPendingRequestCount() {
     const res = await fetch('http://127.0.0.1:8000/api/member/coach-requests/', { credentials: 'include' })
     if (!res.ok) throw new Error('Failed to fetch requests')
     const data = await res.json()
-    pendingRequestCount.value = data.filter((r) => r.status === 'pending').length
-    memberCount.value = data.filter((r) => r.status === 'accepted').length
+    pendingRequestCount.value = data.filter(r => r.status === 'pending').length
+    memberCount.value = data.filter(r => r.status === 'accepted').length
   } catch (err) {
     console.error('Failed to load pending requests', err)
     pendingRequestCount.value = 0
@@ -253,7 +322,6 @@ async function loadPendingRequestCount() {
 }
 
 async function editProgram(programId) {
-  // Navigate to create-workout-program with the program ID
   router.push({
     path: '/create-workout-program',
     query: { edit: programId }
@@ -268,9 +336,7 @@ async function deleteProgram(programId) {
     })
 
     if (res.ok) {
-      // refresh list
       await loadPrograms()
-      // close modal if editing the deleted program
       if (editingProgram.value && editingProgram.value.id === programId) {
         editingProgram.value = null
         showCreateProgram.value = false
@@ -302,11 +368,9 @@ function truncate(text, max = 120) {
 
 onMounted(async () => {
   await loadCoachStatus()
-
- if (isApproved.value) {
+  if (isApproved.value) {
     await Promise.all([loadPrograms(), loadMemberCount(), loadPendingRequestCount()])
   }
-
   loading.value = false
 })
 </script>

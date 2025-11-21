@@ -1,15 +1,17 @@
 <template>
   <div class="max-w-[1200px] mx-auto p-6">
-    <button class="border border-gray-300 rounded-lg px-4 py-2 font-semibold bg-blue-500 text-white hover:bg-blue-600 mb-6 transition-all" @click="goBackToDashboard">
-      ← Back to Dashboard
+    <button
+      @click="goBackToDashboard"
+      class="inline-flex items-center justify-center p-2 border border-gray-300 bg-white rounded-lg mb-6 hover:bg-gray-100 transition"
+    >
+      <ArrowLeft class="w-5 h-5 text-gray-700 mr-2" />
+      Back to Dashboard
     </button>
 
     <div class="flex justify-between items-start mb-6">
-      <div>
-        <h1 class="text-3xl font-bold font-subtitle">Member Management</h1>
-        <p class="text-gray-600 font-body">
-          View and manage members who have been accepted
-        </p>
+      <div class="flex-1">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Member Management</h1>
+        <p class="text-gray-500 text-base">View and manage members who have been accepted</p>
       </div>
       <div class="flex gap-3">
         <div class="flex flex-col items-center py-3 px-4 rounded-xl bg-green-100 border border-green-500">
@@ -25,7 +27,7 @@
       </div>
 
       <div v-else-if="members.length === 0" class="text-center py-16 px-6">
-        <div class="text-6xl mb-4">🙌</div>
+        <FileUser class="w-12 h-12 text-gray-400 mx-auto mb-4" />
         <div class="text-xl font-semibold text-gray-700 mb-3">No active members</div>
         <div class="text-gray-600">Start approving member requests to see them here.</div>
       </div>
@@ -36,21 +38,34 @@
           :key="member.memberId"
           class="border border-gray-200 rounded-xl p-5 bg-gray-50"
         >
-          <div class="flex justify-between mb-4">
-            <div class="flex gap-3 items-center">
-              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center text-xl font-semibold">{{ member.name.charAt(0).toUpperCase() }}</div>
-              <div>
-                <div class="text-lg font-semibold">{{ member.name }}</div>
-                <div class="text-xs text-blue-500 font-mono">ID: {{ member.memberId }}</div>
+          <div class="flex flex-col md:flex-row justify-between items-center gap-3 mb-4">
+            <div class="flex items-center gap-3 flex-1 min-w-0">
+              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 text-white flex items-center justify-center font-semibold text-lg flex-shrink-0">
+                {{ member.name.charAt(0).toUpperCase() }}
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="text-lg font-semibold text-gray-900 mb-1 truncate">{{ member.name }}</div>
+                <div class="text-sm font-semibold text-blue-500 font-mono truncate">ID: {{ member.memberId }}</div>
               </div>
             </div>
             <div class="px-3 py-1.5 rounded-full bg-green-100 text-green-800 text-xs font-semibold self-start">ACTIVE</div>
           </div>
 
-          <div class="grid gap-2 mb-4 p-3 bg-white rounded-lg">
-            <div class="flex justify-between"><span class="text-gray-600">Program:</span><span class="font-semibold">{{ member.programName || 'Not specified'}}</span></div>
-            <div class="flex justify-between"><span class="text-gray-600">Level:</span><span class="font-semibold">{{ member.experienceLevel || 'Not specified' }}</span></div>
-            <div class="flex justify-between"><span class="text-gray-600">Joined:</span><span class="font-semibold">{{ formatDate(member.joinedAt) }}</span></div>
+          <div class="grid gap-2 mb-4 p-3 bg-white rounded-lg border border-gray-100 shadow-sm">
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-500 font-medium">Level:</span>
+              <span class="font-semibold text-gray-800">
+                {{ member.experienceLevel ? member.experienceLevel.charAt(0).toUpperCase()+ member.experienceLevel.slice(1) : 'Not specified' }}
+              </span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-500 font-medium">Joined:</span>
+              <span class="font-semibold text-gray-800">{{ formatDate(member.joinedAt) }}</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-500 font-medium">Assigned Program:</span>
+              <span class="font-semibold text-gray-800">{{ member.programName || 'Not specified' }}</span>
+            </div>
           </div>
 
           <div class="flex gap-2 flex-wrap pt-4 border-t border-gray-200">
@@ -66,6 +81,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { ArrowLeft, FileUser } from 'lucide-vue-next'
 
 const router = useRouter()
 const members = ref([])

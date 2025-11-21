@@ -11,8 +11,52 @@ from .serializers import (
     FoodPostCommentSerializer,
 )
 from coach.models import Coach
-from workout.models import WorkoutProgram, WorkoutAssignment
+from workout.models import WorkoutProgram, WorkoutAssignment, WorkoutDayCompletion
 from workout.serializers import WorkoutAssignmentSerializer
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def coach_member_profile(request, member_id):
+    """Allow a coach to view the profile of a member they are connected to."""
+    user_profile = getattr(request.user, "userprofile", None)
+    coach_profile = getattr(user_profile, "coach_profile", None)
+
+    if not coach_profile:
+        return Response({"error": "You are not a coach"},
+                        status=status.HTTP_403_FORBIDDEN)
+
+    member = get_object_or_404(Member, member_id=member_id)
+
+    # Ensure this coach has a relationship with the member
+    if not CoachMemberRelationship.objects.filter(
+        coach=coach_profile, member=member
+    ).exists():
+        return Response(
+            {"error": "You do not have access to this member."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    profile = member.user
+    user = profile.user
+
+    data = {
+        "user": {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+        },
+        "age": profile.age,
+        "gender": profile.gender,
+        "height": profile.height,
+        "weight": profile.weight,
+        "location": profile.location,
+        "photo": profile.photo.url if profile.photo else None,
+    }
+
+    return Response(data, status=status.HTTP_200_OK)
 
 
 @api_view(["GET", "PATCH"])
@@ -93,6 +137,33 @@ def accepted_members(request):
     ]
 
     return Response(members_data, status=status.HTTP_200_OK)
+
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def coach_remove_member(request, member_id):
+    """Allow a coach to remove an accepted member from their list."""
+    user_profile = getattr(request.user, "userprofile", None)
+    coach_profile = getattr(user_profile, "coach_profile", None)
+
+    if not coach_profile:
+        return Response(
+            {"error": "You are not a coach"}, status=status.HTTP_403_FORBIDDEN
+        )
+
+    member = get_object_or_404(Member, member_id=member_id)
+
+    try:
+        relationship = CoachMemberRelationship.objects.get(
+            coach=coach_profile, member=member
+        )
+    except CoachMemberRelationship.DoesNotExist:
+        return Response(
+            {"error": "Relationship not found"}, status=status.HTTP_404_NOT_FOUND
+        )
+
+    relationship.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(["POST", "PATCH"])
@@ -543,3 +614,81 @@ def uncommented_food_posts(request):
         )
 
     return Response({"count": len(data), "posts": data}, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def member_progress_overview(request):
+    """Get progress overview for all members assigned to this coach"""
+    user_profile = getattr(request.user, "userprofile", None)
+    coach_profile = getattr(user_profile, "coach_profile", None)
+
+    if not coach_profile:
+        return Response(
+            {"error": "You are not a coach"}, status=status.HTTP_403_FORBIDDEN
+        )
+
+    # Get all accepted members for this coach
+    relationships = CoachMemberRelationship.objects.filter(
+        coach=coach_profile, status__in=["accepted", "approved"]
+    ).select_related("member__user__user")
+
+    members_progress = []
+
+    for relationship in relationships:
+        member = relationship.member
+        member_profile = member.user
+
+        # Get assigned programs for this member
+        assignments = WorkoutAssignment.objects.filter(member=member).select_related(
+            "program"
+        )
+
+        total_days = 0
+        completed_days = 0
+        current_program = None
+        completion_rate = 0
+
+        if assignments.exists():
+            # Get the most recent assignment
+            latest_assignment = assignments.first()
+            current_program = latest_assignment.program.title
+
+            # Calculate total days in all assigned programs
+            for assignment in assignments:
+                program_days = assignment.program.days.values("day_number").distinct().count()
+                total_days += program_days
+
+                # Count completed days for this program
+                program_completed = (
+                    WorkoutDayCompletion.objects.filter(
+                        user_profile=member_profile,
+                        workout_day__program=assignment.program
+                    )
+                    .values("workout_day__day_number")
+                    .distinct()
+                    .count()
+                )
+                completed_days += program_completed
+
+            # Calculate completion rate
+            if total_days > 0:
+                completion_rate = round((completed_days / total_days) * 100, 1)
+
+        members_progress.append(
+            {
+                "member_id": member.member_id,
+                "name": member.user.user.username,
+                "experience_level": member.experience_level,
+                "program_name": current_program,
+                "total_days": total_days,
+                "completed_days": completed_days,
+                "completion_rate": completion_rate,
+                "joined_at": member.submitted_at,
+            }
+        )
+
+    return Response(
+        {"count": len(members_progress), "members": members_progress},
+        status=status.HTTP_200_OK,
+    )

@@ -30,6 +30,17 @@ User = get_user_model()
 def workout_programs(request):
     if request.method == "GET":
         user_profile = request.user.userprofile
+
+        # Admins and staff can see all workout programs
+        if (
+            request.user.is_staff
+            or request.user.is_superuser
+            or user_profile.role == "admin"
+        ):
+            programs = WorkoutProgram.objects.all()
+            serializer = WorkoutProgramSerializer(programs, many=True)
+            return Response(serializer.data)
+
         user_level = user_profile.get_current_level()
         # Build query based on user's level
         level_filters = models.Q(level_access="all")
@@ -136,8 +147,8 @@ def workout_program_detail(request, id):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == "DELETE":
-        # Only the coach who created it can delete
-        if program.coach != user_profile:
+        # Only the coach who created and admin it can delete
+        if program.coach != user_profile and not request.user.is_staff:
             return Response(
                 {"error": "You don't have permission to delete this program"},
                 status=status.HTTP_403_FORBIDDEN,
