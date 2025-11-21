@@ -152,19 +152,30 @@ def accepted_members(request):
 
     relationships = CoachMemberRelationship.objects.filter(
         coach=coach_profile, status__in=["accepted", "approved"]
-    )
+    ).select_related("member__user__user")
 
-    # convert to frontend format
-    members_data = [
-        {
-            "memberId": r.member.member_id,
-            "name": r.member.user.user.username,
-            "programName": r.member.program_name,
-            "joinedAt": r.member.submitted_at,
-            "experienceLevel": r.member.experience_level,
-        }
-        for r in relationships
-    ]
+    # convert to frontend format (including profile photo)
+    members_data = []
+    for r in relationships:
+        profile = r.member.user  # UserProfile
+        user = profile.user
+        photo_url = None
+        if getattr(profile, "photo", None):
+            if hasattr(profile.photo, "url"):
+                photo_url = profile.photo.url
+            else:
+                photo_url = str(profile.photo)
+
+        members_data.append(
+            {
+                "memberId": r.member.member_id,
+                "name": user.get_full_name() or user.username,
+                "programName": r.member.program_name,
+                "joinedAt": r.member.submitted_at,
+                "experienceLevel": r.member.experience_level,
+                "member_photo": photo_url,
+            }
+        )
 
     return Response(members_data, status=status.HTTP_200_OK)
 
