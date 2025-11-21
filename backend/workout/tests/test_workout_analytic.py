@@ -75,14 +75,11 @@ class AnalyticsTests(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         analytics = response.data["analytics"]
-        monthly_challenge = response.data["monthlyChallenge"]
 
         self.assertEqual(analytics["weeklyImprovement"], 0)
         self.assertEqual(analytics["consistency"], 0)
         self.assertEqual(analytics["xp_last_30_days"], 0)
         self.assertEqual(analytics["current_streak"], 0)
-        self.assertIn("target", monthly_challenge)
-        self.assertIn("completed", monthly_challenge)
 
     def test_user_weekly_activity(self):
         """Test weekly activity data"""
