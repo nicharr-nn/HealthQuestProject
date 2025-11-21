@@ -80,9 +80,17 @@
           
           <!-- Request Header -->
           <div class="flex flex-col md:flex-row justify-between items-center gap-3 mb-4">
-            <div class="flex items-center gap-3 flex-1 min-w-0">
-              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 text-white flex items-center justify-center font-semibold text-lg flex-shrink-0">
-                {{ request.memberName.charAt(0).toUpperCase() }}
+          <div class="flex items-center gap-3 flex-1 min-w-0">
+              <div
+                class="w-12 h-12 rounded-full flex items-center justify-center font-semibold text-lg flex-shrink-0"
+                :class="!request.member_photo ? 'bg-gradient-to-br from-purple-500 to-indigo-500 text-white' : ''"
+              >
+                <template v-if="request.member_photo">
+                  <img :src="getImageUrl(request.member_photo)" alt="Profile" class="w-full h-full object-cover rounded-full" />
+                </template>
+                <template v-else>
+                  {{ (request.memberName || '').charAt(0).toUpperCase() }}
+                </template>
               </div>
               <div class="flex-1 min-w-0">
                 <div class="text-lg font-semibold text-gray-900 mb-1 truncate">{{ request.memberName }}</div>
@@ -113,12 +121,6 @@
               <span class="text-gray-800 font-semibold">{{ formatDate(request.submittedAt) }}</span>
             </div>
           </div>
-          
-          <!-- Request Message -->
-          <div v-if="request.message" class="mb-4 p-3 bg-white border-l-4 border-blue-500 rounded-lg">
-            <div class="text-xs font-semibold text-gray-500 uppercase mb-1">Message:</div>
-            <div class="text-sm text-gray-800 leading-relaxed">{{ request.message }}</div>
-          </div>
 
           <!-- Goals -->
           <div v-if="request.goals?.length" class="mb-4">
@@ -145,57 +147,14 @@
               <button class="px-3 py-1.5 text-xs font-semibold rounded bg-transparent border border-gray-300 text-gray-700 hover:bg-gray-100 transition" @click="viewDetails(request)">View Details</button>
             </template>
           </div>
-
-          <!-- Profile Modal -->
-          <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
-            <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-6 relative">
-              <!-- Close button -->
-              <button 
-                @click="showModal = false" 
-                class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-lg font-bold"
-              >
-              ×
-              </button>
-
-              <h2 class="text-xl font-bold text-gray-900 mb-6 text-center">Details</h2>
-
-              <!-- Loading / Error -->
-              <div v-if="modalLoading" class="text-center py-16 text-gray-500">Loading profile...</div>
-              <div v-else-if="modalError" class="text-center py-16 text-red-500">{{ modalError }}</div>
-
-              <!-- Profile Details -->
-              <div v-else class="grid grid-cols-1 gap-4 text-gray-700 text-sm">
-                <div class="flex justify-between">
-                  <span class="font-medium text-gray-500">Username:</span>
-                  <!-- Full name -->
-                  <span class="font-semibold">{{ modalProfile.user.username || '-' }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="font-medium text-gray-500">Age:</span>
-                  <span>{{ modalProfile.age || '-' }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="font-medium text-gray-500">Gender:</span>
-                  <span>{{ modalProfile.gender || '-' }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="font-medium text-gray-500">Height:</span>
-                  <span>{{ modalProfile.height ? modalProfile.height + ' cm' : '-' }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="font-medium text-gray-500">Weight:</span>
-                  <span>{{ modalProfile.weight ? modalProfile.weight + ' kg' : '-' }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="font-medium text-gray-500">Location:</span>
-                  <span>{{ modalProfile.location || '-' }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
+    <MemberDetailModal
+      :show="showDetailModal"
+      :member-id="selectedMemberId"
+      @close="closeDetailModal"
+    />
   </div>
 </template>
 
@@ -204,6 +163,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowLeft, ClipboardPen } from 'lucide-vue-next'
 import { useToastStore } from '@/stores/toast'
+import MemberDetailModal from '@/components/MemberDetailModal.vue'
 
 const toast = useToastStore()
 const router = useRouter()
@@ -234,6 +194,21 @@ const rejectedRequests = computed(() => requests.value.filter(r => r.status === 
 const filteredRequests = computed(() =>
   activeTab.value === 'all' ? requests.value : requests.value.filter(r => r.status === activeTab.value)
 )
+
+const showDetailModal = ref(false)
+const selectedMemberId = ref(null)
+
+function closeDetailModal() {
+  showDetailModal.value = false
+  selectedMemberId.value = null
+}
+
+function getImageUrl(path) {
+  if (!path) return ''
+  if (path.startsWith('http')) return path
+  return `http://127.0.0.1:8000${path}`
+}
+
 
 function goBackToDashboard() {
   router.push('/coach-dashboard')
@@ -285,49 +260,11 @@ async function updateRequestStatus(relationshipId, status) {
   }
 }
 
-async function viewDetails(request) {
-  selectedRequest.value = request
-  showModal.value = true
-  modalLoading.value = true
-  modalError.value = ''
-  modalProfile.value = {
-    user: { username: '' },
-    photo: null,
-    role: '',
-    age: null,
-    gender: '',
-    height: null,
-    weight: null,
-    location: '',
-    created_at: '',
-    updated_at: '',
-  }
-
-  try {
-    const res = await fetch(`http://127.0.0.1:8000/api/member/profile/${request.memberId}/`, { credentials: 'include' })
-    if (!res.ok) throw new Error('Failed to fetch profile')
-    const data = await res.json()
-
-    modalProfile.value = {
-      user: { username: data.user.username || '' },
-      photo: null,
-      role: '',
-      age: data.age || null,
-      gender: data.gender || '',
-      height: data.height || null,
-      weight: data.weight || null,
-      location: data.location || '',
-      created_at: '',
-      updated_at: '',
-    }
-
-  } catch (err) {
-    console.error(err)
-    modalError.value = 'Failed to load profile.'
-  } finally {
-    modalLoading.value = false
-  }
+function viewDetails(request) {
+  selectedMemberId.value = request.memberId
+  showDetailModal.value = true
 }
+
 
 onMounted(() => {
   loadRequests()

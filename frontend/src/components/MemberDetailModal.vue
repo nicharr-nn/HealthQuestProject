@@ -1,6 +1,6 @@
 <template>
   <transition name="modal">
-    <div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50" @click.self="closeModal">
+    <div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" @click.self="closeModal">
       <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <!-- Header -->
         <div class="flex justify-between items-center px-6 py-4 border-b border-gray-200 sticky top-0 bg-white rounded-t-2xl">
@@ -18,7 +18,6 @@
 
         <!-- Error State -->
         <div v-else-if="error" class="p-12 text-center">
-          <div class="text-red-500 text-5xl mb-4">⚠️</div>
           <p class="text-gray-700 font-semibold mb-2">Failed to load member details</p>
           <p class="text-gray-500 text-sm">{{ error }}</p>
         </div>
@@ -27,21 +26,31 @@
         <div v-else-if="memberDetails" class="p-6">
           <!-- Profile Section -->
           <div class="flex items-start gap-6 mb-6 p-6 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl">
-            <div class="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 text-white flex items-center justify-center font-bold text-3xl flex-shrink-0">
-              {{ memberDetails.user?.first_name?.charAt(0) || memberDetails.user?.username?.charAt(0) || 'M' }}
+            <div
+              class="w-15 h-15 rounded-full flex items-center justify-center font-bold text-3xl flex-shrink-0 overflow-hidden bg-gradient-to-br from-purple-500 to-indigo-500 text-white"
+            >
+              <template v-if="memberDetails.photo">
+                <img
+                  :src="getImageUrl(memberDetails.photo)"
+                  alt="Avatar"
+                  class="w-full h-full object-cover"
+                />
+              </template>
+              <template v-else>
+                {{ memberDetails.user?.first_name?.charAt(0) || memberDetails.user?.username?.charAt(0) || 'M' }}
+              </template>
             </div>
             <div class="flex-1">
               <h3 class="text-2xl font-bold text-gray-900 mb-1">
                 {{ memberDetails.user?.first_name || memberDetails.user?.username || 'Unknown' }}
                 {{ memberDetails.user?.last_name || '' }}
               </h3>
-              <p class="text-gray-600 mb-2">{{ memberDetails.user?.email || 'No email' }}</p>
               <div class="flex flex-wrap gap-2">
                 <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">
                   ID: {{ memberId }}
                 </span>
                 <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
-                  {{ memberDetails.experienceLevel || 'Member' }}
+                  {{ capitalizeFirst(memberDetails.experienceLevel || 'Member') }}
                 </span>
               </div>
             </div>
@@ -64,10 +73,6 @@
                   <span class="text-gray-600">Gender:</span>
                   <span class="font-semibold text-gray-900">{{ formatGender(memberDetails.gender) }}</span>
                 </div>
-                <div class="flex justify-between text-sm">
-                  <span class="text-gray-600">Location:</span>
-                  <span class="font-semibold text-gray-900">{{ memberDetails.location || 'Not specified' }}</span>
-                </div>
               </div>
             </div>
 
@@ -86,50 +91,6 @@
                   <span class="text-gray-600">Weight:</span>
                   <span class="font-semibold text-gray-900">{{ memberDetails.weight ? memberDetails.weight + ' kg' : 'Not specified' }}</span>
                 </div>
-                <div class="flex justify-between text-sm">
-                  <span class="text-gray-600">BMI:</span>
-                  <span class="font-semibold text-gray-900">{{ calculateBMI(memberDetails.height, memberDetails.weight) }}</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Membership Information -->
-            <div class="bg-gray-50 rounded-xl p-4">
-              <h4 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                <Calendar class="w-4 h-4" />
-                Membership Information
-              </h4>
-              <div class="space-y-2">
-                <div class="flex justify-between text-sm">
-                  <span class="text-gray-600">Experience Level:</span>
-                  <span class="font-semibold text-gray-900">{{ memberDetails.experienceLevel || 'Not specified' }}</span>
-                </div>
-                <div class="flex justify-between text-sm">
-                  <span class="text-gray-600">Joined:</span>
-                  <span class="font-semibold text-gray-900">{{ formatDate(memberDetails.joinedAt) }}</span>
-                </div>
-                <div class="flex justify-between text-sm">
-                  <span class="text-gray-600">Status:</span>
-                  <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-semibold">Active</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Program Information -->
-            <div class="bg-gray-50 rounded-xl p-4">
-              <h4 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                <Dumbbell class="w-4 h-4" />
-                Program Information
-              </h4>
-              <div class="space-y-2">
-                <div class="flex justify-between text-sm">
-                  <span class="text-gray-600">Assigned Program:</span>
-                  <span class="font-semibold text-gray-900">{{ memberDetails.programName || 'Not assigned' }}</span>
-                </div>
-                <div class="flex justify-between text-sm">
-                  <span class="text-gray-600">Progress:</span>
-                  <span class="font-semibold text-gray-900">{{ memberDetails.progress || '0' }}%</span>
-                </div>
               </div>
             </div>
           </div>
@@ -138,7 +99,7 @@
           <div v-if="memberDetails.message" class="bg-blue-50 border border-blue-200 rounded-xl p-4">
             <h4 class="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
               <MessageCircle class="w-4 h-4" />
-              Member's Message
+              Message
             </h4>
             <p class="text-gray-700 text-sm leading-relaxed">{{ memberDetails.message }}</p>
           </div>
@@ -223,12 +184,18 @@ function formatDate(dateStr) {
   return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
 }
 
-function calculateBMI(height, weight) {
-  if (!height || !weight) return 'Not available'
-  const heightInMeters = height / 100
-  const bmi = (weight / (heightInMeters * heightInMeters)).toFixed(1)
-  return bmi
+function getImageUrl(path) {
+  if (!path) return ''
+  if (path.startsWith('http')) return path
+  return `http://127.0.0.1:8000${path}`
 }
+
+function capitalizeFirst(str) {
+  if (!str) return ''
+  return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
+
 </script>
 
 <style scoped>

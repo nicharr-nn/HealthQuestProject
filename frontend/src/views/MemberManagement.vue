@@ -40,8 +40,16 @@
         >
           <div class="flex flex-col md:flex-row justify-between items-center gap-3 mb-4">
             <div class="flex items-center gap-3 flex-1 min-w-0">
-              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 text-white flex items-center justify-center font-semibold text-lg flex-shrink-0">
-                {{ member.name.charAt(0).toUpperCase() }}
+              <div
+                class="w-12 h-12 rounded-full flex items-center justify-center font-semibold text-lg flex-shrink-0"
+                :class="!member.member_photo ? 'bg-gradient-to-br from-purple-500 to-indigo-500 text-white' : ''"
+              >
+                <template v-if="member.member_photo">
+                  <img :src="getImageUrl(member.member_photo)" alt="Profile" class="w-full h-full object-cover rounded-full" />
+                </template>
+                <template v-else>
+                  {{ (member.name || '').charAt(0).toUpperCase() }}
+                </template>
               </div>
               <div class="flex-1 min-w-0">
                 <div class="text-lg font-semibold text-gray-900 mb-1 truncate">{{ member.name }}</div>
@@ -99,6 +107,12 @@ const loading = ref(true)
 const toast = useToastStore()
 const showDetailModal = ref(false)
 const selectedMemberId = ref(null)
+
+function getImageUrl(path) {
+  if (!path) return ''
+  if (path.startsWith('http')) return path
+  return `http://127.0.0.1:8000${path}`
+}
 
 function goBackToDashboard() {
   router.push('/coach-dashboard')
