@@ -47,7 +47,7 @@ def workout_programs(request):
             serializer = WorkoutProgramSerializer(programs, many=True)
             return Response(serializer.data)
 
-        # ✅ Get user's fitness goals for sorting
+        # Get user's fitness goals for sorting
         user_goals = user_profile.fitness_goals.values_list("goal_type", flat=True)
         matching_categories = _get_matching_categories(user_goals)
 
@@ -530,7 +530,7 @@ def workout_progress(request, id):
     profile = request.user.userprofile
     program = get_object_or_404(WorkoutProgram, pk=id)
 
-    total_days = program.days.count()  # check
+    total_days = program.days.count()
     completed_qs = WorkoutDayCompletion.objects.filter(
         user_profile=profile, workout_day__program=program
     )

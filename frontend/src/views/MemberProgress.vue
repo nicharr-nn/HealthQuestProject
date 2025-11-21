@@ -167,20 +167,17 @@ const error = ref(null)
 const memberInfo = ref({})
 const programs = ref([])
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
+const API_URL = 'http://127.0.0.1:8000'
 
 const memberId = computed(() => {
   // Check route.params first
   if (route.params.memberId) {
-    console.log('Got memberId from params:', route.params.memberId)
     return route.params.memberId
   }
   // Check route.query as fallback
   if (route.query.memberId) {
-    console.log('Got memberId from query:', route.query.memberId)
     return route.query.memberId
   }
-  console.error('No memberId found in route params or query')
   return null
 })
 
@@ -213,12 +210,6 @@ async function fetchMemberProgress() {
 
   try {
     const currentMemberId = memberId.value
-    
-    console.log('Fetching progress for member:', currentMemberId) // Debug
-    console.log('Route params:', route.params) // Debug
-    console.log('Route query:', route.query) // Debug
-    console.log('Full route:', route) // Debug
-
     if (!currentMemberId) {
       throw new Error('Member ID is missing from route')
     }
@@ -236,7 +227,6 @@ async function fetchMemberProgress() {
     }
 
     const members = await memberResponse.json()
-    console.log('All members:', members) // Debug
     
     // Find member by memberId
     const member = members.find((m) => m.memberId === currentMemberId)
@@ -244,8 +234,6 @@ async function fetchMemberProgress() {
     if (!member) {
       throw new Error(`Member ${currentMemberId} not found in your accepted members list`)
     }
-
-    console.log('Found member:', member) // Debug
 
     memberInfo.value = {
       member_id: member.memberId,
@@ -265,13 +253,11 @@ async function fetchMemberProgress() {
     )
 
     if (!assignmentsResponse.ok) {
-      console.warn('Failed to fetch assignments, member may have no assignments')
       programs.value = []
       return
     }
 
     const assignments = await assignmentsResponse.json()
-    console.log('Assignments:', assignments) // Debug
 
     if (!assignments || assignments.length === 0) {
       programs.value = []
@@ -292,7 +278,6 @@ async function fetchMemberProgress() {
           )
 
           if (!progressResponse.ok) {
-            console.warn(`Failed to fetch progress for program ${assignment.program.id}`)
             return {
               program_id: assignment.program.id,
               program_title: assignment.program.title,
@@ -308,7 +293,6 @@ async function fetchMemberProgress() {
           }
 
           const progress = await progressResponse.json()
-          console.log('Progress for program', assignment.program.id, ':', progress) // Debug
 
           return {
             program_id: progress.program_id,
@@ -323,19 +307,15 @@ async function fetchMemberProgress() {
             assignment_status: assignment.status,
             member: progress.member,
           }
-        } catch (err) {
-          console.error(`Error fetching progress for program ${assignment.program.id}:`, err)
+        } catch {
           return null
         }
       })
     )
 
     programs.value = programsWithProgress.filter((p) => p !== null)
-    console.log('Final programs:', programs.value) // Debug
     
-  } catch (err) {
-    console.error('Error fetching member progress:', err)
-    error.value = err.message
+  } catch {
     toast.error('Failed to load member progress')
   } finally {
     loading.value = false

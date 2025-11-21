@@ -24,7 +24,7 @@ const CertificationManagement = () => import('../views/admin/CertificationManage
 const RecipeManagement = () => import('../views/admin/RecipeManagement.vue')
 const WorkoutManagement = () => import('../views/admin/WorkoutManagement.vue')
 const AdminUser = () => import('../views/admin/AdminUser.vue')
-const MemberProgress = () => import('../views/coach/MemberProgress.vue')
+const MemberProgress = () => import('../views/MemberProgress.vue')
 
 const routes = [
   { path: '/', name: 'LandingPage', component: LandingPage },
