@@ -154,7 +154,7 @@ async function saveGoal() {
     if (response.ok) {
       const goalData = await response.json();
       console.log("Goal set successfully:", goalData);
-      router.push("/about-you");
+      router.push("/dashboard");
     } else if (response.status === 400) {
       const error = await response.json();
       console.error("Error setting goal:", error);
@@ -162,7 +162,7 @@ async function saveGoal() {
       // Handle specific error for non-normal users
       if (error.user_profile && error.user_profile.role !== 'normal' && error.user_profile.role !== 'member') {
         alert("Only normal and member users can set fitness goals. Please contact support if you believe this is an error.");
-        router.push("/about-you");
+        router.push("/dashboard");
       } else {
         alert("Failed to set goal: " + (error.detail || JSON.stringify(error)));
       }

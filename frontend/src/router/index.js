@@ -5,7 +5,6 @@ import { watch } from 'vue'
 const LandingPage = () => import('../views/LandingPage.vue')
 const AboutPage = () => import('../views/AboutPage.vue')
 const SelectRole = () => import('../views/RoleSelection.vue')
-const AboutYou = () => import('../views/AboutYou.vue')
 const Profile = () => import('../views/UserProfile.vue')
 const Dashboard = () => import('../views/Dashboard.vue')
 const SelectGoal = () => import('../views/GoalSelection.vue')
@@ -29,7 +28,6 @@ const routes = [
   { path: '/', name: 'LandingPage', component: LandingPage },
   { path: '/about', name: 'AboutPage', component: AboutPage },
   { path: '/select-role', name: 'SelectRole', component: SelectRole },
-  { path: '/about-you', name: 'AboutYou', component: AboutYou },
   { path: '/profile', name: 'Profile', component: Profile },
   { path: '/dashboard', name: 'Dashboard', component: Dashboard },
   { path: '/select-goal', name: 'SelectGoal', component: SelectGoal },
@@ -84,7 +82,7 @@ router.beforeEach(async (to, from, next) => {
   const profileComplete = userStore.profile_complete
 
   // --- Redirect admin users away from onboarding pages ---
-  if (isAdmin && ['/select-role', '/about-you'].includes(to.path)) {
+  if (isAdmin && to.path === '/select-role') {
     return next('/admin-user')
   }
 
@@ -94,13 +92,13 @@ router.beforeEach(async (to, from, next) => {
   }
 
   // --- Redirect approved coaches away from onboarding pages ---
-  if (isCoach && profileComplete && ['/select-role', '/about-you'].includes(to.path)) {
+  if (isCoach && profileComplete && to.path === '/select-role') {
     if (isApproved) return next('/coach-dashboard')
     return next('/coach-portal')
   }
 
   // --- Redirect regular users away from onboarding pages if profile complete ---
-  if (profileComplete && ['/select-role', '/about-you'].includes(to.path)) {
+  if (profileComplete && to.path === '/select-role') {
     return next('/dashboard')
   }
 

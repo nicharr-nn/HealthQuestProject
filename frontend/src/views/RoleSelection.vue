@@ -99,7 +99,7 @@ async function selectRole(role) {
       if (role !== "coach") {
         router.push("/select-goal");
       } else {
-        router.push("/about-you");
+        router.push("/coach-portal");
       }
     } else {
       const error = await response.json();
@@ -133,7 +133,11 @@ onMounted(async () => {
       }
 
       if (!profile.height || !profile.weight) {
-        router.replace("/about-you");
+        if (profile.role === "coach") {
+          router.replace("/coach-portal");
+        } else {
+          router.replace("/dashboard");
+        }
         return;
       }
 
