@@ -65,9 +65,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    profile = UserProfileSerializer(source="userprofile",
-                                    required=False,
-                                    allow_null=True)
+    profile = UserProfileSerializer(
+        source="userprofile", required=False, allow_null=True
+    )
     photo = serializers.SerializerMethodField()
     is_admin = serializers.SerializerMethodField()
     is_staff = serializers.BooleanField(read_only=True)

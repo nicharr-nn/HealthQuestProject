@@ -4,8 +4,8 @@ from .models import Admin, AdminModeration
 
 @admin.register(Admin)
 class AdminProfileAdmin(admin.ModelAdmin):
-    list_display = ['id', 'user']
-    search_fields = ['user__username']
+    list_display = ["id", "user"]
+    search_fields = ["user__username"]
 
 
 @admin.register(AdminModeration)

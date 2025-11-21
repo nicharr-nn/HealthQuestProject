@@ -29,28 +29,30 @@ def user_info(request):
 
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
-def delete_account(request):
+def delete_account(request, user_id):
     """Delete user account"""
     user = request.user
 
     if request.method == "DELETE":
-        # require user_id for security
-        user_id = request.data.get("user_id")
-
-        if user_id is None:
-            return Response(
-                {"detail": "User ID is required for account deletion."}, status=400
-            )
-
-        # Verify it matches authenticated user
-        if str(user.id) != str(user_id):
+        # Verify it matches authenticated user (or user is admin)
+        if user.id != user_id and not user.is_staff:
             return Response(
                 {"detail": "You can only delete your own account."}, status=403
             )
 
-        # User is authenticated and owns the account
-        user.delete()
-        return Response({"message": "Account deleted permanently"})
+        try:
+            # Get the user to delete
+            user_to_delete = User.objects.get(id=user_id)
+
+            # Delete the user
+            user_to_delete.delete()
+
+            return Response({"message": "Account deleted permanently"}, status=200)
+
+        except User.DoesNotExist:
+            return Response({"detail": "User not found."}, status=404)
+        except Exception as e:
+            return Response({"detail": f"Error deleting account: {str(e)}"}, status=500)
 
 
 @api_view(["POST"])

@@ -264,7 +264,6 @@ const editingId = ref(null)
 const currentImageUrl = ref('')
 const showImageModal = ref(false)
 const currentImage = ref('')
-const token = localStorage.getItem('access_token') || ''
 
 // Delete modal state
 const showDeleteModal = ref(false)
@@ -296,7 +295,6 @@ const confirmDeletePost = async () => {
       `http://127.0.0.1:8000/api/member/food-posts/${postToDeleteId.value}/delete/`,
       {
         method: 'DELETE',
-        headers: { Authorization: token ? `Bearer ${token}` : '' },
         credentials: 'include'
       }
     )
@@ -318,7 +316,6 @@ const confirmDeletePost = async () => {
 const fetchComments = async (postId) => {
   try {
     const res = await fetch(`http://127.0.0.1:8000/api/member/food-posts/${postId}/comments/`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
       credentials: 'include'
     })
     if (!res.ok) throw new Error(`Failed to fetch comments for post ${postId}`)
@@ -339,7 +336,6 @@ const addComment = async (postId) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: token ? `Bearer ${token}` : ''
       },
       body: JSON.stringify(payload),
       credentials: 'include'
@@ -368,9 +364,7 @@ const getImageUrl = (path) => {
 
 const fetchFoodPosts = async () => {
   try {
-    const headers = token ? { Authorization: `Bearer ${token}` } : {}
     const response = await fetch('http://127.0.0.1:8000/api/member/food-posts/', {
-      headers,
       credentials: 'include'
     })
     if (!response.ok) throw new Error(`Failed to fetch: ${response.status}`)
@@ -406,7 +400,6 @@ const submitMeal = async () => {
         {
           method: 'PUT',
           headers: {
-            'Authorization': token ? `Bearer ${token}` : '',
             'Content-Type': 'application/json'
           },
           body: JSON.stringify(postData),
@@ -440,7 +433,6 @@ const submitMeal = async () => {
 
       const response = await fetch('http://127.0.0.1:8000/api/member/food-posts/', {
         method: 'POST',
-        headers: { Authorization: token ? `Bearer ${token}` : '' },
         body: formData,
         credentials: 'include'
       })
@@ -479,7 +471,6 @@ const uploadImageToPost = async (postId, file) => {
     `http://127.0.0.1:8000/api/member/food-posts/${postId}/upload-image/`,
     {
       method: 'POST',
-      headers: { Authorization: token ? `Bearer ${token}` : '' },
       body: formData,
       credentials: 'include'
     }

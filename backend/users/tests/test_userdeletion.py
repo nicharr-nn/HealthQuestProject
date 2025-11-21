@@ -32,20 +32,17 @@ class UserDeletionTests(TestCase):
     def test_user_deletion_via_api(self):
         """User DELETE request should delete the user account permanently"""
         self.client.force_login(user=self.user)
-        url = reverse("delete-account")
-        response = self.client.delete(
-            url, data={"user_id": self.user.id}, format="json"
-        )
+        url = reverse("delete-account", kwargs={"user_id": self.user.id})
+        response = self.client.delete(url, format="json")
 
         self.assertEqual(response.status_code, 200, response.data)
         self.assertEqual(response.data["message"], "Account deleted permanently")
 
-        # Verify user is deleted
         self.assertFalse(User.objects.filter(id=self.user.id).exists())
 
     def test_unauthenticated_cannot_delete(self):
         """Unauthenticated users cannot delete accounts"""
-        url = reverse("delete-account")
+        url = reverse("delete-account", kwargs={"user_id": self.user.id})
         response = self.client.delete(url)
         self.assertIn(response.status_code, [401, 403])
 
@@ -62,11 +59,8 @@ class UserDeletionTests(TestCase):
         )
 
         self.client.force_login(user=self.user)
-        url = reverse("delete-account")
-
-        response = self.client.delete(
-            url, data={"user_id": other_user.id}, format="json"
-        )
+        url = reverse("delete-account", kwargs={"user_id": other_user.id})
+        response = self.client.delete(url, format="json")
 
         self.assertEqual(response.status_code, 403)
         self.assertIn("You can only delete your own account", response.data["detail"])
@@ -74,27 +68,46 @@ class UserDeletionTests(TestCase):
         # Verify other user still exists
         self.assertTrue(User.objects.filter(id=other_user.id).exists())
 
-    def test_delete_account_no_user_id(self):
-        """Should return 400 if user_id is not provided"""
+    def test_delete_account_nonexistent_user(self):
+        """Should return 404 if user doesn't exist"""
         self.client.force_login(self.user)
-        url = reverse("delete-account")
-        response = self.client.delete(url, {}, format="json")
+        url = reverse("delete-account", kwargs={"user_id": 99999})
+        response = self.client.delete(url, format="json")
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
         self.assertEqual(
-            response.data["detail"], "User ID is required for account deletion."
+            response.data["detail"], "You can only delete your own account."
         )
 
     def test_delete_account_profile_also_deleted(self):
         """Deleting user should also delete profile (cascade)"""
         self.client.force_login(self.user)
-        url = reverse("delete-account")
+        url = reverse("delete-account", kwargs={"user_id": self.user.id})
         profile_id = self.profile.id
 
-        response = self.client.delete(
-            url, data={"user_id": self.user.id}, format="json"
-        )
+        response = self.client.delete(url, format="json")
 
         self.assertEqual(response.status_code, 200)
-        # Profile should be deleted via cascade
         self.assertFalse(self.UserProfile.objects.filter(id=profile_id).exists())
+
+    def test_admin_can_delete_other_users(self):
+        """Admin users can delete other accounts"""
+        admin_user = User.objects.create_user(
+            username="admin",
+            email="admin@example.com",
+            password="adminpass123",
+            is_staff=True,
+        )
+
+        other_user = User.objects.create_user(
+            username="otheruser",
+            email="other@example.com",
+            password="otherpass123",
+        )
+
+        self.client.force_login(user=admin_user)
+        url = reverse("delete-account", kwargs={"user_id": other_user.id})
+        response = self.client.delete(url, format="json")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(User.objects.filter(id=other_user.id).exists())

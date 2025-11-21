@@ -161,9 +161,6 @@
               </div>
             </div>
             
-            <p class="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">
-              {{ todayWorkout.description || 'No workout assigned today' }}
-            </p>
           </div>
           
           <button 

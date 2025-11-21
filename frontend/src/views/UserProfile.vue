@@ -344,7 +344,7 @@ const closeDeleteModal = () => {
 
 const deleteUserAccount = async () => {
   try {
-    const response = await fetch(`http://127.0.0.1:8000/api/user/delete-account/`, {
+    const response = await fetch(`http://127.0.0.1:8000/api/user/delete-account/${userStore.id}/`, {
       method: 'DELETE',
       credentials: 'include',
       headers: {

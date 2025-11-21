@@ -9,5 +9,5 @@ urlpatterns = [
     path("update-profile/", views.update_profile, name="update-profile"),
     path("upload-photo/", views.upload_photo, name="upload-photo"),
     path("users/", views.all_users, name="all-users"),
-    path("delete-account/", views.delete_account, name="delete-account"),
+    path("delete-account/<int:user_id>/", views.delete_account, name="delete-account"),
 ]

@@ -5,21 +5,25 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('coach', '0003_alter_coach_public_id'),
-        ('moderation', '0001_initial'),
+        ("coach", "0003_alter_coach_public_id"),
+        ("moderation", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='adminmoderation',
-            name='coach',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='coach.coach'),
+            model_name="adminmoderation",
+            name="coach",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="coach.coach",
+            ),
         ),
         migrations.AlterField(
-            model_name='adminmoderation',
-            name='content_id',
+            model_name="adminmoderation",
+            name="content_id",
             field=models.PositiveIntegerField(blank=True, null=True),
         ),
     ]
