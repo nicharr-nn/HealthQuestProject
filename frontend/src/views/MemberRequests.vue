@@ -170,23 +170,6 @@ const router = useRouter()
 const requests = ref([])
 const activeTab = ref('all')
 const loading = ref(true)
-const showModal = ref(false)
-const selectedRequest = ref(null)
-
-const modalProfile = ref({
-  user: { username: '' },
-  photo: null,
-  role: '',
-  age: null,
-  gender: '',
-  height: null,
-  weight: null,
-  location: '',
-  created_at: '',
-  updated_at: '',
-})
-const modalLoading = ref(false)
-const modalError = ref('')
 
 const pendingRequests = computed(() => requests.value.filter(r => r.status === 'pending'))
 const acceptedRequests = computed(() => requests.value.filter(r => r.status === 'accepted'))

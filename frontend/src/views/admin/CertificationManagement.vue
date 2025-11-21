@@ -262,14 +262,12 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import AdminSideBar from '@/components/AdminSideBar.vue'
 import AdminNotificationBell from '@/components/AdminNotificationBell.vue'
 import { Menu } from 'lucide-vue-next'
 import { useToastStore } from '@/stores/toast'
 
-const router = useRouter()
 const userStore = useUserStore()
 const toast = useToastStore()
 
