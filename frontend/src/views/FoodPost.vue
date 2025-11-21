@@ -14,11 +14,24 @@
       </button>
     </div>
 
+    <!-- No posts state -->
+    <div
+      v-if="foodPosts.length === 0 && !loading"
+      class="max-w-5xl mx-auto bg-white rounded-2xl border-2 border-dashed border-gray-300 text-center p-12 my-8"
+    >
+      <p class="text-2xl font-semibold text-gray-700 mb-4">
+        Let’s get started!
+      </p>
+      <p class="text-gray-500 mb-6">
+        Share your first meal with your coach to begin your journey.
+      </p>
+    </div>
+
     <!-- Food Posts -->
     <div
       v-for="post in foodPosts"
       :key="post.id"
-      class="max-w-5xl mx-auto bg-purple-200 shadow-lg rounded-2xl my-8 grid lg:grid-cols-[10%_1.5fr_1fr] overflow-hidden"
+      class="max-w-5xl mx-auto bg-purple-200 shadow-lg rounded-2xl my-8 grid lg:grid-cols-[6%_1.5fr_1fr] overflow-hidden"
     >
       <!-- Left side - Buttons -->
       <div class="flex lg:flex-col lg:w-full w-full order-3 lg:order-1">
@@ -28,7 +41,7 @@
           class="bg-yellow-200 hover:bg-yellow-300 text-white flex-1 lg:h-full px-5 py-3 lg:py-2 font-semibold cursor-pointer text-lg sm:text-xl flex items-center justify-center rounded-bl-xl lg:rounded-tl-xl lg:rounded-bl-none"
           title="Edit post"
         >
-          ✍🏻
+          <Pencil class="w-6 h-6 text-[#846757]" />
         </button>
 
         <!-- Delete Button -->
@@ -37,7 +50,7 @@
           class="bg-red-300 hover:bg-red-400 text-white flex-1 lg:h-full px-5 py-3 lg:py-2 font-semibold cursor-pointer text-lg sm:text-xl flex items-center justify-center rounded-br-xl lg:rounded-bl-xl lg:rounded-br-none"
           title="Delete post"
         >
-          🗑️
+          <Trash2 class="w-6 h-6 text-[#846757]" />
         </button>
       </div>
 
@@ -45,7 +58,7 @@
       <div class="bg-[#e2dbff] flex flex-col font-body order-1 lg:order-2">
         <!-- Image Section -->
         <div class="flex flex-col items-center text-center p-6 text-[#846757]">
-          <h3 class="text-3xl font-semibold mb-4">{{ post.title }}</h3>
+          <h3 class="text-3xl font-bold mb-4 uppercase">{{ post.title }}</h3>
           <div class="w-full h-64 md:h-80 rounded-lg overflow-hidden shadow-md mx-auto cursor-pointer">
             <img
               :src="getImageUrl(post.image)"
@@ -62,9 +75,9 @@
               <!-- Close button on top-left of the image -->
               <button
                 @click="closeImageModal"
-                class="absolute top-2 right-2 text-white text-2xl font-bold bg-black/30 rounded-full w-8 h-8 flex items-center justify-center cursor-pointer"
+                class="absolute top-2 right-2 text-white hover:bg-black/30 rounded-full p-1 transition"
               >
-                ×
+                <X class="w-6 h-6" />
               </button>
 
               <!-- Image -->
@@ -151,7 +164,7 @@
           @click="closeModal"
           class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl cursor-pointer"
         >
-          ×
+          <X />
         </button>
 
         <h2 class="text-2xl font-bold mb-4 text-pink-400">
@@ -238,7 +251,7 @@
       message="Are you sure you want to delete"
       :item-name="postToDeleteTitle"
       cancel-text="Keep Post"
-      confirm-text="Yes, Delete"
+      confirm-text="Delete"
       @confirm="confirmDeletePost"
       @close="closeDeleteModal"
     />
@@ -248,6 +261,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useToastStore } from '@/stores/toast'
+import { Pencil, X, Trash2 } from 'lucide-vue-next'
 import DeleteModal from '@/components/DeleteModal.vue'
 
 const toast = useToastStore()
