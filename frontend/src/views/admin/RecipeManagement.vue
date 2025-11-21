@@ -367,6 +367,8 @@ async function fetchRecipes() {
   }
 }
 
+function logout() { userStore.logout?.(); window.location.href='/' }
+
 onMounted(async () => {
   if (!userStore.profile) await userStore.init()
   await fetchRecipes()

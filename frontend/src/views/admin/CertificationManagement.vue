@@ -311,10 +311,7 @@ function getDocumentUrl(doc) {
 function viewCoachDetails(coach) { coachModal.value = { open: true, coach } }
 function closeModal() { coachModal.value = { open: false, coach: null } }
 
-function logout() {
-  userStore.logout?.()
-  router.push('/')
-}
+function logout() { userStore.logout?.(); window.location.href='/' }
 
 async function fetchCoaches() {
   loading.value = true
