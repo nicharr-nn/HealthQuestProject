@@ -28,13 +28,16 @@
             v-for="star in 5"
             :key="star"
             @click="localRating = star"
-            class="text-4xl hover:scale-110 transition-transform cursor-pointer"
+            class="cursor-pointer"
           >
-            {{ star <= localRating ? '⭐' : '☆' }}
+            <Star
+              class="w-8 h-8 transition-transform hover:scale-110"
+              :class="star <= localRating ? 'text-yellow-400 fill-current' : 'text-gray-300'"
+            />
           </button>
         </div>
         <p v-if="localRating > 0" class="text-center text-sm text-gray-500 mt-2">
-          {{ localRating }} {{ localRating === 1 ? 'star' : 'stars' }}
+          {{ localRating }} {{ localRating === 1 ? 'Star' : 'Stars' }}
         </p>
       </div>
 
@@ -69,6 +72,7 @@
 
 <script setup>
 import { ref, watch } from 'vue'
+import { Star } from 'lucide-vue-next'
 
 const props = defineProps({
   show: {
