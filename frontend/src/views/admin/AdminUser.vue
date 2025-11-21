@@ -172,7 +172,7 @@
           message="Are you sure you want to delete"
           :item-name="userToDeleteName"
           cancel-text="Cancel"
-          confirm-text="Yes, Delete"
+          confirm-text="Delete"
           @confirm="confirmDelete"
           @close="closeDeleteModal"
         />
