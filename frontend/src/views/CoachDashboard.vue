@@ -60,7 +60,7 @@
         }"
       >
         <div class="text-2xl">
-          <icon.Spinner class="animate-spin" v-if="approvalStatus === 'pending'" />
+          <icon.Loader class="animate-spin" v-if="approvalStatus === 'pending'" />
           <icon.XCircle v-else-if="approvalStatus === 'rejected'" />
         </div>
 
@@ -114,6 +114,9 @@
           <div class="mt-2 text-blue-600 text-xs font-semibold">View All →</div>
         </div>
       </div>
+
+      <!-- Member Progress Overview Section -->
+      <MemberProgressOverview class="mb-8" />
 
       <!-- Programs Section -->
       <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow">
@@ -209,11 +212,11 @@
   </div>
 </template>
 
-
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import NotificationBell from '@/components/NotificationBell.vue'
+import MemberProgressOverview from '@/components/MemberProgressOverview.vue'
 import * as icons from 'lucide-vue-next'
 import { useToastStore } from "@/stores/toast";
 
@@ -344,8 +347,8 @@ async function deleteProgram(programId) {
     } else {
       const text = await res.text()
       let body = text
-      try { 
-        body = JSON.parse(text) 
+      try {
+        body = JSON.parse(text)
       } catch (err) {
         console.warn('Failed to parse response as JSON:', err)
       }
