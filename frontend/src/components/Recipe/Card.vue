@@ -118,7 +118,6 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
 import { CookingPot, List, Save, Star, Pencil, Trash2 } from 'lucide-vue-next';
 
 defineProps({

@@ -122,7 +122,7 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { X, User, Activity, Calendar, Dumbbell, MessageCircle } from 'lucide-vue-next'
+import { X, User, Activity, MessageCircle } from 'lucide-vue-next'
 
 const props = defineProps({
   show: Boolean,
@@ -176,12 +176,6 @@ function viewFoodDiary() {
 function formatGender(gender) {
   if (!gender) return 'Not specified'
   return gender.charAt(0).toUpperCase() + gender.slice(1)
-}
-
-function formatDate(dateStr) {
-  if (!dateStr) return 'Not specified'
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
 }
 
 function getImageUrl(path) {
