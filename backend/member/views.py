@@ -12,7 +12,7 @@ from .serializers import (
     FoodPostCommentSerializer,
 )
 from coach.models import Coach
-from workout.models import WorkoutProgram, WorkoutAssignment
+from workout.models import WorkoutProgram, WorkoutAssignment, WorkoutDayCompletion
 from workout.serializers import WorkoutAssignmentSerializer
 from django.db import models
 
@@ -135,6 +135,7 @@ def accepted_members(request):
             "programName": r.member.program_name,
             "joinedAt": r.member.submitted_at,
             "experienceLevel": r.member.experience_level,
+            "photo": r.member.user.photo.url if r.member.user.photo else None,
         }
         for r in relationships
     ]
@@ -459,6 +460,163 @@ def assign_program_to_member(request):
         {"message": "Program assigned successfully.", "assignment": serializer.data},
         status=status.HTTP_201_CREATED,
     )
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def member_assignments(request, member_id):
+    """
+    Get all workout assignments for a specific member.
+    Only accessible by the member's coach.
+    """
+    try:
+        user_profile = request.user.userprofile
+
+        # Check if user is a coach
+        if user_profile.role != "coach":
+            return Response(
+                {"error": "Only coaches can view member assignments"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        coach = Coach.objects.get(user=user_profile)
+
+        # Get the member
+        try:
+            member = Member.objects.get(member_id=member_id)
+        except Member.DoesNotExist:
+            return Response(
+                {"error": "Member not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Verify relationship exists
+        relationship = CoachMemberRelationship.objects.filter(
+            coach=coach, member=member, status="accepted"
+        ).first()
+
+        if not relationship:
+            return Response(
+                {"error": "You do not have access to this member's assignments"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        # Get all assignments for this member
+        assignments = WorkoutAssignment.objects.filter(member=member).select_related(
+            "program"
+        )
+
+        assignments_data = []
+        for assignment in assignments:
+            program = assignment.program
+            assignments_data.append(
+                {
+                    "id": assignment.id,
+                    "program": {
+                        "id": program.id,
+                        "title": program.title,
+                        "category": program.category,
+                        "difficulty_level": program.difficulty_level,
+                        "description": program.description,
+                    },
+                    "status": assignment.status,
+                    "assigned_date": assignment.assigned_date,
+                }
+            )
+
+        return Response(assignments_data, status=status.HTTP_200_OK)
+
+    except Coach.DoesNotExist:
+        return Response(
+            {"error": "Coach profile not found"}, status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def coach_member_workout_progress(request, program_id, member_id):
+    """
+    Coach-specific endpoint to view member's workout progress.
+    URL: /api/member/member-progress/<program_id>/<member_id>/
+    """
+    user_profile = request.user.userprofile
+
+    # Only coaches can access
+    if user_profile.role != "coach":
+        return Response(
+            {"error": "Only coaches can access member progress"},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    try:
+        coach = Coach.objects.get(user=user_profile)
+        program = get_object_or_404(WorkoutProgram, pk=program_id)
+
+        # Get the member
+        if member_id.startswith("M-"):
+            member = Member.objects.get(member_id=member_id)
+        else:
+            member = Member.objects.get(pk=member_id)
+
+        # Verify relationship
+        relationship = CoachMemberRelationship.objects.filter(
+            coach=coach, member=member, status="accepted"
+        ).first()
+
+        if not relationship:
+            return Response(
+                {"error": "You don't have access to this member's progress"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        # Get progress data
+        member_profile = member.user
+        total_workouts = program.days.count()
+        completed_qs = WorkoutDayCompletion.objects.filter(
+            user_profile=member_profile, workout_day__program=program
+        )
+        completed_day_numbers = list(
+            completed_qs.values_list("workout_day__day_number", flat=True)
+            .distinct()
+            .order_by("workout_day__day_number")
+        )
+
+        completed_workouts = completed_qs.count()
+        xp_earned = (
+            completed_qs.aggregate(models.Sum("xp_earned"))["xp_earned__sum"] or 0
+        )
+
+        return Response(
+            {
+                "program_id": program.id,
+                "program_title": program.title,
+                "member": {
+                    "member_id": member.member_id,
+                    "name": member_profile.user.first_name
+                    or member_profile.user.username,
+                },
+                "total_workouts": total_workouts,
+                "completed_workouts": completed_workouts,
+                "completion_percentage": (
+                    round((completed_workouts / total_workouts) * 100, 1)
+                    if total_workouts > 0
+                    else 0
+                ),
+                "xp_earned": xp_earned,
+                "completed_day_numbers": completed_day_numbers,
+            }
+        )
+
+    except Member.DoesNotExist:
+        return Response({"error": "Member not found"}, status=status.HTTP_404_NOT_FOUND)
+    except Coach.DoesNotExist:
+        return Response(
+            {"error": "Coach profile not found"}, status=status.HTTP_404_NOT_FOUND
+        )
+
+
+# ==================== FOOD POSTS ====================
 
 
 @api_view(["GET", "POST"])

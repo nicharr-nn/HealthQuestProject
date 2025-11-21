@@ -14,6 +14,8 @@ from .views import (
     food_post_comments,
     food_post_comment_detail,
     uncommented_food_posts,
+    coach_member_workout_progress,
+    member_assignments,
 )
 
 urlpatterns = [
@@ -58,4 +60,14 @@ urlpatterns = [
     ),
     # coach can remove an accepted member
     path("<str:member_id>/", coach_remove_member, name="coach-remove-member"),
+    path(
+        "member-progress/<int:program_id>/<str:member_id>/",
+        coach_member_workout_progress,
+        name="member-workout-progress",
+    ),
+    path(
+        "member-assignments/<str:member_id>/",
+        member_assignments,
+        name="member-assignments",
+    ),
 ]

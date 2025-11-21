@@ -5,6 +5,8 @@ from coach.serializers import CoachSerializer
 
 
 class MemberSerializer(serializers.ModelSerializer):
+    photo = serializers.SerializerMethodField()
+
     class Meta:
         model = Member
         fields = [
@@ -15,7 +17,14 @@ class MemberSerializer(serializers.ModelSerializer):
             "message",
             "submitted_at",
             "status",
+            "photo",
         ]
+
+    def get_photo(self, obj):
+        user_profile = getattr(obj, "user_profile", None)
+        if user_profile and user_profile.photo and hasattr(user_profile.photo, "url"):
+            return user_profile.photo.url
+        return None
 
 
 class CoachMemberRelationshipSerializer(serializers.ModelSerializer):

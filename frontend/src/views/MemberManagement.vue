@@ -2,7 +2,7 @@
   <div class="max-w-[1200px] mx-auto p-6">
     <button
       @click="goBackToDashboard"
-      class="inline-flex items-center justify-center p-2 border border-gray-300 bg-white rounded-lg mb-6 hover:bg-gray-100 transition"
+      class="inline-flex items-center justify-center p-2 border border-gray-300 rounded-lg mb-6 hover:bg-gray-100 transition"
     >
       <ArrowLeft class="w-5 h-5 text-gray-700 mr-2" />
       Back to Dashboard
@@ -70,8 +70,8 @@
           </div>
 
           <div class="flex gap-2 flex-wrap pt-4 border-t border-gray-200">
+            <button class="border border-gray-300 rounded-lg px-3 py-1.5 text-xs font-semibold hover:bg-gray-50 transition-all" @click="viewProgress(member)">View Details</button>
             <button class="border border-gray-300 rounded-lg px-3 py-1.5 text-xs font-semibold hover:bg-gray-50 transition-all" @click="viewFoodDiary(member)">View Food Diary</button>
-            <!-- <button class="border border-gray-300 rounded-lg px-3 py-1.5 text-xs font-semibold hover:bg-gray-50 transition-all" @click="viewDetails(request)">View Details</button> -->
             <button class="bg-red-500 text-white border-red-500 rounded-lg px-3 py-1.5 text-xs font-semibold hover:bg-red-600 transition-all" @click="removeMember(member)">Remove</button>
           </div>
         </div>
@@ -120,6 +120,11 @@ async function loadMembers() {
 function viewFoodDiary(member) {
   router.push(`/food-diary/${member.memberId}`)
 }
+
+function viewProgress(member) {
+  router.push(`/member-progress?memberId=${member.memberId}`)
+}
+
 
 async function removeMember(member) {
   if (!confirm(`Remove ${member.name} from your members?`)) return

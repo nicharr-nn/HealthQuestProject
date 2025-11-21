@@ -457,9 +457,9 @@ async function completeDay(dayId) {
     if (nextDay) {
       selectedDay.value = nextDay.id
     } else {
-      toast.success(`🎉 You completed all days in this program! You earned ${xp.value} XP!`)
+      toast.success(`You completed all days in this program! You earned ${xp.value} XP!`)
     }
-    toast.success(`🎉 Congratulations! You earned ${xp.value} XP!`)
+    toast.success(`Congratulations! You earned ${xp.value} XP!`)
   } catch (err) {
     console.error(err)
     toast.error('Failed to complete day. Please try again.')

@@ -530,7 +530,7 @@ def workout_progress(request, id):
     profile = request.user.userprofile
     program = get_object_or_404(WorkoutProgram, pk=id)
 
-    total_days = program.days.count()
+    total_days = program.days.count()  # check
     completed_qs = WorkoutDayCompletion.objects.filter(
         user_profile=profile, workout_day__program=program
     )
