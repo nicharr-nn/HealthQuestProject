@@ -115,9 +115,6 @@
         </div>
       </div>
 
-      <!-- Member Progress Overview Section -->
-      <MemberProgressOverview class="mb-8" />
-
       <!-- Programs Section -->
       <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow">
         <div class="flex justify-between items-center mb-6">
@@ -216,7 +213,6 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import NotificationBell from '@/components/NotificationBell.vue'
-import MemberProgressOverview from '@/components/MemberProgressOverview.vue'
 import * as icons from 'lucide-vue-next'
 import { useToastStore } from "@/stores/toast";
 
