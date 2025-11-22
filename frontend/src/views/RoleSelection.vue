@@ -57,7 +57,7 @@ import { useToastStore } from '@/stores/toast'
 
 const userStore = useUserStore()
 const toast = useToastStore()
-
+const API_URL = 'http://127.0.0.1:8000'
 const router = useRouter()
 
 const memberPoints = [
@@ -92,7 +92,7 @@ async function selectRole(role) {
   userStore.setRole(role)
 
   try {
-    const response = await fetch('http://127.0.0.1:8000/api/user/select-role/', {
+    const response = await fetch(`${API_URL}/api/user/select-role/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
       credentials: 'include',
@@ -118,7 +118,7 @@ async function selectRole(role) {
 
 onMounted(async () => {
   try {
-    const res = await fetch('http://127.0.0.1:8000/api/user/user-info/', {
+    const res = await fetch(`${API_URL}/api/user/user-info/`, {
       credentials: 'include',
     })
     const data = await res.json()

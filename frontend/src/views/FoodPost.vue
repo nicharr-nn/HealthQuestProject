@@ -8,7 +8,7 @@
       <button
         @click="openModal"
         class="bg-[#fac3e1] hover:bg-pink-300 px-8 py-3 rounded-lg shadow-md cursor-pointer font-semibold"
-        style="color: #9c547b;"
+        style="color: #9c547b"
       >
         Upload Meal
       </button>
@@ -97,12 +97,13 @@
               {{ post.content }}
             </p>
           </div>
-
         </div>
       </div>
 
       <!-- Right side - Comments -->
-      <div class="bg-[#E6F3E6] p-6 flex flex-col justify-between font-body order-2 lg:order-3 rounded-tr-xl lg:rounded-tr-xl lg:rounded-br-xl">
+      <div
+        class="bg-[#E6F3E6] p-6 flex flex-col justify-between font-body order-2 lg:order-3 rounded-tr-xl lg:rounded-tr-xl lg:rounded-br-xl"
+      >
         <h4 class="text-xl font-semibold mb-3">Coach Comments</h4>
         <div class="flex-1 overflow-y-auto space-y-2 mb-4 max-h-90">
           <div
@@ -111,8 +112,8 @@
             class="bg-white p-3 rounded-lg shadow-sm text-sm text-gray-800"
           >
             <div class="flex justify-between items-center mb-1">
-              <span 
-                class="font-extrabold uppercase" 
+              <span
+                class="font-extrabold uppercase"
                 :class="{
                   'text-pink-500 text-xs': comment.author_role === 'coach',
                   'text-green-600 text-xs': comment.author_role === 'member',
@@ -154,12 +155,12 @@
 
     <!-- Upload/Edit Modal -->
     <div
-        v-if="showModal"
-        class="fixed inset-0 bg-black/20 flex items-center justify-center z-50 p-4"
+      v-if="showModal"
+      class="fixed inset-0 bg-black/20 flex items-center justify-center z-50 p-4"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 relative max-h-[90vh] overflow-y-auto"
       >
-        <div
-          class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 relative max-h-[90vh] overflow-y-auto"
-        >
         <button
           @click="closeModal"
           class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl cursor-pointer"
@@ -183,26 +184,22 @@
               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-pink-400 focus:outline-none"
               required
             />
-            <p class="text-xs text-gray-400 mt-1">
-              {{ foodName.length }}/40 characters
-            </p>
+            <p class="text-xs text-gray-400 mt-1">{{ foodName.length }}/40 characters</p>
           </div>
 
           <!-- Description -->
           <div>
             <label class="block text-gray-600 font-medium mb-1">Description</label>
             <textarea
-                v-model="foodDescription"
-                placeholder="Describe your meal..."
-                maxlength="80"
-                rows="3"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-pink-400 focus:outline-none"
-                required
+              v-model="foodDescription"
+              placeholder="Describe your meal..."
+              maxlength="80"
+              rows="3"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-pink-400 focus:outline-none"
+              required
             ></textarea>
-            <p class="text-xs text-gray-400 mt-1">
-                {{ foodDescription.length }}/80 characters
-            </p>
-            </div>
+            <p class="text-xs text-gray-400 mt-1">{{ foodDescription.length }}/80 characters</p>
+          </div>
 
           <!-- Image Upload -->
           <div>
@@ -216,13 +213,11 @@
               class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-50 cursor-pointer"
               :required="!editMode"
             />
-            <p v-if="imageName" class="text-sm text-gray-500 mt-1">
-              Selected: {{ imageName }}
-            </p>
+            <p v-if="imageName" class="text-sm text-gray-500 mt-1">Selected: {{ imageName }}</p>
             <div v-if="editMode && currentImageUrl" class="mt-2">
               <p class="text-sm text-gray-600 mb-1">Current Image:</p>
-              <img 
-                :src="getImageUrl(currentImageUrl)" 
+              <img
+                :src="getImageUrl(currentImageUrl)"
                 alt="Current meal image"
                 class="w-32 h-32 object-cover rounded-lg border mx-auto"
               />
@@ -234,10 +229,9 @@
             <button
               type="submit"
               :disabled="uploading"
-              class="w-full bg-pink-400 hover:bg-pink-500 text-white font-semibold py-2 rounded-lg transition 
-              disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              class="w-full bg-pink-400 hover:bg-pink-500 text-white font-semibold py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
-              {{ uploading ? 'Uploading…' : (editMode ? 'Update Meal' : 'Submit Meal') }}
+              {{ uploading ? 'Uploading…' : editMode ? 'Update Meal' : 'Submit Meal' }}
             </button>
           </div>
         </form>
@@ -278,6 +272,7 @@ const editingId = ref(null)
 const currentImageUrl = ref('')
 const showImageModal = ref(false)
 const currentImage = ref('')
+const API_URL = 'http://127.0.0.1:8000'
 
 // Delete modal state
 const showDeleteModal = ref(false)
@@ -303,14 +298,14 @@ const closeDeleteModal = () => {
 
 const confirmDeletePost = async () => {
   if (!postToDeleteId.value) return
-  
+
   try {
     const response = await fetch(
-      `http://127.0.0.1:8000/api/member/food-posts/${postToDeleteId.value}/delete/`,
+      `${API_URL}/api/member/food-posts/${postToDeleteId.value}/delete/`,
       {
         method: 'DELETE',
-        credentials: 'include'
-      }
+        credentials: 'include',
+      },
     )
     if (response.ok) {
       toast.success('Post deleted successfully!')
@@ -329,8 +324,8 @@ const confirmDeletePost = async () => {
 // Fetch comments for a post
 const fetchComments = async (postId) => {
   try {
-    const res = await fetch(`http://127.0.0.1:8000/api/member/food-posts/${postId}/comments/`, {
-      credentials: 'include'
+    const res = await fetch(`${API_URL}/api/member/food-posts/${postId}/comments/`, {
+      credentials: 'include',
     })
     if (!res.ok) throw new Error(`Failed to fetch comments for post ${postId}`)
     comments.value[postId] = await res.json()
@@ -346,13 +341,13 @@ const addComment = async (postId) => {
   try {
     const payload = { text: newComment.value }
 
-    const res = await fetch(`http://127.0.0.1:8000/api/member/food-posts/${postId}/comments/`, {
+    const res = await fetch(`${API_URL}/api/member/food-posts/${postId}/comments/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(payload),
-      credentials: 'include'
+      credentials: 'include',
     })
 
     if (!res.ok) throw new Error(`Failed to add comment: ${res.statusText}`)
@@ -373,13 +368,13 @@ const addComment = async (postId) => {
 const getImageUrl = (path) => {
   if (!path) return 'https://via.placeholder.com/300x300.png?text=No+Image'
   if (path.startsWith('http')) return path
-  return `http://127.0.0.1:8000${path}`
+  return `${API_URL}${path}`
 }
 
 const fetchFoodPosts = async () => {
   try {
-    const response = await fetch('http://127.0.0.1:8000/api/member/food-posts/', {
-      credentials: 'include'
+    const response = await fetch(`${API_URL}/api/member/food-posts/`, {
+      credentials: 'include',
     })
     if (!response.ok) throw new Error(`Failed to fetch: ${response.status}`)
     foodPosts.value = await response.json()
@@ -406,19 +401,19 @@ const submitMeal = async () => {
     if (editMode.value) {
       const postData = {
         title: foodName.value,
-        content: foodDescription.value
+        content: foodDescription.value,
       }
 
       const updateResponse = await fetch(
-        `http://127.0.0.1:8000/api/member/food-posts/${editingId.value}/update/`,
+        `${API_URL}/api/member/food-posts/${editingId.value}/update/`,
         {
           method: 'PUT',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify(postData),
-          credentials: 'include'
-        }
+          credentials: 'include',
+        },
       )
 
       if (!updateResponse.ok) {
@@ -445,10 +440,10 @@ const submitMeal = async () => {
       formData.append('content', foodDescription.value)
       formData.append('image', imageFile.value)
 
-      const response = await fetch('http://127.0.0.1:8000/api/member/food-posts/', {
+      const response = await fetch(`${API_URL}/api/member/food-posts/`, {
         method: 'POST',
         body: formData,
-        credentials: 'include'
+        credentials: 'include',
       })
 
       if (!response.ok) {
@@ -481,14 +476,11 @@ const uploadImageToPost = async (postId, file) => {
   const formData = new FormData()
   formData.append('image', file)
 
-  const response = await fetch(
-    `http://127.0.0.1:8000/api/member/food-posts/${postId}/upload-image/`,
-    {
-      method: 'POST',
-      body: formData,
-      credentials: 'include'
-    }
-  )
+  const response = await fetch(`${API_URL}/api/member/food-posts/${postId}/upload-image/`, {
+    method: 'POST',
+    body: formData,
+    credentials: 'include',
+  })
 
   if (!response.ok) {
     const errorText = await response.text()

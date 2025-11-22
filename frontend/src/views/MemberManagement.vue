@@ -3,7 +3,7 @@
     <!-- Back Button -->
     <button
       @click="goBackToDashboard"
-      class="inline-flex items-center justify-center p-2 border border-gray-300 bg-white rounded-lg mb-6 hover:bg-gray-100 transition"
+      class="inline-flex items-center justify-center p-2 border border-gray-300 rounded-lg mb-6 hover:bg-gray-100 transition"
     >
       <ArrowLeft class="w-5 h-5 text-gray-700 mr-2" />
       Back to Dashboard
@@ -16,7 +16,9 @@
         <p class="text-gray-500 text-base">View and manage members who have been accepted</p>
       </div>
       <div class="flex gap-3">
-        <div class="flex flex-col items-center py-3 px-4 rounded-xl bg-green-100 border border-green-500">
+        <div
+          class="flex flex-col items-center py-3 px-4 rounded-xl bg-green-100 border border-green-500"
+        >
           <span class="text-2xl font-bold">{{ members.length }}</span>
           <span class="text-xs uppercase text-gray-600">Active Members</span>
         </div>
@@ -80,7 +82,9 @@
             </div>
             <div class="flex justify-between text-sm">
               <span class="text-gray-500 font-medium">Assigned Program:</span>
-              <span class="font-semibold text-gray-800">{{ member.programName || 'Not specified' }}</span>
+              <span class="font-semibold text-gray-800">{{
+                member.programName || 'Not specified'
+              }}</span>
             </div>
           </div>
 
@@ -91,6 +95,12 @@
               @click="viewDetails(member)"
             >
               View Details
+            </button>
+            <button
+              class="border border-gray-300 rounded-lg px-3 py-1.5 text-xs font-semibold hover:bg-gray-50 transition-all"
+              @click="viewProgress(member)"
+            >
+              View Progress
             </button>
             <button
               class="border border-gray-300 rounded-lg px-3 py-1.5 text-xs font-semibold hover:bg-gray-50 transition-all"
@@ -141,7 +151,7 @@ const toast = useToastStore()
 
 const members = ref([])
 const loading = ref(true)
-
+const API_BASE = 'http://127.0.0.1:8000/api/member/'
 const showDetailModal = ref(false)
 const selectedMemberId = ref(null)
 
@@ -189,7 +199,7 @@ function removeMember(member) {
 async function confirmRemoveMember() {
   if (!memberToRemove.value) return
   try {
-    const res = await fetch(`http://127.0.0.1:8000/api/member/${memberToRemove.value.memberId}/`, {
+    const res = await fetch(`${API_BASE}${memberToRemove.value.memberId}/`, {
       method: 'DELETE',
       credentials: 'include'
     })
@@ -209,7 +219,9 @@ async function confirmRemoveMember() {
 async function loadMembers() {
   loading.value = true
   try {
-    const res = await fetch('http://127.0.0.1:8000/api/member/accepted/', { credentials: 'include' })
+    const res = await fetch(`${API_BASE}accepted/`, {
+      credentials: 'include',
+    })
     if (!res.ok) throw new Error('Failed to fetch members')
     const data = await res.json()
     members.value = data
@@ -220,6 +232,10 @@ async function loadMembers() {
   } finally {
     loading.value = false
   }
+}
+
+function viewProgress(member) {
+  router.push(`/member-progress?memberId=${member.memberId}`)
 }
 
 onMounted(() => {

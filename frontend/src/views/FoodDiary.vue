@@ -1,6 +1,5 @@
 <template>
   <div class="max-w-[1400px] mx-auto p-6 font-sans">
-    
     <!-- Header Section -->
     <div class="elative">
       <div class="mt-4 bg-[#fac3e1] p-8 rounded-xl text-white shadow-lg relative max-w-5xl mx-auto">
@@ -10,7 +9,10 @@
         <p class="font-subtitle text-[#9c547b] text-sm opacity-90 mb-3">
           Review meals and provide coaching feedback
         </p>
-        <span v-if="memberId" class="inline-block bg-[#9c547b] px-3 py-1 rounded text-xs font-mono font-subtitle">
+        <span
+          v-if="memberId"
+          class="inline-block bg-[#9c547b] px-3 py-1 rounded text-xs font-mono font-subtitle"
+        >
           Member ID: {{ memberId }}
         </span>
 
@@ -27,7 +29,10 @@
             />
 
             <!-- Magnifying glass icon -->
-            <Search class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size="20" />
+            <Search
+              class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+              size="20"
+            />
           </div>
         </div>
       </div>
@@ -35,7 +40,9 @@
 
     <!-- Loading State -->
     <div v-if="loading" class="text-center py-16">
-      <div class="w-12 h-12 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
+      <div
+        class="w-12 h-12 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"
+      ></div>
       <p>Loading food posts...</p>
     </div>
 
@@ -58,26 +65,39 @@
       >
         
         <!-- Post Header: Member Info -->
-        <div class="px-6 py-5 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+        <div
+          class="px-6 py-5 bg-gray-50 border-b border-gray-200 flex items-center justify-between"
+        >
           <div class="flex items-center gap-3">
             <!-- Avatar -->
-            <div class="w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm flex-shrink-0"
-              :class="!post.author_photo ? 'bg-gradient-to-br from-purple-500 to-indigo-500 text-white' : ''">
+            <div
+              class="w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm flex-shrink-0"
+              :class="
+                !post.author_photo
+                  ? 'bg-gradient-to-br from-purple-500 to-indigo-500 text-white'
+                  : ''
+              "
+            >
               <template v-if="post.author_photo">
-                <img :src="getImageUrl(post.author_photo)" alt="Profile" class="w-full h-full object-cover rounded-full" />
+                <img
+                  :src="getImageUrl(post.author_photo)"
+                  alt="Profile"
+                  class="w-full h-full object-cover rounded-full"
+                />
               </template>
               <template v-else>
                 {{ (post.author_first_name || memberDisplayName).charAt(0).toUpperCase() }}
               </template>
             </div>
             <div class="flex flex-col leading-tight">
-              <span class="font-semibold text-gray-900">{{ post.author_first_name || memberDisplayName }}</span>
+              <span class="font-semibold text-gray-900">{{
+                post.author_first_name || memberDisplayName
+              }}</span>
               <span class="text-xs text-gray-500">ID: {{ post.member_id }}</span>
             </div>
           </div>
           <span class="text-xs text-gray-500 font-medium">{{ formatTime(post.created_at) }}</span>
         </div>
-
 
         <!-- Post Body -->
         <div class="grid md:grid-cols-2">
@@ -87,13 +107,24 @@
               v-if="post.image"
               class="w-full h-64 md:h-80 lg:h-[480px] overflow-hidden bg-gray-100 cursor-pointer" @click="openImageModal(getImageUrl(post.image))"
             >
-              <img :src="getImageUrl(post.image)" :alt="post.title" class="w-full h-full object-cover" />
+              <img
+                :src="getImageUrl(post.image)"
+                :alt="post.title"
+                class="w-full h-full object-cover"
+              />
             </div>
-            <div v-else class="w-full h-48 flex items-center justify-center bg-gray-100 text-gray-400 text-sm">No image uploaded</div>
+            <div
+              v-else
+              class="w-full h-48 flex items-center justify-center bg-gray-100 text-gray-400 text-sm"
+            >
+              No image uploaded
+            </div>
 
             <div class="p-5">
               <h3 class="font-bold text-lg text-gray-900 mb-2">{{ post.title }}</h3>
-              <p class="text-gray-700 text-sm leading-relaxed whitespace-pre-line">{{ post.content }}</p>
+              <p class="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
+                {{ post.content }}
+              </p>
             </div>
           </div>
 
@@ -111,7 +142,7 @@
             <div
               v-if="hasComments(post.id)"
               class="flex-1 flex flex-col gap-3 overflow-y-auto mb-4"
-              style="max-height: 400px;"
+              style="max-height: 400px"
             >
               <div
                 v-for="comment in getComments(post.id)"
@@ -121,8 +152,10 @@
                 <div class="flex justify-between items-center mb-2">
                   <span
                     :class="{
-                      'text-pink-600 font-extrabold uppercase text-xs': comment.author_role==='coach',
-                      'text-green-600 font-extrabold uppercase text-xs': comment.author_role==='member'
+                      'text-pink-600 font-extrabold uppercase text-xs':
+                        comment.author_role === 'coach',
+                      'text-green-600 font-extrabold uppercase text-xs':
+                        comment.author_role === 'member',
                     }"
                   >
                     {{ comment.author_name || 'You' }}
@@ -133,7 +166,10 @@
               </div>
             </div>
 
-            <div v-else class="flex-1 flex flex-col justify-center items-center text-gray-500 italic mb-4">
+            <div
+              v-else
+              class="flex-1 flex flex-col justify-center items-center text-gray-500 italic mb-4"
+            >
               No comments yet.
             </div>
 
@@ -147,10 +183,17 @@
                 maxlength="500"
                 @keydown.enter.prevent="handleEnter($event, post.id)"
               ></textarea>
-              <div class="flex flex-col md:flex-row md:justify-between items-start md:items-center gap-3">
-                <span class="text-xs text-gray-500 font-medium">{{ getCharCount(post.id) }}/500</span>
-                <button @click="addComment(post.id)" :disabled="!canSubmitComment(post.id) || submittingComment[post.id]"
-                  class="cursor-pointer px-4 py-2 bg-[#9CCC65] hover:bg-[#7CB342] text-white font-semibold py-2 rounded-lg transition">
+              <div
+                class="flex flex-col md:flex-row md:justify-between items-start md:items-center gap-3"
+              >
+                <span class="text-xs text-gray-500 font-medium"
+                  >{{ getCharCount(post.id) }}/500</span
+                >
+                <button
+                  @click="addComment(post.id)"
+                  :disabled="!canSubmitComment(post.id) || submittingComment[post.id]"
+                  class="cursor-pointer px-4 py-2 bg-[#9CCC65] hover:bg-[#7CB342] text-white font-semibold py-2 rounded-lg transition"
+                >
                   {{ submittingComment[post.id] ? 'Commenting...' : 'Add Comment' }}
                 </button>
               </div>
@@ -161,22 +204,45 @@
     </div>
 
     <!-- Edit Comment Modal -->
-    <div v-if="showEditModal" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" @click="closeEditModal">
+    <div
+      v-if="showEditModal"
+      class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+      @click="closeEditModal"
+    >
       <div class="bg-white rounded-xl w-full max-w-lg shadow-2xl" @click.stop>
         <div class="flex justify-between items-center px-6 py-4 border-b-2 border-gray-200">
           <h3 class="font-bold text-lg text-gray-900">Edit Comment</h3>
-          <button @click="closeEditModal" class="text-gray-500 text-2xl hover:bg-gray-100 rounded px-2 py-1 transition">×</button>
+          <button
+            @click="closeEditModal"
+            class="text-gray-500 text-2xl hover:bg-gray-100 rounded px-2 py-1 transition"
+          >
+            ×
+          </button>
         </div>
         <div class="px-6 py-4">
-          <textarea v-model="editingCommentText" rows="4" maxlength="500"
-            class="w-full border-2 border-gray-200 rounded p-3 text-sm resize-y focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-200 mb-2">
+          <textarea
+            v-model="editingCommentText"
+            rows="4"
+            maxlength="500"
+            class="w-full border-2 border-gray-200 rounded p-3 text-sm resize-y focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-200 mb-2"
+          >
           </textarea>
           <span class="text-xs text-gray-500">{{ editingCommentText.length }}/500</span>
         </div>
         <div class="flex justify-end gap-3 px-6 py-4 border-t-2 border-gray-200">
-          <button @click="closeEditModal" class="bg-gray-200 text-gray-700 px-4 py-2 rounded font-semibold hover:bg-gray-300 transition">Cancel</button>
-          <button @click="updateComment" :disabled="!editingCommentText.trim()"
-            class="bg-blue-500 text-white px-4 py-2 rounded font-semibold hover:bg-blue-600 transition disabled:bg-gray-300">Update Comment</button>
+          <button
+            @click="closeEditModal"
+            class="bg-gray-200 text-gray-700 px-4 py-2 rounded font-semibold hover:bg-gray-300 transition"
+          >
+            Cancel
+          </button>
+          <button
+            @click="updateComment"
+            :disabled="!editingCommentText.trim()"
+            class="bg-blue-500 text-white px-4 py-2 rounded font-semibold hover:bg-blue-600 transition disabled:bg-gray-300"
+          >
+            Update Comment
+          </button>
         </div>
       </div>
     </div>
@@ -208,12 +274,12 @@ import { Search, Utensils, X } from 'lucide-vue-next'
 const props = defineProps({
   memberId: {
     type: String,
-    required: true
+    required: true,
   },
   memberName: {
     type: String,
-    default: 'Member'
-  }
+    default: 'Member',
+  },
 })
 
 // State
@@ -236,24 +302,27 @@ const selectedMemberId = ref('')
 const memberId = ref('') // <-- default to all members
 const memberDisplayName = ref('All Members')
 const memberSearchQuery = ref('')
-const allPosts = ref([]) 
+const allPosts = ref([])
+const API_URL = 'http://127.0.0.1:8000'
 
 // Helper Functions
 const getImageUrl = (path) => {
   if (!path) return ''
   if (path.startsWith('http')) return path
-  return `http://127.0.0.1:8000${path}`
+  return `${API_URL}${path}`
 }
 
 const formatTime = (dateString) => {
   if (!dateString) return ''
   const date = new Date(dateString)
-  return date.toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  }).replace(',', ' at')
+  return date
+    .toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+    .replace(',', ' at')
 }
 
 const getComments = (postId) => {
@@ -290,7 +359,7 @@ const closeImageModal = () => {
 // API Calls
 const fetchMembers = async () => {
   try {
-    const res = await fetch('http://127.0.0.1:8000/api/member/accepted/', { credentials: 'include' })
+    const res = await fetch(`${API_URL}/api/member/accepted/`, { credentials: 'include' })
     members.value = await res.json()
 
     // Default selection: All Members
@@ -308,15 +377,15 @@ const fetchMembers = async () => {
 const fetchFoodPosts = async () => {
   loading.value = true
   try {
-    let url = 'http://127.0.0.1:8000/api/member/food-posts/'
-    
+    let url = `${API_URL}/api/member/food-posts/`
+
     if (props.memberId) {
       url += `?member_id=${props.memberId}`
     }
 
     const response = await fetch(url, { credentials: 'include' })
     if (!response.ok) throw new Error(`Failed to fetch posts: ${response.status}`)
-    
+
     const data = await response.json()
     foodPosts.value = data
     allPosts.value = data
@@ -334,11 +403,10 @@ const fetchFoodPosts = async () => {
   }
 }
 
-
 const fetchComments = async (postId) => {
   try {
-    const response = await fetch(`http://127.0.0.1:8000/api/member/food-posts/${postId}/comments/`, {
-      credentials: 'include'
+    const response = await fetch(`${API_URL}/api/member/food-posts/${postId}/comments/`, {
+      credentials: 'include',
     })
 
     if (!response.ok) throw new Error(`Failed to fetch comments: ${response.status}`)
@@ -358,13 +426,13 @@ const addComment = async (postId) => {
   submittingComment.value[postId] = true
 
   try {
-    const response = await fetch(`http://127.0.0.1:8000/api/member/food-posts/${postId}/comments/`, {
+    const response = await fetch(`${API_URL}/api/member/food-posts/${postId}/comments/`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
       credentials: 'include',
-      body: JSON.stringify({ text })
+      body: JSON.stringify({ text }),
     })
 
     if (!response.ok) {
@@ -384,7 +452,6 @@ const addComment = async (postId) => {
     toast.success('Comment posted successfully!')
   } catch (error) {
     console.error('Error adding comment:', error)
-
   } finally {
     submittingComment.value[postId] = false
   }
@@ -395,15 +462,15 @@ const updateComment = async () => {
 
   try {
     const response = await fetch(
-      `http://127.0.0.1:8000/api/member/food-posts/${editingPostId.value}/comments/${editingCommentId.value}/`,
+      `${API_URL}/api/member/food-posts/${editingPostId.value}/comments/${editingCommentId.value}/`,
       {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({ text: editingCommentText.value.trim() })
-      }
+        body: JSON.stringify({ text: editingCommentText.value.trim() }),
+      },
     )
 
     if (!response.ok) throw new Error(`Failed to update comment: ${response.status}`)
@@ -412,7 +479,7 @@ const updateComment = async () => {
 
     // Update local state
     const postComments = comments.value[editingPostId.value]
-    const index = postComments.findIndex(c => c.id === editingCommentId.value)
+    const index = postComments.findIndex((c) => c.id === editingCommentId.value)
     if (index !== -1) {
       postComments[index] = updatedComment
     }
@@ -421,7 +488,6 @@ const updateComment = async () => {
     toast.success('Comment updated successfully!')
   } catch (error) {
     console.error('Error updating comment:', error)
-
   }
 }
 
@@ -442,8 +508,8 @@ const onMemberSearch = () => {
   }
 
   // Filter posts by author name
-  foodPosts.value = allPosts.value.filter(post =>
-    (post.author_name || '').toLowerCase().includes(query)
+  foodPosts.value = allPosts.value.filter((post) =>
+    (post.author_name || '').toLowerCase().includes(query),
   )
 }
 
@@ -459,7 +525,7 @@ onMounted(async () => {
   // if URL already has a member ID (e.g. food-diary/M0003)
   if (props.memberId) {
     selectedMemberId.value = props.memberId
-    const selected = members.value.find(m => m.memberId === props.memberId)
+    const selected = members.value.find((m) => m.memberId === props.memberId)
 
     // use fetched name first, fallback to props.memberName
     memberDisplayName.value = selected?.name || props.memberName || 'Member'

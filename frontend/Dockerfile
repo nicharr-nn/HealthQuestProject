@@ -1,12 +1,12 @@
 # Use Node.js image
-FROM node:20.19.0
+FROM node:20-alpine
 
 # Set work directory
 WORKDIR /app
 
 # Copy package.json and install dependencies
 COPY package*.json ./
-RUN rm -rf node_modules package-lock.json && npm cache clean --force && npm install
+RUN npm install --force && npm install @rollup/rollup-linux-arm64-musl --save-optional
 
 # Copy frontend code
 COPY . .

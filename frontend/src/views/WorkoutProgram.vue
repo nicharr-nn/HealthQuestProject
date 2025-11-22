@@ -6,7 +6,9 @@
 
     <div v-else>
       <!-- Program Title -->
-      <h1 class="text-4xl font-bold text-center mb-8 text-[#846757]">{{ program.title.toUpperCase() }}</h1>
+      <h1 class="text-4xl font-bold text-center mb-8 text-[#846757]">
+        {{ program.title.toUpperCase() }}
+      </h1>
 
       <!-- Day Selector -->
       <div class="relative max-w-6xl mx-auto mb-8 rounded-full bg-[#E3CFD8]">
@@ -265,6 +267,7 @@ const workoutStates = ref({})
 const dayCompletionStates = ref({})
 const isCompletingDay = ref(false)
 const xp = ref(0)
+const API_URL = 'http://127.0.0.1:8000'
 
 const selectedDayInfo = computed(() => days.value.find((d) => d.id === selectedDay.value))
 
@@ -275,7 +278,7 @@ onMounted(async () => {
 
 async function fetchProgramDetail() {
   try {
-    const res = await fetch(`http://127.0.0.1:8000/api/workout/programs/${programId}/`, {
+    const res = await fetch(`${API_URL}/api/workout/programs/${programId}/`, {
       credentials: 'include',
     })
     if (!res.ok) throw new Error(`Failed to fetch program: ${res.status}`)
@@ -331,7 +334,7 @@ async function fetchProgramDetail() {
 }
 
 async function fetchCompletedDays() {
-  const res = await fetch(`http://127.0.0.1:8000/api/workout/progress/${programId}/`, {
+  const res = await fetch(`${API_URL}/api/workout/progress/${programId}/`, {
     credentials: 'include',
   })
   if (res.ok) {
@@ -346,7 +349,7 @@ async function fetchCompletedDays() {
 
 async function checkDayCompletion(dayId) {
   try {
-    const res = await fetch(`http://127.0.0.1:8000/api/workout/day/${dayId}/complete-status/`, {
+    const res = await fetch(`${API_URL}/api/workout/day/${dayId}/complete-status/`, {
       credentials: 'include',
     })
 
@@ -421,7 +424,7 @@ function allWorkoutsComplete(dayId) {
 }
 
 async function getCurrentXp() {
-  const res = await fetch(`http://127.0.0.1:8000/api/user/user-info/`, {
+  const res = await fetch(`${API_URL}/api/user/user-info/`, {
     credentials: 'include',
   })
   if (!res.ok) throw new Error('Failed to load user info')
@@ -439,7 +442,7 @@ async function completeDay(dayId) {
   try {
     const before = await getCurrentXp()
 
-    const res = await fetch(`http://127.0.0.1:8000/api/workout/day/${dayId}/complete/`, {
+    const res = await fetch(`${API_URL}/api/workout/day/${dayId}/complete/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -451,7 +454,6 @@ async function completeDay(dayId) {
     const after = await getCurrentXp()
 
     xp.value = Math.max(0, (after || 0) - (before || 0))
-
 
     // hide or move to next day automatically
     const nextDay = days.value.find((d) => !dayCompletionStates.value[d.id])

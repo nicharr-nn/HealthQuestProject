@@ -53,9 +53,12 @@
                           </span>
                         </label>
                       </div>
-                      <p v-if="uploadMessage" class="mt-4 text-sm text-gray-600 break-words overflow-hidden">
+                      <p
+                        v-if="uploadMessage"
+                        class="mt-4 text-sm text-gray-600 break-words overflow-hidden"
+                      >
                         {{ uploadMessage }}
-                      </p>                    
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -72,7 +75,9 @@
                         <span class="text-teal-600 text-lg font-medium break-words">
                           {{ profile.name }}
                         </span>
-                        <p v-if="isEditing" class="text-xs text-gray-400 mt-1">(Linked to Google account)</p>
+                        <p v-if="isEditing" class="text-xs text-gray-400 mt-1">
+                          (Linked to Google account)
+                        </p>
                       </div>
                     </div>
 
@@ -82,8 +87,12 @@
                         >Email</label
                       >
                       <div class="flex-1 min-w-0 text-right">
-                        <span class="text-teal-600 text-lg font-medium break-all">{{ profile.email }}</span>
-                        <p v-if="isEditing" class="text-xs text-gray-400 mt-1">(Linked to Google account)</p>
+                        <span class="text-teal-600 text-lg font-medium break-all">{{
+                          profile.email
+                        }}</span>
+                        <p v-if="isEditing" class="text-xs text-gray-400 mt-1">
+                          (Linked to Google account)
+                        </p>
                       </div>
                     </div>
 
@@ -304,6 +313,7 @@ import DeleteModal from '@/components/DeleteModal.vue'
 
 const userStore = useUserStore()
 const toast = useToastStore()
+const API_URL = 'http://127.0.0.1:8000'
 
 const profile = ref({
   name: '',
@@ -344,7 +354,7 @@ const closeDeleteModal = () => {
 
 const deleteUserAccount = async () => {
   try {
-    const response = await fetch(`http://127.0.0.1:8000/api/user/delete-account/${userStore.id}/`, {
+    const response = await fetch(`${API_URL}/api/user/delete-account/${userStore.id}/`, {
       method: 'DELETE',
       credentials: 'include',
       headers: {
@@ -474,11 +484,12 @@ function handleFileChange(event) {
   // Truncate filename if too long
   const maxLength = 30
   const fileName = selectedFile.value.name
-  
+
   if (fileName.length > maxLength) {
     const extension = fileName.substring(fileName.lastIndexOf('.'))
     const nameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.'))
-    const truncatedName = nameWithoutExt.substring(0, maxLength - extension.length - 3) + '...' + extension
+    const truncatedName =
+      nameWithoutExt.substring(0, maxLength - extension.length - 3) + '...' + extension
     uploadMessage.value = `Selected: ${truncatedName}`
   } else {
     uploadMessage.value = `Selected: ${fileName}`
@@ -492,7 +503,7 @@ async function uploadPhoto() {
   formData.append('photo', selectedFile.value)
 
   try {
-    const response = await fetch('http://127.0.0.1:8000/api/user/upload-photo/', {
+    const response = await fetch(`${API_URL}/api/user/upload-photo/`, {
       method: 'POST',
       body: formData,
       credentials: 'include',
@@ -539,7 +550,7 @@ async function saveChanges() {
     }
 
     // Update profile info
-    const profileResponse = await fetch('http://127.0.0.1:8000/api/user/update-profile/', {
+    const profileResponse = await fetch(`${API_URL}/api/user/update-profile/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -559,7 +570,7 @@ async function saveChanges() {
       (userStore.role === 'normal' || userStore.role === 'member') &&
       editProfile.value.current_goal
     ) {
-      const goalResponse = await fetch('http://127.0.0.1:8000/api/user/select-goal/', {
+      const goalResponse = await fetch(`${API_URL}/api/user/select-goal/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -608,7 +619,7 @@ const profileComplete = ref(userStore.profile_complete)
 
 async function fetchUserProfile() {
   try {
-    const response = await fetch('http://127.0.0.1:8000/api/user/user-info/', {
+    const response = await fetch(`${API_URL}/api/user/user-info/`, {
       credentials: 'include',
     })
 
@@ -635,7 +646,7 @@ async function fetchUserProfile() {
         joinDate: profileData.created_at
           ? new Date(profileData.created_at).toLocaleDateString()
           : '',
-        photo: profileData.photo ? `http://127.0.0.1:8000${profileData.photo}` : null,
+        photo: profileData.photo ? `${API_URL}${profileData.photo}` : null,
       }
 
       profileComplete.value = userData.profile_complete
@@ -666,4 +677,3 @@ onMounted(() => {
   fetchUserProfile()
 })
 </script>
-
