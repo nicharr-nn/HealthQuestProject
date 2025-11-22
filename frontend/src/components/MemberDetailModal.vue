@@ -111,7 +111,6 @@
 
 <script setup>
 import { ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
 import { X, User, Activity, MessageCircle } from 'lucide-vue-next'
 
 const props = defineProps({
@@ -120,7 +119,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close'])
-const router = useRouter()
 
 const loading = ref(false)
 const error = ref(null)
