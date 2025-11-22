@@ -86,13 +86,12 @@
       </div>
 
       <!-- Coach Registration / Details Form -->
-      <div class="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 flex flex-col justify-between h-full">
+      <div class="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 flex flex-col">
         <h2 class="text-lg font-semibold text-gray-900 mb-4">
           {{ hasSubmitted ? 'Profile Details' : 'Coach Application' }}
         </h2>
 
         <form @submit.prevent="submitApplication" class="grid gap-4">
-
           <!-- Profile Info Fields -->
           <div class="grid grid-cols-2 gap-3">
             <div class="grid gap-1">
@@ -119,14 +118,14 @@
             </div>
           </div>
 
+          <!-- Location -->
           <div class="grid gap-1">
             <label for="location" class="text-gray-700 font-medium text-sm">Location</label>
             <select
               id="location"
               v-model="coachForm.location"
               :disabled="hasSubmitted && !isEditingProfile"
-              class="border border-gray-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2
-                    focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-50 disabled:cursor-not-allowed"
+              class="border border-gray-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-50 disabled:cursor-not-allowed"
             >
               <option value="">Select your location</option>
               <option value="TH">Thailand</option>
@@ -147,7 +146,7 @@
               v-model="coachForm.bio"
               rows="4"
               placeholder="Tell us a bit about your coaching style and experience"
-              :disabled="hasSubmitted && !isEditingProfile"
+              :disabled="hasSubmitted && !isEditingProfile && !isResubmitting"
               maxlength="250"
               class="border border-gray-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-50 disabled:cursor-not-allowed"
             ></textarea>
@@ -175,62 +174,53 @@
             <label class="text-gray-700 font-medium text-sm">Certification Document</label>
             <p class="text-gray-700 text-sm">{{ selectedFileName }}</p>
           </div>
-        </form>
 
-        <!-- Form Buttons -->
-        <div class="flex justify-end mt-auto gap-2">
-          <!-- Submit new application if not submitted yet -->
-          <button
-            v-if="!hasSubmitted"
-            type="submit"
-            class="px-4 py-2 rounded-xl bg-gray-900 text-white font-semibold hover:brightness-105 transition"
-          >
-            Submit Application
-          </button>
-          <button
-            v-if="!hasSubmitted"
-            type="button"
-            @click="resetForm"
-            class="px-4 py-2 rounded-xl border border-gray-300 font-semibold hover:bg-gray-100 transition"
-          >
-            Reset
-          </button>
-
-          <!-- Edit / Save / Cancel for approved -->
-          <button
-            v-if="hasSubmitted && coachStatus === 'approved'"
-            type="button"
-            @click="toggleEdit"
-            class="px-4 py-2 rounded-xl bg-gray-900 text-white font-semibold hover:brightness-105 transition"
-          >
-            {{ isEditingProfile ? (hasChanges ? 'Save Changes' : 'Cancel') : 'Edit Profile' }}
-          </button>
-
-          <!-- Resubmit for pending/rejected -->
-          <button
-            v-if="hasSubmitted && coachStatus !== 'approved' && !isResubmitting"
-            type="button"
-            @click="startResubmit"
-            class="px-4 py-2 rounded-xl bg-gray-900 text-white font-semibold hover:brightness-105 transition"
-          >
-            Resubmit Certification
-          </button>
-          <template v-if="isResubmitting">
+          <!-- Form Buttons -->
+          <div class="flex justify-end gap-2 mt-2">
             <button
+              v-if="!hasSubmitted"
               type="submit"
-              class="px-4 py-2 rounded-xl bg-gray-900 text-white font-semibold hover:brightness-105 transition"
+              class="px-4 py-2 rounded-xl bg-gray-900 text-white font-semibold hover:brightness-105 transition cursor-pointer"
             >
               Submit Application
             </button>
             <button
+              v-if="!hasSubmitted"
               type="button"
-              @click="cancelResubmit"
-              class="px-4 py-2 rounded-xl border border-gray-300 font-semibold hover:bg-gray-100 transition"
+              @click="resetForm"
+              class="px-4 py-2 rounded-xl border border-gray-300 font-semibold hover:bg-gray-100 transition cursor-pointer"
             >
-              Cancel
+              Reset
             </button>
-          </template>
-        </div>
+
+            <button
+              v-if="hasSubmitted && coachStatus === 'approved'"
+              type="button"
+              @click="toggleEdit"
+              class="px-4 py-2 rounded-xl bg-gray-900 text-white font-semibold hover:brightness-105 transition cursor-pointer"
+            >
+              {{ isEditingProfile ? (hasChanges ? 'Save Changes' : 'Cancel') : 'Edit Profile' }}
+            </button>
+
+            <button
+              v-if="hasSubmitted && coachStatus !== 'approved' && !isResubmitting"
+              type="button"
+              @click="startResubmit"
+              class="px-4 py-2 rounded-xl bg-gray-900 text-white font-semibold hover:brightness-105 transition cursor-pointer"
+            >
+              Resubmit Certification
+            </button>
+
+            <template v-if="isResubmitting">
+              <button
+                type="submit"
+                class="px-4 py-2 rounded-xl bg-gray-900 text-white font-semibold hover:brightness-105 transition cursor-pointer"
+              >
+                Submit Application
+              </button>
+            </template>
+          </div>
+        </form>
       </div>
     </div>
     <DeleteModal
@@ -416,7 +406,14 @@ onMounted(async () => {
 
 // Submit coach application
 async function submitApplication() {
-  if (!selectedFile.value && !hasSubmitted.value) {
+  // Validate Bio
+  if (!coachForm.bio || !coachForm.bio.trim()) {
+    toast.error('Please enter a Short Bio.')
+    return
+  }
+
+  // Validate Certification (file must be selected if first submission or resubmitting)
+  if (!selectedFile.value && (!hasSubmitted.value || isResubmitting.value)) {
     toast.error('Please upload a Certification PDF.')
     return
   }
@@ -432,10 +429,6 @@ async function submitApplication() {
 
   const method = hasSubmitted.value ? 'PATCH' : 'POST'
 
-  if (userStore.loading) {
-    await userStore.init()
-  }
-
   try {
     const response = await fetch('http://127.0.0.1:8000/api/coach/upload-cert/', {
       method,
@@ -450,7 +443,7 @@ async function submitApplication() {
     coachStatus.value = newStatus
     hasSubmitted.value = true
     isResubmitting.value = false
-    selectedFileName.value = selectedFile.value?.name || null
+    selectedFileName.value = selectedFile.value?.name || selectedFileName.value
     selectedFile.value = null
     toast.info('Application submitted! Status is now pending.')
   } catch (err) {
@@ -467,8 +460,11 @@ function resetForm() {
 }
 
 function startResubmit() {
-  showResubmitModal.value = true
+  isResubmitting.value = true
+  selectedFile.value = null
+  selectedFileName.value = null
 }
+
 
 function confirmResubmit() {
   isResubmitting.value = true
