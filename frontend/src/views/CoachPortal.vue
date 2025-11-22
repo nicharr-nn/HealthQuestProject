@@ -287,8 +287,6 @@ const joinedDate = ref('')
 const showDeleteAccountModal = ref(false)
 const showResubmitConfirm = ref(false)
 
-const API_URL = 'http://127.0.0.1:8000';
-
 function confirmDeleteProfile() {
   showDeleteAccountModal.value = true
 }
@@ -332,8 +330,6 @@ const statusBadgeClass = computed(() => {
       return `${base} bg-gray-100 text-gray-700`
   }
 })
-
-const showResubmitModal = ref(false)
 
 // Called when file input changes
 function onFileSelected(event) {
