@@ -19,7 +19,9 @@
     <!-- Main column -->
     <div :class="sidebarOpen ? 'md:pl-72' : 'md:pl-0'">
       <!-- Header -->
-      <header class="sticky top-0 left-0 right-0 z-30 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-sm">
+      <header
+        class="sticky top-0 left-0 right-0 z-30 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-sm"
+      >
         <div class="flex items-center justify-between px-4 py-3 md:px-8">
           <div class="flex items-center gap-3">
             <button
@@ -44,7 +46,9 @@
 
             <!-- Header User Info -->
             <div class="flex items-center gap-2">
-              <div class="grid h-10 w-10 place-items-center rounded-full bg-blue-500 font-bold font-subtitle text-white">
+              <div
+                class="grid h-10 w-10 place-items-center rounded-full bg-blue-500 font-bold font-subtitle text-white"
+              >
                 <template v-if="userStore.user?.username">
                   {{ getInitials(userStore.user.username) }}
                 </template>
@@ -60,9 +64,9 @@
                 </div>
                 <div class="text-[11px] text-slate-500 font-subtitle">Administrator</div>
               </div>
-            </div>            
+            </div>
 
-            <button 
+            <button
               @click="logout"
               class="ml-3 flex items-center py-2 px-3 rounded-md hover:bg-gray-100"
             >
@@ -76,15 +80,22 @@
       <div class="p-5 space-y-4">
         <div>
           <h2 class="text-2xl font-subtitle">Workout Management</h2>
-          <p class="text-sm text-slate-500 font-subtitle">View all workout programs and their associated coaches</p>
+          <p class="text-sm text-slate-500 font-subtitle">
+            View all workout programs and their associated coaches
+          </p>
         </div>
 
         <!-- Workouts Table -->
         <div class="rounded-xl bg-white p-5 shadow-sm">
           <div class="mb-4 flex items-center justify-between">
-            <h3 class="text-base font-semibold font-subtitle">All Workout Programs ({{ workouts.length }})</h3>
+            <h3 class="text-base font-semibold font-subtitle">
+              All Workout Programs ({{ workouts.length }})
+            </h3>
             <div class="flex items-center gap-3">
-              <select class="rounded-md border border-slate-200 px-3 py-2 text-sm font-subtitle" v-model="workoutCategoryFilter">
+              <select
+                class="rounded-md border border-slate-200 px-3 py-2 text-sm font-subtitle"
+                v-model="workoutCategoryFilter"
+              >
                 <option value="all">All Categories</option>
                 <option value="strength_training">Strength Training</option>
                 <option value="cardio">Cardio</option>
@@ -94,7 +105,10 @@
                 <option value="flexibility">Flexibility</option>
                 <option value="full_body">Full Body</option>
               </select>
-              <select class="rounded-md border border-slate-200 px-3 py-2 text-sm font-subtitle" v-model="workoutDifficultyFilter">
+              <select
+                class="rounded-md border border-slate-200 px-3 py-2 text-sm font-subtitle"
+                v-model="workoutDifficultyFilter"
+              >
                 <option value="all">All Difficulties</option>
                 <option value="easy">Easy</option>
                 <option value="medium">Medium</option>
@@ -103,7 +117,9 @@
             </div>
           </div>
 
-          <div v-if="loadingWorkouts" class="text-center py-8 text-slate-500">Loading workouts...</div>
+          <div v-if="loadingWorkouts" class="text-center py-8 text-slate-500">
+            Loading workouts...
+          </div>
 
           <div v-else class="overflow-x-auto">
             <table class="w-full border-collapse text-sm">
@@ -124,7 +140,11 @@
                     No workout programs found
                   </td>
                 </tr>
-                <tr v-for="workout in filteredWorkouts" :key="workout.id" class="border-b border-slate-100 hover:bg-slate-50">
+                <tr
+                  v-for="workout in filteredWorkouts"
+                  :key="workout.id"
+                  class="border-b border-slate-100 hover:bg-slate-50"
+                >
                   <td class="px-3 py-3">
                     <div class="flex items-center gap-2">
                       <div class="font-semibold">{{ workout.title }}</div>
@@ -132,14 +152,18 @@
                   </td>
                   <td class="px-3 py-3">
                     <div class="flex items-center gap-2">
-                      <div class="grid h-6 w-6 place-items-center rounded-full bg-emerald-500 text-xs font-bold text-white">
+                      <div
+                        class="grid h-6 w-6 place-items-center rounded-full bg-emerald-500 text-xs font-bold text-white"
+                      >
                         {{ getInitials(workout.coach_name) }}
                       </div>
                       <span class="font-semibold">{{ workout.coach_name }}</span>
                     </div>
                   </td>
                   <td class="px-3 py-3">
-                    <span class="rounded-full px-2 py-0.5 text-[11px] font-semibold capitalize bg-purple-100 text-purple-800">
+                    <span
+                      class="rounded-full px-2 py-0.5 text-[11px] font-semibold capitalize bg-purple-100 text-purple-800"
+                    >
                       {{ formatCategory(workout.category) }}
                     </span>
                   </td>
@@ -192,22 +216,30 @@
             <div class="px-5 py-4 space-y-4 max-h-[70vh] overflow-y-auto">
               <div>
                 <h4 class="text-xl font-subtitle">{{ workoutModal.workout?.title }}</h4>
-                <p class="text-sm text-slate-600 mt-2 font-medium ">{{ workoutModal.workout?.description }}</p>
+                <p class="text-sm text-slate-600 mt-2 font-medium">
+                  {{ workoutModal.workout?.description }}
+                </p>
               </div>
 
               <div class="grid grid-cols-2 gap-4">
                 <div>
                   <div class="text-sm font-subtitle text-slate-700">Coach</div>
                   <div class="flex items-center gap-2 mt-1">
-                    <div class="grid h-8 w-8 place-items-center rounded-full bg-emerald-500 text-xs font-bold text-white">
+                    <div
+                      class="grid h-8 w-8 place-items-center rounded-full bg-emerald-500 text-xs font-bold text-white"
+                    >
                       {{ getInitials(workoutModal.workout?.coach_name) }}
                     </div>
-                    <span class="text-base font-medium">{{ workoutModal.workout?.coach_name }}</span>
+                    <span class="text-base font-medium">{{
+                      workoutModal.workout?.coach_name
+                    }}</span>
                   </div>
                 </div>
                 <div>
                   <div class="text-sm font-subtitle text-slate-700">Category</div>
-                  <div class="text-base capitalize mt-1 font-medium ">{{ formatCategory(workoutModal.workout?.category) }}</div>
+                  <div class="text-base capitalize mt-1 font-medium">
+                    {{ formatCategory(workoutModal.workout?.category) }}
+                  </div>
                 </div>
                 <div>
                   <div class="text-sm font-subtitle text-slate-700">Difficulty Level</div>
@@ -222,15 +254,21 @@
                 </div>
                 <div>
                   <div class="text-sm font-subtitle text-slate-700">Duration</div>
-                  <div class="text-base mt-1 font-medium ">{{ workoutModal.workout?.duration }} days</div>
+                  <div class="text-base mt-1 font-medium">
+                    {{ workoutModal.workout?.duration }} days
+                  </div>
                 </div>
                 <div>
                   <div class="text-sm font-subtitle text-slate-700">Level Access</div>
-                  <div class="text-base capitalize mt-1 font-medium ">{{ workoutModal.workout?.level_access }}</div>
+                  <div class="text-base capitalize mt-1 font-medium">
+                    {{ workoutModal.workout?.level_access }}
+                  </div>
                 </div>
                 <div>
                   <div class="text-sm font-subtitle text-slate-700">Created</div>
-                  <div class="text-base mt-1 font-medium ">{{ formatDate(workoutModal.workout?.created_at) }}</div>
+                  <div class="text-base mt-1 font-medium">
+                    {{ formatDate(workoutModal.workout?.created_at) }}
+                  </div>
                 </div>
               </div>
 
@@ -241,12 +279,18 @@
                 class="flex items-center justify-between rounded-md bg-slate-50 p-3"
               >
                 <div class="flex items-center gap-3">
-                  <div class="grid h-8 w-8 place-items-center rounded-full bg-blue-500 text-xs font-bold text-white">
+                  <div
+                    class="grid h-8 w-8 place-items-center rounded-full bg-blue-500 text-xs font-bold text-white"
+                  >
                     {{ day.day_number }}
                   </div>
                   <div>
-                    <div class="text-sm font-medium">{{ day.title || `Day ${day.day_number}` }}</div>
-                    <div class="text-xs text-slate-500">{{ day.duration }} minutes • {{ day.video_links?.length || 0 }} videos</div>
+                    <div class="text-sm font-medium">
+                      {{ day.title || `Day ${day.day_number}` }}
+                    </div>
+                    <div class="text-xs text-slate-500">
+                      {{ day.duration }} minutes • {{ day.video_links?.length || 0 }} videos
+                    </div>
                   </div>
                 </div>
 
@@ -290,7 +334,7 @@ import DeleteModal from '@/components/DeleteModal.vue'
 const toast = useToastStore()
 
 const userStore = useUserStore()
-const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
+const API_URL = 'http://127.0.0.1:8000'
 
 // Sidebar
 const sidebarOpen = ref(true)
@@ -337,21 +381,21 @@ const filteredWorkouts = computed(() => {
 
   // Category filter
   if (workoutCategoryFilter.value !== 'all') {
-    result = result.filter(w => w.category === workoutCategoryFilter.value)
+    result = result.filter((w) => w.category === workoutCategoryFilter.value)
   }
 
   // Difficulty filter
   if (workoutDifficultyFilter.value !== 'all') {
-    result = result.filter(w => w.difficulty_level === workoutDifficultyFilter.value)
+    result = result.filter((w) => w.difficulty_level === workoutDifficultyFilter.value)
   }
 
   // Search filter
   if (searchQuery.value) {
     const q = searchQuery.value.toLowerCase()
     result = result.filter(
-      w =>
+      (w) =>
         w.title.toLowerCase().includes(q) ||
-        (w.coach_name && w.coach_name.toLowerCase().includes(q))
+        (w.coach_name && w.coach_name.toLowerCase().includes(q)),
     )
   }
 
@@ -365,22 +409,29 @@ async function fetchWorkouts() {
   try {
     const res = await fetch(`${API_URL}/api/workout/programs/`, {
       credentials: 'include',
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
     })
     if (!res.ok) throw new Error('Failed to fetch workouts')
     const data = await res.json()
 
     if (import.meta.env.DEV) {
       try {
-        console.debug('Admin Workouts payload sample', Array.isArray(data) ? data.slice(0, 2) : data)
+        console.debug(
+          'Admin Workouts payload sample',
+          Array.isArray(data) ? data.slice(0, 2) : data,
+        )
       } catch (e) {
         console.error(e)
       }
     }
 
-    const base = data.map(w => {
-      const nameCandidate = w.coach?.name || w.coach?.username || w.coach_name || w.coach_username || null
-      const idCandidate = (typeof w.coach === 'number' || typeof w.coach === 'string') ? w.coach : (w.coach?.id || w.coach_id || w.coach?.public_id)
+    const base = data.map((w) => {
+      const nameCandidate =
+        w.coach?.name || w.coach?.username || w.coach_name || w.coach_username || null
+      const idCandidate =
+        typeof w.coach === 'number' || typeof w.coach === 'string'
+          ? w.coach
+          : w.coach?.id || w.coach_id || w.coach?.public_id
       const display = nameCandidate || (idCandidate ? `Coach ${idCandidate}` : 'Unknown Coach')
       return {
         ...w,
@@ -389,14 +440,15 @@ async function fetchWorkouts() {
       }
     })
 
-    const numericCoachIds = Array.from(new Set(base
-      .map(w => w.coach)
-      .filter(id => typeof id === 'number')
-    ))
+    const numericCoachIds = Array.from(
+      new Set(base.map((w) => w.coach).filter((id) => typeof id === 'number')),
+    )
 
     if (numericCoachIds.length > 0) {
       try {
-        const coachRes = await fetch(`${API_URL}/api/moderation/coaches/`, { credentials: 'include' })
+        const coachRes = await fetch(`${API_URL}/api/moderation/coaches/`, {
+          credentials: 'include',
+        })
         if (coachRes.ok) {
           const list = await coachRes.json()
           const idToName = {}
@@ -407,14 +459,15 @@ async function fetchWorkouts() {
               c?.user_profile?.id,
               c?.user?.profile?.id,
               typeof c.id === 'number' ? c.id : null,
-            ].filter(v => typeof v === 'number')
+            ].filter((v) => typeof v === 'number')
             for (const cid of candidates) {
               if (numericCoachIds.includes(cid)) {
-                idToName[cid] = c.name || c.username || (c.email ? String(c.email).split('@')[0] : null)
+                idToName[cid] =
+                  c.name || c.username || (c.email ? String(c.email).split('@')[0] : null)
               }
             }
           }
-          base.forEach(w => {
+          base.forEach((w) => {
             if (typeof w.coach === 'number' && idToName[w.coach]) {
               w.coach_display = idToName[w.coach]
             }
@@ -426,7 +479,6 @@ async function fetchWorkouts() {
     }
 
     workouts.value = base
-
   } catch (err) {
     console.error('Error fetching workouts:', err)
     error.value = 'Failed to load workouts'
@@ -443,37 +495,40 @@ function getCsrfToken() {
 async function deleteWorkout(id) {
   try {
     const res = await fetch(`${API_URL}/api/workout/programs/${id}/delete/`, {
-      method: "DELETE",
-      credentials: "include",
+      method: 'DELETE',
+      credentials: 'include',
       headers: {
-        "Content-Type": "application/json",
-        "X-CSRFToken": getCsrfToken(),
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCsrfToken(),
       },
-    });
+    })
 
     if (!res.ok) {
       const text = await res.text()
       let body = text
-      try { 
-        body = JSON.parse(text) 
+      try {
+        body = JSON.parse(text)
       } catch (e) {
         console.error(e)
       }
 
       if (res.status === 403) {
-        toast.error((body && (body.detail || body.error)) || "You don't have permission to delete this program")
+        toast.error(
+          (body && (body.detail || body.error)) ||
+            "You don't have permission to delete this program",
+        )
       } else {
-        toast.error((body && (body.error || body.detail)) || "Failed to delete workout")
+        toast.error((body && (body.error || body.detail)) || 'Failed to delete workout')
       }
-      return;
+      return
     }
 
     // Remove from local list
-    workouts.value = workouts.value.filter(w => w.id !== id);
-    toast.success("Workout program deleted successfully");
+    workouts.value = workouts.value.filter((w) => w.id !== id)
+    toast.success('Workout program deleted successfully')
   } catch (err) {
-    console.error("Delete workout error:", err);
-    toast.error("Failed to delete workout");
+    console.error('Delete workout error:', err)
+    toast.error('Failed to delete workout')
   }
 }
 
@@ -507,7 +562,10 @@ function getDifficultyClass(difficulty) {
 
 function getInitials(name) {
   if (!name) return '?'
-  return name.split(' ').map(n => n[0].toUpperCase()).join('')
+  return name
+    .split(' ')
+    .map((n) => n[0].toUpperCase())
+    .join('')
 }
 
 function openVideo(link) {
@@ -521,7 +579,7 @@ function formatDate(dateString) {
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
-    day: 'numeric'
+    day: 'numeric',
   })
 }
 

@@ -8,7 +8,9 @@
           Manage your workout programs and track your coaching progress
         </p>
 
-        <div class="flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-500 rounded-lg w-fit">
+        <div
+          class="flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-500 rounded-lg w-fit"
+        >
           <span class="text-xs text-gray-500 font-medium">Your Coach ID:</span>
           <span class="text-sm text-blue-900 font-bold font-mono tracking-wide">{{ coachID }}</span>
 
@@ -56,7 +58,7 @@
         class="flex items-center gap-4 p-5 rounded-xl mb-5"
         :class="{
           'bg-yellow-100 border border-yellow-500': approvalStatus === 'pending',
-          'bg-red-100 border border-red-500': approvalStatus === 'rejected'
+          'bg-red-100 border border-red-500': approvalStatus === 'rejected',
         }"
       >
         <div class="text-2xl">
@@ -69,9 +71,11 @@
             {{ approvalStatus === 'pending' ? 'Application Under Review' : 'Application Rejected' }}
           </div>
           <div class="text-gray-500 leading-relaxed">
-            {{ approvalStatus === 'pending'
-              ? "Your application is being reviewed. You can create programs once approved."
-              : "Please contact support or resubmit your application." }}
+            {{
+              approvalStatus === 'pending'
+                ? 'Your application is being reviewed. You can create programs once approved.'
+                : 'Please contact support or resubmit your application.'
+            }}
           </div>
         </div>
       </div>
@@ -137,10 +141,7 @@
         </div>
 
         <!-- Programs Grid -->
-        <div
-          v-else
-          class="grid grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-5"
-        >
+        <div v-else class="grid grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-5">
           <div
             v-for="program in filteredPrograms"
             :key="program.id"
@@ -157,7 +158,7 @@
                 :class="{
                   'bg-green-100 text-green-700': program.difficulty_level === 'beginner',
                   'bg-yellow-100 text-yellow-700': program.difficulty_level === 'intermediate',
-                  'bg-red-100 text-red-700': program.difficulty_level === 'advanced'
+                  'bg-red-100 text-red-700': program.difficulty_level === 'advanced',
                 }"
               >
                 {{ program.difficulty_level }}
@@ -228,6 +229,7 @@ const memberCount = ref(0)
 const editingProgram = ref(null)
 const pendingRequestCount = ref(0)
 const copied = ref(false)
+const API_URL = 'http://127.0.0.1:8000'
 
 const { Clipboard } = icons
 
@@ -253,7 +255,7 @@ function copyCoachID() {
 
 async function loadCoachStatus() {
   try {
-    const res = await fetch('http://127.0.0.1:8000/api/coach/status/', {
+    const res = await fetch(`${API_URL}/api/coach/status/`, {
       credentials: 'include'
     })
     if (!res.ok) {
@@ -273,7 +275,7 @@ async function loadCoachStatus() {
   }
 }
 
-const API_BASE = 'http://127.0.0.1:8000/api/workout/programs/'
+const API_BASE = `${API_URL}/api/workout/programs/`
 
 async function loadPrograms() {
   try {

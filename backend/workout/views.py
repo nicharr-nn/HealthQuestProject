@@ -1,6 +1,4 @@
-import calendar
 from datetime import datetime, timedelta
-
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import Sum, Case, When, IntegerField, Value
@@ -47,7 +45,7 @@ def workout_programs(request):
             serializer = WorkoutProgramSerializer(programs, many=True)
             return Response(serializer.data)
 
-        # ✅ Get user's fitness goals for sorting
+        # Get user's fitness goals for sorting
         user_goals = user_profile.fitness_goals.values_list("goal_type", flat=True)
         matching_categories = _get_matching_categories(user_goals)
 
@@ -253,7 +251,6 @@ def user_analytics(request):
     weekly_stats = _calculate_weekly_improvement(completions, today)
     consistency_stats = _calculate_consistency(completions, today)
     xp_stats = _calculate_xp_last_30_days(completions, today)
-    monthly_stats = _calculate_monthly_challenge(completions, profile, today)
     streak = _calculate_current_streak(completions, today)
 
     return Response(
@@ -265,8 +262,7 @@ def user_analytics(request):
                 "completed_this_week": weekly_stats["this_week"],
                 "completed_prev_week": weekly_stats["prev_week"],
                 "current_streak": streak,
-            },
-            "monthlyChallenge": monthly_stats,
+            }
         }
     )
 
@@ -318,22 +314,6 @@ def _calculate_xp_last_30_days(completions, today):
         or 0
     )
     return {"total": total}
-
-
-def _calculate_monthly_challenge(completions, profile, today):
-    """Calculate monthly challenge progress."""
-    target = getattr(profile, "monthly_challenge_target", 20)
-    completed = completions.filter(completed_at__date__gte=today.replace(day=1)).count()
-
-    _, days_in_month = calendar.monthrange(today.year, today.month)
-    days_left = (today.replace(day=days_in_month) - today).days
-
-    return {
-        "description": f"Complete {target} workouts this month",
-        "completed": completed,
-        "target": target,
-        "daysLeft": days_left,
-    }
 
 
 def _calculate_current_streak(completions, today):

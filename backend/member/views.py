@@ -47,19 +47,18 @@ def coach_member_profile(request, member_id):
     total_days = 0
     completed_days = 0
     progress = 0
-    assignments = WorkoutAssignment.objects.filter(
-        member=member
-        ).select_related("program")
+    assignments = WorkoutAssignment.objects.filter(member=member).select_related(
+        "program"
+    )
     if assignments.exists():
         for assignment in assignments:
-            program_days = assignment.program.days.values(
-                "day_number"
-                ).distinct().count()
+            program_days = (
+                assignment.program.days.values("day_number").distinct().count()
+            )
             total_days += program_days
             program_completed = (
                 WorkoutDayCompletion.objects.filter(
-                    user_profile=profile,
-                    workout_day__program=assignment.program
+                    user_profile=profile, workout_day__program=assignment.program
                 )
                 .values("workout_day__day_number")
                 .distinct()
@@ -503,6 +502,163 @@ def assign_program_to_member(request):
     )
 
 
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def member_assignments(request, member_id):
+    """
+    Get all workout assignments for a specific member.
+    Only accessible by the member's coach.
+    """
+    try:
+        user_profile = request.user.userprofile
+
+        # Check if user is a coach
+        if user_profile.role != "coach":
+            return Response(
+                {"error": "Only coaches can view member assignments"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        coach = Coach.objects.get(user=user_profile)
+
+        # Get the member
+        try:
+            member = Member.objects.get(member_id=member_id)
+        except Member.DoesNotExist:
+            return Response(
+                {"error": "Member not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Verify relationship exists
+        relationship = CoachMemberRelationship.objects.filter(
+            coach=coach, member=member, status="accepted"
+        ).first()
+
+        if not relationship:
+            return Response(
+                {"error": "You do not have access to this member's assignments"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        # Get all assignments for this member
+        assignments = WorkoutAssignment.objects.filter(member=member).select_related(
+            "program"
+        )
+
+        assignments_data = []
+        for assignment in assignments:
+            program = assignment.program
+            assignments_data.append(
+                {
+                    "id": assignment.id,
+                    "program": {
+                        "id": program.id,
+                        "title": program.title,
+                        "category": program.category,
+                        "difficulty_level": program.difficulty_level,
+                        "description": program.description,
+                    },
+                    "status": assignment.status,
+                    "assigned_date": assignment.assigned_date,
+                }
+            )
+
+        return Response(assignments_data, status=status.HTTP_200_OK)
+
+    except Coach.DoesNotExist:
+        return Response(
+            {"error": "Coach profile not found"}, status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def coach_member_workout_progress(request, program_id, member_id):
+    """
+    Coach-specific endpoint to view member's workout progress.
+    URL: /api/member/member-progress/<program_id>/<member_id>/
+    """
+    user_profile = request.user.userprofile
+
+    # Only coaches can access
+    if user_profile.role != "coach":
+        return Response(
+            {"error": "Only coaches can access member progress"},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    try:
+        coach = Coach.objects.get(user=user_profile)
+        program = get_object_or_404(WorkoutProgram, pk=program_id)
+
+        # Get the member
+        if member_id.startswith("M-"):
+            member = Member.objects.get(member_id=member_id)
+        else:
+            member = Member.objects.get(pk=member_id)
+
+        # Verify relationship
+        relationship = CoachMemberRelationship.objects.filter(
+            coach=coach, member=member, status="accepted"
+        ).first()
+
+        if not relationship:
+            return Response(
+                {"error": "You don't have access to this member's progress"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        # Get progress data
+        member_profile = member.user
+        total_workouts = program.days.count()
+        completed_qs = WorkoutDayCompletion.objects.filter(
+            user_profile=member_profile, workout_day__program=program
+        )
+        completed_day_numbers = list(
+            completed_qs.values_list("workout_day__day_number", flat=True)
+            .distinct()
+            .order_by("workout_day__day_number")
+        )
+
+        completed_workouts = completed_qs.count()
+        xp_earned = (
+            completed_qs.aggregate(models.Sum("xp_earned"))["xp_earned__sum"] or 0
+        )
+
+        return Response(
+            {
+                "program_id": program.id,
+                "program_title": program.title,
+                "member": {
+                    "member_id": member.member_id,
+                    "name": member_profile.user.first_name
+                    or member_profile.user.username,
+                },
+                "total_workouts": total_workouts,
+                "completed_workouts": completed_workouts,
+                "completion_percentage": (
+                    round((completed_workouts / total_workouts) * 100, 1)
+                    if total_workouts > 0
+                    else 0
+                ),
+                "xp_earned": xp_earned,
+                "completed_day_numbers": completed_day_numbers,
+            }
+        )
+
+    except Member.DoesNotExist:
+        return Response({"error": "Member not found"}, status=status.HTTP_404_NOT_FOUND)
+    except Coach.DoesNotExist:
+        return Response(
+            {"error": "Coach profile not found"}, status=status.HTTP_404_NOT_FOUND
+        )
+
+
+# ==================== FOOD POSTS ====================
+
+
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def food_posts(request):
@@ -714,83 +870,3 @@ def uncommented_food_posts(request):
         )
 
     return Response({"count": len(data), "posts": data}, status=status.HTTP_200_OK)
-
-
-@api_view(["GET"])
-@permission_classes([IsAuthenticated])
-def member_progress_overview(request):
-    """Get progress overview for all members assigned to this coach"""
-    user_profile = getattr(request.user, "userprofile", None)
-    coach_profile = getattr(user_profile, "coach_profile", None)
-
-    if not coach_profile:
-        return Response(
-            {"error": "You are not a coach"}, status=status.HTTP_403_FORBIDDEN
-        )
-
-    # Get all accepted members for this coach
-    relationships = CoachMemberRelationship.objects.filter(
-        coach=coach_profile, status__in=["accepted", "approved"]
-    ).select_related("member__user__user")
-
-    members_progress = []
-
-    for relationship in relationships:
-        member = relationship.member
-        member_profile = member.user
-
-        # Get assigned programs for this member
-        assignments = WorkoutAssignment.objects.filter(member=member).select_related(
-            "program"
-        )
-
-        total_days = 0
-        completed_days = 0
-        current_program = None
-        completion_rate = 0
-
-        if assignments.exists():
-            # Get the most recent assignment
-            latest_assignment = assignments.first()
-            current_program = latest_assignment.program.title
-
-            # Calculate total days in all assigned programs
-            for assignment in assignments:
-                program_days = assignment.program.days.values(
-                    "day_number"
-                    ).distinct().count()
-                total_days += program_days
-
-                # Count completed days for this program
-                program_completed = (
-                    WorkoutDayCompletion.objects.filter(
-                        user_profile=member_profile,
-                        workout_day__program=assignment.program
-                    )
-                    .values("workout_day__day_number")
-                    .distinct()
-                    .count()
-                )
-                completed_days += program_completed
-
-            # Calculate completion rate
-            if total_days > 0:
-                completion_rate = round((completed_days / total_days) * 100, 1)
-
-        members_progress.append(
-            {
-                "member_id": member.member_id,
-                "name": member.user.user.username,
-                "experience_level": member.experience_level,
-                "program_name": current_program,
-                "total_days": total_days,
-                "completed_days": completed_days,
-                "completion_rate": completion_rate,
-                "joined_at": member.submitted_at,
-            }
-        )
-
-    return Response(
-        {"count": len(members_progress), "members": members_progress},
-        status=status.HTTP_200_OK,
-    )

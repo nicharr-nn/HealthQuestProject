@@ -99,6 +99,7 @@ import { useRouter } from "vue-router";
 import { useUserStore } from '@/stores/user'
 import { useToastStore } from "@/stores/toast";
 
+const API_URL = 'http://127.0.0.1:8000'
 const router = useRouter();
 const loading = ref(false);
 const userStore = useUserStore();
@@ -205,7 +206,7 @@ async function submitProfile() {
       location: form.location
     };
 
-    const response = await fetch("http://127.0.0.1:8000/api/user/update-profile/", {
+    const response = await fetch(`${API_URL}/api/user/update-profile/`, {
       method: "POST",
       credentials: "include",
       headers: {
@@ -215,20 +216,22 @@ async function submitProfile() {
       body: JSON.stringify(payload)
     });
 
-if (response.ok) {
-  const res = await response.json()
+    if (response.ok) {
+      const res = await response.json();
 
+      const profile = res.data;
 
-  const profile = res.data
-  userStore.setRole(profile.role) 
+      userStore.setRole(profile.role);
 
-  if (profile.role === "coach") {
-    router.push("/coach-portal")
-  } else {
-    router.push("/dashboard")
-  }
-}
+      await userStore.refreshUserProfile();
 
+      // redirect based on role
+      if (profile.role === "coach") {
+        router.push("/coach-portal");
+      } else {
+        router.push("/dashboard");
+      }
+    }
 
   } catch (error) {
     console.error("Error updating profile:", error);

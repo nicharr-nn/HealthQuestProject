@@ -331,7 +331,9 @@
               />
             </svg>
             <span class="font-semibold text-sm"
-              >Program Duration: {{ workoutProgram.duration }} day{{ workoutProgram.duration === 1 ? '' : 's' }}
+              >Program Duration: {{ workoutProgram.duration }} day{{
+                workoutProgram.duration === 1 ? '' : 's'
+              }}
               {{
                 duration > 0
                   ? `(${Math.ceil(workoutProgram.duration / 7)} week${Math.ceil(workoutProgram.duration / 7) === 1 ? '' : 's'})`
@@ -601,6 +603,7 @@ import { useToastStore } from '@/stores/toast'
 const router = useRouter()
 const route = useRoute()
 const toast = useToastStore()
+const API_URL = 'http://127.0.0.1:8000'
 
 const coachUserProfileId = ref(null)
 const editingProgramId = ref(null)
@@ -783,7 +786,6 @@ async function fetchCoachMembers() {
         display_name: `${m.name} (${m.memberId})`,
         member_id: m.memberId,
       }))
-
 
     if (coachMembers.value.length === 0) {
       console.warn('No accepted members found')
@@ -1021,7 +1023,7 @@ function resetCurrentWorkout() {
 
 async function loadExistingProgram(programId) {
   try {
-    const response = await fetch(`http://127.0.0.1:8000/api/workout/programs/${programId}/`, {
+    const response = await fetch(`${API_URL}/api/workout/programs/${programId}/`, {
       credentials: 'include',
     })
 
@@ -1151,8 +1153,7 @@ async function handleAssignment(programId, isUpdate) {
   }
 
   const method = isUpdate ? 'PATCH' : 'POST'
-  const url = `http://127.0.0.1:8000/api/workout/assignment-manage/${programId}/`
-
+  const url = `${API_URL}/api/workout/assignment-manage/${programId}/`
 
   try {
     const response = await fetch(url, {
@@ -1184,19 +1185,15 @@ async function handleAssignment(programId, isUpdate) {
 
 async function deleteAssignmentIfExists(programId) {
   try {
-    const response = await fetch(
-      `http://127.0.0.1:8000/api/workout/assignment-delete/${programId}/`,
-      {
-        method: 'DELETE',
-        credentials: 'include',
-        headers: {
-          'X-CSRFToken': getCsrfToken(),
-        },
+    const response = await fetch(`${API_URL}/api/workout/assignment-delete/${programId}/`, {
+      method: 'DELETE',
+      credentials: 'include',
+      headers: {
+        'X-CSRFToken': getCsrfToken(),
       },
-    )
+    })
 
     if (response.ok || response.status === 404) {
-
       return true
     }
 
@@ -1232,7 +1229,7 @@ async function submitProgram() {
 
   if (!coachUserProfileId.value) {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/user/user-info/', {
+      const response = await fetch(`${API_URL}/api/user/user-info/`, {
         credentials: 'include',
       })
       if (response.ok) {
@@ -1280,8 +1277,8 @@ async function submitProgram() {
   }
 
   const programUrl = editingProgramId.value
-    ? `http://127.0.0.1:8000/api/workout/programs/${editingProgramId.value}/update/`
-    : 'http://127.0.0.1:8000/api/workout/programs/create/'
+    ? `${API_URL}/api/workout/programs/${editingProgramId.value}/update/`
+    : `${API_URL}/api/workout/programs/create/`
 
   try {
     const programResponse = await fetch(programUrl, {
@@ -1302,12 +1299,11 @@ async function submitProgram() {
     const programData = await programResponse.json()
     const programId = programData.id
 
-    const wasPrivateBefore = isEditing && backupProgramData.value 
-      ? backupProgramData.value.is_public === false 
-      : false
+    const wasPrivateBefore =
+      isEditing && backupProgramData.value ? backupProgramData.value.is_public === false : false
     const isPrivateNow = workoutProgram.is_public === false
     const isPublicNow = workoutProgram.is_public === true
-    
+
     if (isPrivateNow && workoutAssignment.member_id) {
       // Case 1: Program is PRIVATE (new or staying private)
       // → Create or update assignment
@@ -1321,7 +1317,6 @@ async function submitProgram() {
     } else if (isPublicNow) {
       // Case 3: Program is PUBLIC (new or staying public)
       // → Do nothing with assignments
-
     }
 
     emit('programCreated', programData)
@@ -1336,7 +1331,6 @@ async function submitProgram() {
     router.push('/coach-dashboard')
   } catch (error) {
     console.error('Error saving program:', error)
-
   }
 }
 </script>

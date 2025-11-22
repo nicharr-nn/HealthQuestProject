@@ -24,6 +24,7 @@ const CertificationManagement = () => import('../views/admin/CertificationManage
 const RecipeManagement = () => import('../views/admin/RecipeManagement.vue')
 const WorkoutManagement = () => import('../views/admin/WorkoutManagement.vue')
 const AdminUser = () => import('../views/admin/AdminUser.vue')
+const MemberProgress = () => import('../views/MemberProgress.vue')
 
 const routes = [
   { path: '/', name: 'LandingPage', component: LandingPage },
@@ -49,6 +50,7 @@ const routes = [
   { path: '/admin-recipe', name: 'RecipeManagement', component: RecipeManagement, meta: { requiresAdmin: true } },
   { path: '/admin-workout', name: 'WorkoutManagement', component: WorkoutManagement, meta: { requiresAdmin: true } },
   { path: '/admin-user', name: 'AdminUser', component: AdminUser, meta: { requiresAdmin: true } },
+  { path: '/member-progress', name: 'MemberProgress', component: MemberProgress, meta: { requiresCoach: true } }
 ]
 
 const router = createRouter({

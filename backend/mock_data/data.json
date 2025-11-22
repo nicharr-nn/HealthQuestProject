@@ -1,0 +1,688 @@
+[
+  {
+    "model": "auth.user",
+    "pk": 1,
+    "fields": {
+      "username": "admin",
+      "email": "admin@healthquest.com",
+      "password": "healthyadmin",
+      "first_name": "Admin",
+      "last_name": "User",
+      "is_superuser": true,
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "users.userprofile",
+    "pk": 1,
+    "fields": {
+      "user": 1,
+      "role": "admin",
+      "height": null,
+      "weight": null,
+      "age": null,
+      "gender": null,
+      "location": null,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "moderation.admin",
+    "pk": 1,
+    "fields": {
+      "user": 1
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 2,
+    "fields": {
+      "username": "john_bronze",
+      "email": "john@example.com",
+      "password": "johnpasswordhash",
+      "first_name": "John",
+      "last_name": "Smith",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "users.userprofile",
+    "pk": 2,
+    "fields": {
+      "user": 2,
+      "role": "normal",
+      "height": 175,
+      "weight": 70,
+      "age": 25,
+      "gender": "M",
+      "location": "US",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "users.userlevel",
+    "pk": 1,
+    "fields": {
+      "user_profile": 2,
+      "level": "Bronze",
+      "level_rank": 1,
+      "xp": 0,
+      "goal_achieved": false
+    }
+  },
+  {
+    "model": "users.fitnessgoal",
+    "pk": 1,
+    "fields": {
+      "user_profile": 2,
+      "goal_type": "weight_loss",
+      "start_date": "2024-01-01"
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 3,
+    "fields": {
+      "username": "sarah_silver",
+      "email": "sarah@example.com",
+      "password": "sarahpasswordhash",
+      "first_name": "Sarah",
+      "last_name": "Davis",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "users.userprofile",
+    "pk": 3,
+    "fields": {
+      "user": 3,
+      "role": "normal",
+      "height": 165,
+      "weight": 60,
+      "age": 28,
+      "gender": "F",
+      "location": "TH",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "users.userlevel",
+    "pk": 2,
+    "fields": {
+      "user_profile": 3,
+      "level": "Silver",
+      "level_rank": 2,
+      "xp": 1000,
+      "goal_achieved": false
+    }
+  },
+  {
+    "model": "users.fitnessgoal",
+    "pk": 2,
+    "fields": {
+      "user_profile": 3,
+      "goal_type": "build_muscle",
+      "start_date": "2024-01-01"
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 4,
+    "fields": {
+      "username": "mike_gold",
+      "email": "mike@example.com",
+      "password": "mikepasswordhash",
+      "first_name": "Mike",
+      "last_name": "Taylor",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "users.userprofile",
+    "pk": 4,
+    "fields": {
+      "user": 4,
+      "role": "normal",
+      "height": 185,
+      "weight": 85,
+      "age": 32,
+      "gender": "M",
+      "location": "O",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "users.userlevel",
+    "pk": 3,
+    "fields": {
+      "user_profile": 4,
+      "level": "Gold",
+      "xp": 5000,
+      "goal_achieved": true
+    }
+  },
+  {
+    "model": "users.fitnessgoal",
+    "pk": 3,
+    "fields": {
+      "user_profile": 4,
+      "goal_type": "improve_endurance",
+      "start_date": "2024-01-01"
+    }
+  },
+
+  {
+    "model": "auth.user",
+    "pk": 5,
+    "fields": {
+      "username": "bright_win",
+      "email": "bright@example.com",
+      "password": "brightpasswordhash",
+      "first_name": "Bright",
+      "last_name": "Wang",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "users.userprofile",
+    "pk": 5,
+    "fields": {
+      "user": 5,
+      "role": "member",
+      "height": 185,
+      "weight": 85,
+      "age": 32,
+      "gender": "M",
+      "location": "TH",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "users.userlevel",
+    "pk": 4,
+    "fields": {
+      "user_profile": 5,
+      "level": "Bronze",
+      "xp": 100,
+      "goal_achieved": false
+    }
+  },
+  {
+    "model": "users.fitnessgoal",
+    "pk": 4,
+    "fields": {
+      "user_profile": 5,
+      "goal_type": "improve_endurance",
+      "start_date": "2024-01-01"
+    }
+  },
+  {
+    "model": "member.member",
+    "pk": 1,
+    "fields": {
+      "user": 5,
+      "member_id": "M-00001",
+      "experience_level": "advanced",
+      "program_name": "Ultimate Fitness",
+      "status": "approved",
+      "submitted_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "member.coachmemberrelationship",
+    "pk": 1,
+    "fields": {
+      "relationship_id": 1,
+      "coach": 1,
+      "member": 1,
+      "status": "accepted",
+      "start_date": "2024-01-01"
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 6,
+    "fields": {
+      "username": "coach_win",
+      "email": "win.coach@healthquest.com",
+      "password": "wincoachpasswordhash",
+      "first_name": "Win",
+      "last_name": "Hams",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "users.userprofile",
+    "pk": 6,
+    "fields": {
+      "user": 6,
+      "role": "coach",
+      "height": 180,
+      "weight": 75,
+      "age": 35,
+      "gender": "M",
+      "location": "US",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "coach.coach",
+    "pk": 1,
+    "fields": {
+      "user": 6,
+      "bio": "Certified strength and conditioning coach with 10+ years experience",
+      "certification_doc": "NASM-CPT-Certificate.pdf",
+      "status_approval": "approved",
+      "public_id": "C-00001",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "workout.workoutprogram",
+    "pk": 1,
+    "fields": {
+      "coach": 6,
+      "title": "Strength Builder",
+      "description": "A solid 4-week strength program focused on progressive overload.",
+      "level_access": "all",
+      "difficulty_level": "medium",
+      "is_public": true,
+      "duration": 3,
+      "category": "strength_training",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "workout.workoutprogram",
+    "pk": 2,
+    "fields": {
+      "coach": 6,
+      "title": "Fat Burn Express",
+      "description": "A high-intensity cardio/HIIT focused program designed to cut fat fast.",
+      "level_access": "silver",
+      "difficulty_level": "hard",
+      "is_public": true,
+      "duration": 10,
+      "category": "cardio",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "workout.workoutprogram",
+    "pk": 3,
+    "fields": {
+      "coach": 6,
+      "title": "Win's Elite Muscle Plan",
+      "description": "A private muscle-building program reserved for selected athletes.",
+      "level_access": "all",
+      "difficulty_level": "hard",
+      "is_public": false,
+      "duration": 2,
+      "category": "muscle_building",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "workout.workoutassignment",
+    "pk": 3,
+    "fields": {
+      "member": 1,
+      "program": 3,
+      "assigned_date": "2024-01-01",
+      "status": "pending",
+      "due_date": "2024-01-31"
+    }
+  },
+  {
+    "model": "workout.workoutday",
+    "pk": 1,
+    "fields": {
+      "program": 1,
+      "day_number": 1,
+      "title": "Full Body Strength",
+      "video_links": ["https://youtu.be/iX2FUPgd60A?si=ypnhDOOuSyTRd9_t"],
+      "duration": 30,
+      "type": "full_body"
+    }
+  },
+  {
+    "model": "workout.workoutday",
+    "pk": 2,
+    "fields": {
+      "program": 3,
+      "day_number": 1,
+      "title": "Cardio Blast",
+      "video_links": ["https://youtu.be/kZDvg92tTMc?si=LiclN1wycseeVKxH"],
+      "duration": 30,
+      "type": "cardio"
+    }
+  },
+  {
+    "model": "workout.workoutday",
+    "pk": 3,
+    "fields": {
+      "program": 3,
+      "day_number": 2,
+      "title": "Yoga",
+      "video_links": ["https://youtu.be/2eC7TlC2NLs?si=qBPIPIGuIaGobAVA"],
+      "duration": 30,
+      "type": "recovery"
+    }
+  },
+  {
+    "model": "workout.workoutday",
+    "pk": 4,
+    "fields": {
+      "program": 3,
+      "day_number": 2,
+      "title": "Cooling Down Yoga",
+      "video_links": ["https://youtu.be/tXWh-dowiLg?si=OIKhfojBlS6f-2qb"],
+      "duration": 10,
+      "type": "recovery"
+    }
+  },
+  {
+    "model": "workout.workoutday",
+    "pk": 5,
+    "fields": {
+      "program": 1,
+      "day_number": 2,
+      "title": "Build Strength",
+      "video_links": ["https://youtu.be/9FBIaqr7TjQ?si=pME5IvimSlzbQggx"],
+      "duration": 30,
+      "type": "strength_training"
+    }
+  },
+  {
+    "model": "workout.workoutday",
+    "pk": 6,
+    "fields": {
+      "program": 1,
+      "day_number": 3,
+      "title": "Core Focus",
+      "video_links": ["https://youtu.be/7UI4XbHDpss?si=SvcFCErgPPBDaZeg"],
+      "duration": 40,
+      "type": "core_workout"
+    }
+  },
+  {
+    "model": "workout.workoutprogram",
+    "pk": 4,
+    "fields": {
+      "coach": 6,
+      "title": "Feel the Burn",
+      "description": "An intense fat-loss program HIIT",
+      "level_access": "all",
+      "difficulty_level": "hard",
+      "is_public": true,
+      "duration": 1,
+      "category": "weight_loss",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "workout.workoutday",
+    "pk": 7,
+    "fields": {
+      "program": 4,
+      "day_number": 1,
+      "title": "HIIT Blast",
+      "video_links": ["https://youtu.be/n_cIBBDb9JA?si=oErd1Bn-gre-p3iM"],
+      "duration": 20,
+      "type": "hiit"
+    }
+  },
+  {
+    "model": "workout.workoutday",
+    "pk": 8,
+    "fields": {
+      "program": 3,
+      "day_number": 3,
+      "title": "Recovery Stretch",
+      "video_links": ["https://youtu.be/sTANio_2E0Q?si=0G11W-r3NWGn0Xlo"],
+      "duration": 20,
+      "type": "recovery"
+    }
+  },
+  {
+    "model": "member.foodpost",
+    "pk": 1,
+    "fields": {
+      "user_profile": 5,
+      "coach": 6,
+      "title": "Healthy Chicken Salad",
+      "content": "Today's lunch was a high-protein chicken salad with fresh vegetables.",
+      "image": null,
+      "created_at": "2024-02-01T12:00:00Z",
+      "updated_at": "2024-02-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "member.foodpostcomment",
+    "pk": 1,
+    "fields": {
+      "food_post": 1,
+      "author": 5,
+      "text": "This meal felt great and very clean! Trying to improve my protein intake.",
+      "created_at": "2024-02-01T12:05:00Z",
+      "updated_at": "2024-02-01T12:05:00Z"
+    }
+  },
+  {
+    "model": "member.foodpostcomment",
+    "pk": 2,
+    "fields": {
+      "food_post": 1,
+      "author": 6,
+      "text": "Great job! Add an extra 20g of healthy fats next time for better recovery.",
+      "created_at": "2024-02-01T12:10:00Z",
+      "updated_at": "2024-02-01T12:10:00Z"
+    }
+  },
+  {
+    "model": "recipe.recipe",
+    "pk": 1,
+    "fields": {
+      "user_profile": 4,
+      "title": "Post-Workout Protein Smoothie",
+      "ingredients": "1 scoop whey protein powder (vanilla or chocolate)\n1 banana\n1 cup almond milk\n2 tbsp peanut butter\n1 cup spinach\n1/2 cup ice cubes\n1 tbsp honey (optional)",
+      "steps": "1. Add almond milk to blender first\n2. Add spinach and blend until smooth\n3. Add banana, protein powder, peanut butter, and honey\n4. Add ice cubes\n5. Blend on high for 45-60 seconds until smooth and creamy\n6. Pour into glass and serve immediately\n7. Optional: top with sliced banana or a drizzle of peanut butter",
+      "access_level": "silver",
+      "created_at": "2024-01-20T14:30:00Z",
+      "updated_at": "2024-01-20T14:30:00Z"
+    }
+  },
+  {
+    "model": "recipe.reciperating",
+    "pk": 1,
+    "fields": {
+      "recipe": 1,
+      "user_profile": 3,
+      "rating": 3,
+      "created_at": "2024-01-16T09:00:00Z"
+    }
+  },
+  {
+    "model": "recipe.reciperating",
+    "pk": 2,
+    "fields": {
+      "recipe": 1,
+      "user_profile": 6,
+      "rating": 4,
+      "created_at": "2024-01-18T11:30:00Z"
+    }
+  },
+  {
+    "model": "recipe.recipe",
+    "pk": 2,
+    "fields": {
+      "user_profile": 4,
+      "title": "High-Protein Chicken Bowl",
+      "ingredients": "1 cup cooked chicken breast\n1/2 cup quinoa\n1/2 cup black beans\n1/2 cup corn\n1/4 cup diced bell peppers\n2 tbsp olive oil\n1 tbsp lime juice\nSalt and pepper to taste",
+      "steps": "1. Cook quinoa according to package instructions\n2. In a large bowl, combine cooked chicken, quinoa, black beans, corn, and bell peppers\n3. Drizzle with olive oil and lime juice\n4. Season with salt and pepper\n5. Toss everything together until well mixed\n6. Serve immediately or refrigerate for later",
+      "access_level": "silver",
+      "created_at": "2024-01-20T14:30:00Z",
+      "updated_at": "2024-01-20T14:30:00Z"
+    }
+  },
+  {
+    "model": "recipe.reciperating",
+    "pk": 3,
+    "fields": {
+      "recipe": 2,
+      "user_profile": 3,
+      "rating": 2,
+      "created_at": "2024-01-16T09:00:00Z"
+    }
+  },
+  {
+    "model": "recipe.reciperating",
+    "pk": 4,
+    "fields": {
+      "recipe": 2,
+      "user_profile": 6,
+      "rating": 5,
+      "created_at": "2024-01-18T11:30:00Z"
+    }
+  },
+  {
+    "model": "workout.workoutprogram",
+    "pk": 4,
+    "fields": {
+      "coach": 6,
+      "title": "Win's Core Body Plan",
+      "description": "A private core-strengthening program for dedicated members.",
+      "level_access": "all",
+      "difficulty_level": "hard",
+      "is_public": false,
+      "duration": 2,
+      "category": "core",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "workout.workoutassignment",
+    "pk": 4,
+    "fields": {
+      "member": 1,
+      "program": 4,
+      "assigned_date": "2024-01-14",
+      "status": "pending",
+      "due_date": "2025-12-21"
+    }
+  },
+  {
+    "model": "workout.workoutday",
+    "pk": 9,
+    "fields": {
+      "program": 4,
+      "day_number": 1,
+      "title": "Intense Core Workout",
+      "video_links": ["https://youtu.be/Cnmy08JgakM?si=4s4-4SrcDEHo8yaW"],
+      "duration": 40,
+      "type": "core_workout"
+    }
+  },
+  {
+    "model": "workout.workoutprogram",
+    "pk": 5,
+    "fields": {
+      "coach": 6,
+      "title": "Win's Recovery Plan",
+      "description": "A private recovery program for dedicated members.",
+      "level_access": "all",
+      "difficulty_level": "hard",
+      "is_public": false,
+      "duration": 2,
+      "category": "recovery",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "workout.workoutassignment",
+    "pk": 5,
+    "fields": {
+      "member": 1,
+      "program": 5,
+      "assigned_date": "2024-01-14",
+      "status": "in_progress",
+      "due_date": "2025-12-10"
+    }
+  },
+  {
+    "model": "workout.workoutday",
+    "pk": 10,
+    "fields": {
+      "program": 5,
+      "day_number": 1,
+      "title": "Recovery Stretch",
+      "video_links": ["https://youtu.be/sTANio_2E0Q?si=0G11W-r3NWGn0Xlo"],
+      "duration": 20,
+      "type": "recovery"
+    }
+  },
+  {
+    "model": "workout.workoutday",
+    "pk": 11,
+    "fields": {
+      "program": 5,
+      "day_number": 2,
+      "title": "Recovery Stretch",
+      "video_links": ["https://youtu.be/sTANio_2E0Q?si=0G11W-r3NWGn0Xlo"],
+      "duration": 15,
+      "type": "recovery"
+    }
+  },
+  {
+    "model": "workout.workoutdaycompletion",
+    "pk": 1,
+    "fields": {
+      "workout_day": 10,
+      "completed_at": "2024-02-01T15:00:00Z",
+      "xp_earned": 30,
+      "user_profile": 5
+    }
+  },
+  {
+    "model": "workout.workoutday",
+    "pk": 12,
+    "fields": {
+      "program": 2,
+      "day_number": 2,
+      "title": "Cardio",
+      "video_links": ["https://youtu.be/kZDvg92tTMc?si=2HnE3AMG2bQfZI1_"],
+      "duration": 30,
+      "type": "cardio"
+    }
+  }
+]

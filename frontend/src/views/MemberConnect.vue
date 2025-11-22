@@ -5,9 +5,7 @@
         <!-- Header -->
         <div class="mb-8 text-center font-subtitle text-[#846757]">
           <h1 class="text-3xl font-bold">Coach Management</h1>
-          <p class=" text-sm mt-1">
-            Connect with your coach or view your request status
-          </p>
+          <p class="text-sm mt-1">Connect with your coach or view your request status</p>
         </div>
 
         <!-- Loading State -->
@@ -17,10 +15,13 @@
         </div>
 
         <!-- Error State -->
-        <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-6 text-center mb-8">
+        <div
+          v-else-if="error"
+          class="bg-red-50 border border-red-200 rounded-lg p-6 text-center mb-8"
+        >
           <div class="text-red-600 text-lg font-semibold mb-2">Error</div>
           <p class="text-red-700">{{ error }}</p>
-          <button 
+          <button
             @click="loadMemberData"
             class="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
           >
@@ -44,10 +45,12 @@
               </div>
               <div>
                 <p class="text-sm text-gray-800 mb-1">Joined Date</p>
-                <p class="text-lg font-semibold text-gray-800">{{ formatDate(currentCoach.joined_date) }}</p>
+                <p class="text-lg font-semibold text-gray-800">
+                  {{ formatDate(currentCoach.joined_date) }}
+                </p>
               </div>
             </div>
-            
+
             <!-- Program Information -->
             <div v-if="memberProfile?.program_name" class="mt-4 pt-4 border-t border-[#ff9ba6]">
               <p class="text-sm text-gray-600 mb-1">Your Assigned Program</p>
@@ -69,9 +72,12 @@
         <!-- Pending Coach Request -->
         <div v-else-if="coachStatus === 'pending'" class="text-center mb-8">
           <p class="text-gray-600 text-l mb-4">
-            Your request to connect with <strong>{{ pendingCoach.name }}</strong> is waiting for their approval.
+            Your request to connect with <strong>{{ pendingCoach.name }}</strong> is waiting for
+            their approval.
           </p>
-          <div class="bg-yellow-50 border border-yellow-300 text-yellow-800 p-4 rounded-lg inline-block mb-4">
+          <div
+            class="bg-yellow-50 border border-yellow-300 text-yellow-800 p-4 rounded-lg inline-block mb-4"
+          >
             ⏳ Pending Acceptance
           </div>
 
@@ -88,12 +94,16 @@
 
         <!-- No Coach Yet - Send Request -->
         <div v-else>
-          <h2 class="text-xl font-semibold text-gray-700 mb-4 font-subtitle">Connect with a Coach</h2>
+          <h2 class="text-xl font-semibold text-gray-700 mb-4 font-subtitle">
+            Connect with a Coach
+          </h2>
 
           <!-- Member Profile Setup -->
           <div v-if="!memberProfile" class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
             <h3 class="text-lg font-semibold text-blue-800 mb-2">Setup Required</h3>
-            <p class="text-blue-700 mb-4">You need to create your member profile before connecting with a coach.</p>
+            <p class="text-blue-700 mb-4">
+              You need to create your member profile before connecting with a coach.
+            </p>
             <button
               @click="setupMemberProfile"
               class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold"
@@ -164,7 +174,7 @@
                   'p-4 rounded-lg text-sm font-medium',
                   messageDisplay.type === 'error'
                     ? 'bg-red-50 text-red-700 border border-red-200'
-                    : 'bg-green-50 text-green-700 border border-green-200'
+                    : 'bg-green-50 text-green-700 border border-green-200',
                 ]"
               >
                 {{ messageDisplay.text }}
@@ -175,9 +185,9 @@
                 :disabled="requestLoading || !coachCode.trim()"
                 :class="[
                   'w-full py-3 px-6 rounded-lg font-semibold text-white transition-all cursor-pointer',
-                  requestLoading || !coachCode.trim() 
-                    ? 'bg-gray-400 cursor-not-allowed' 
-                    : 'bg-blue-400 hover:bg-blue-500 hover:shadow-lg'
+                  requestLoading || !coachCode.trim()
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-blue-400 hover:bg-blue-500 hover:shadow-lg',
                 ]"
               >
                 <span v-if="requestLoading" class="flex items-center justify-center gap-2">
@@ -232,7 +242,7 @@ onMounted(() => {
 async function loadMemberData() {
   loading.value = true
   error.value = ''
-  
+
   try {
     // Load member profile
     const profileResponse = await fetch(`${API_BASE}member-profile/`, {
@@ -253,7 +263,7 @@ async function loadMemberData() {
     })
 
     if (relationshipResponse.ok) {
-      const relationshipData = await relationshipResponse.json()      
+      const relationshipData = await relationshipResponse.json()
       if (relationshipData.message === 'No coach request found.') {
         coachStatus.value = ''
       } else {
@@ -267,7 +277,7 @@ async function loadMemberData() {
         } else if (relationshipData.status === 'pending') {
           pendingCoach.value = {
             name: relationshipData.coach?.name || 'Coach',
-            coach_id: relationshipData.coach?.public_id || relationshipData.coach?.coach_id
+            coach_id: relationshipData.coach?.public_id || relationshipData.coach?.coach_id,
           }
         }
       }
@@ -276,7 +286,6 @@ async function loadMemberData() {
     } else {
       throw new Error('Failed to load coach relationship')
     }
-
   } catch (err) {
     console.error('Error loading member data:', err)
     error.value = 'Failed to load your data. Please try again.'
@@ -298,17 +307,16 @@ async function setupMemberProfile() {
       credentials: 'include',
       body: JSON.stringify({
         experience_level: experienceLevel.value,
-        message: message.value
-      })
+        message: message.value,
+      }),
     })
 
     if (response.ok) {
       memberProfile.value = await response.json()
-      messageDisplay.value = { 
-        type: 'success', 
-        text: 'Member profile created successfully! You can now connect with a coach.' 
+      messageDisplay.value = {
+        type: 'success',
+        text: 'Member profile created successfully! You can now connect with a coach.',
       }
-
     } else {
       const errorData = await response.json()
       throw new Error(errorData.error || 'Failed to create member profile')
@@ -340,37 +348,35 @@ async function sendRequest() {
       body: JSON.stringify({
         coach_code: coachCode.value.trim(),
         experience_level: experienceLevel.value,
-        message: message.value
-      })
+        message: message.value,
+      }),
     })
 
     if (response.ok) {
       const data = await response.json()
       memberProfile.value = data.member || data
-      messageDisplay.value = { 
-        type: 'success', 
-        text: data.message || 'Request sent successfully! Waiting for coach approval.' 
+      messageDisplay.value = {
+        type: 'success',
+        text: data.message || 'Request sent successfully! Waiting for coach approval.',
       }
-      
+
       // Reload to get updated relationship status
       await loadMemberData()
-      
+
       // Reset form
       coachCode.value = ''
       message.value = ''
-      
     } else if (response.status === 404) {
       const errorData = await response.json()
-      messageDisplay.value = { 
-        type: 'error', 
-        text: errorData.error || 'Coach not found.' 
+      messageDisplay.value = {
+        type: 'error',
+        text: errorData.error || 'Coach not found.',
       }
-      
     } else if (response.status === 400) {
       const errorData = await response.json()
-      messageDisplay.value = { 
-        type: 'error', 
-        text: errorData.error || 'Cannot send request.' 
+      messageDisplay.value = {
+        type: 'error',
+        text: errorData.error || 'Cannot send request.',
       }
     } else {
       const errorData = await response.json()
@@ -407,9 +413,9 @@ async function confirmCancelCoach() {
     })
 
     if (response.ok) {
-      messageDisplay.value = { 
-        type: 'success', 
-        text: 'Coach connection cancelled successfully.' 
+      messageDisplay.value = {
+        type: 'success',
+        text: 'Coach connection cancelled successfully.',
       }
       await loadMemberData()
     } else {
@@ -423,6 +429,3 @@ async function confirmCancelCoach() {
   }
 }
 </script>
-
-<style scoped>
-</style>

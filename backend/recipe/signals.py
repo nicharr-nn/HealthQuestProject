@@ -15,10 +15,17 @@ def _generate_pdf(instance: Recipe):
 
 
 @receiver(post_save, sender=Recipe)
-def generate_or_update_recipe_pdf(sender, instance, created, **kwargs):
+def generate_or_update_recipe_pdf(sender, instance, created, raw=False, **kwargs):
     """
     Generate or update the PDF for a Recipe when it's created or edited.
     """
+
+    # Skip PDF generation during fixture loading
+    if raw:
+        logger.info(
+            "Skipping PDF generation for recipe %s (fixture loading)", instance.pk
+        )
+        return
 
     def _needs_pdf_update():
         # Only regenerate if PDF is missing or the recipe content changed

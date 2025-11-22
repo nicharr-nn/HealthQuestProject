@@ -59,7 +59,7 @@ const assignments = ref([])
 const loading = ref(true)
 const error = ref(null)
 const userRole = ref(null)
-
+const API_URL = 'http://127.0.0.1:8000'
 const userStore = useUserStore()
 
 const availablePrograms = computed(() => {
@@ -67,16 +67,14 @@ const availablePrograms = computed(() => {
     return programs.value
   }
 
-  const assignedProgramIds = new Set(
-    assignments.value.map((assignment) => assignment.program.id)
-  )
+  const assignedProgramIds = new Set(assignments.value.map((assignment) => assignment.program.id))
 
   return programs.value.filter((program) => !assignedProgramIds.has(program.id))
 })
 
 async function fetchPrograms() {
   try {
-    const response = await fetch('http://127.0.0.1:8000/api/workout/programs/', {
+    const response = await fetch(`${API_URL}/api/workout/programs/`, {
       credentials: 'include',
     })
     if (!response.ok) throw new Error(`Failed to fetch: ${response.status}`)
@@ -89,12 +87,11 @@ async function fetchPrograms() {
 
 async function fetchWorkoutAssignments() {
   try {
-    const response = await fetch('http://127.0.0.1:8000/api/workout/assignments/', {
+    const response = await fetch(`${API_URL}/api/workout/assignments/`, {
       credentials: 'include',
     })
     if (!response.ok) throw new Error(`Failed to fetch assignments: ${response.status}`)
     assignments.value = await response.json()
-
   } catch (err) {
     console.error('Error fetching assignments:', err)
     error.value = 'Could not load your assignments.'
@@ -102,7 +99,6 @@ async function fetchWorkoutAssignments() {
 }
 
 function selectProgram(programId) {
-
   router.push(`/workout/${programId}`)
 }
 
@@ -111,7 +107,6 @@ onMounted(async () => {
   try {
     userRole.value = userStore.role || userStore.profile?.role || null
 
-    
     if (userRole.value === 'member') {
       await fetchWorkoutAssignments()
       await fetchPrograms()

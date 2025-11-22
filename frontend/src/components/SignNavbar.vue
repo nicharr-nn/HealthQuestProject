@@ -174,7 +174,6 @@
               class="flex items-center text-white hover:text-[#c7d2fe] transition-colors py-2"
             >
               <span class="material-symbols-outlined">logout</span>
-              <span class="ml-2">Logout</span>
             </button>
           </li>
         </ul>
@@ -192,11 +191,12 @@ import { useUserStore } from '@/stores/user'
 const mobileMenuOpen = ref(false)
 const userStore = useUserStore()
 const hasAcceptedCoach = ref(false)
+const API_URL = 'http://127.0.0.1:8000'
 
 async function fetchMemberRequest() {
   if (userStore.role === 'member') {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/member/member-request/', {
+      const response = await fetch(`${API_URL}/api/member/member-request/`, {
         credentials: 'include'
       })
       
@@ -228,6 +228,6 @@ function closeMobileMenu() {
 }
 
 async function logout() {
-  window.location.href = "http://127.0.0.1:8000/accounts/logout/"
+  window.location.href = `${API_URL}/accounts/logout/`
 }
 </script>
