@@ -229,7 +229,7 @@
             </div>
 
             <div v-else class="py-4">
-              <div class="text-6xl mb-4">🏆</div>
+              <div class="text-6xl mb-4 justify-center flex"><Trophy class="w-24 h-24"/></div>
               <h3
                 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 mb-2"
               >
@@ -250,6 +250,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useToastStore } from '@/stores/toast'
+import { Trophy } from 'lucide-vue-next'
 
 const toast = useToastStore()
 

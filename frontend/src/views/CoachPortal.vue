@@ -87,6 +87,16 @@
         </form>
       </div>
     </div>
+      <ResubmitModal
+      :show="showResubmitModal"
+      title="Resubmit Certification"
+      message="Are you sure you want to resubmit your certification?"
+      confirm-text="Yes, Resubmit"
+      cancel-text="Cancel"
+      @update:show="showResubmitModal = $event"
+      @confirm="confirmResubmit"
+      @close="cancelResubmitModal"
+    />
   </div>
 </template>
 
@@ -94,6 +104,7 @@
 import { reactive, ref, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { useToastStore } from '@/stores/toast'
+import ResubmitModal from '@/components/ResubmitModal.vue'
 
 const userStore = useUserStore()
 const toast = useToastStore()
@@ -109,6 +120,8 @@ const isEditingProfile = ref(false)
 const isResubmitting = ref(false)
 const googleName = ref('')
 const API_URL = 'http://127.0.0.1:8000'
+
+const showResubmitModal = ref(false)
 
 // Called when file input changes
 function onFileSelected(event) {
@@ -195,19 +208,18 @@ function resetForm() {
   selectedFileName.value = null
 }
 
-// Start resubmit process
 function startResubmit() {
-  const confirmed = confirm('Are you sure you want to resubmit your certification?')
-  if (confirmed) {
-    isResubmitting.value = true
-    selectedFile.value = null
-  }
+  showResubmitModal.value = true
 }
 
-// Cancel resubmit
-function cancelResubmit() {
-  isResubmitting.value = false
+function confirmResubmit() {
+  isResubmitting.value = true
   selectedFile.value = null
+  showResubmitModal.value = false
+}
+
+function cancelResubmitModal() {
+  showResubmitModal.value = false
 }
 
 // Start editing profile

@@ -104,16 +104,6 @@
             <p class="text-gray-700 text-sm leading-relaxed">{{ memberDetails.message }}</p>
           </div>
         </div>
-
-        <!-- Footer Actions -->
-        <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 rounded-b-2xl flex justify-end gap-3">
-          <button @click="closeModal" class="px-4 py-2 border border-gray-300 rounded-lg font-semibold hover:bg-gray-100 transition">
-            Close
-          </button>
-          <button @click="viewFoodDiary" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition">
-            View Food Diary
-          </button>
-        </div>
       </div>
     </div>
   </transition>
@@ -121,7 +111,6 @@
 
 <script setup>
 import { ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
 import { X, User, Activity, MessageCircle } from 'lucide-vue-next'
 
 const props = defineProps({
@@ -130,7 +119,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close'])
-const router = useRouter()
 
 const loading = ref(false)
 const error = ref(null)
@@ -166,11 +154,6 @@ async function loadMemberDetails() {
 
 function closeModal() {
   emit('close')
-}
-
-function viewFoodDiary() {
-  router.push(`/food-diary/${props.memberId}`)
-  closeModal()
 }
 
 function formatGender(gender) {
