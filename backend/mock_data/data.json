@@ -302,6 +302,55 @@
     }
   },
   {
+    "model": "auth.user",
+    "pk": 7,
+    "fields": {
+      "username": "thee_peach",
+      "email": "thee_peach@example.com",
+      "password": "theepasswordhash",
+      "first_name": "Thee",
+      "last_name": "Peach",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "users.userprofile",
+    "pk": 7,
+    "fields": {
+      "user": 7,
+      "role": "member",
+      "height": 190,
+      "weight": 50,
+      "age": 27,
+      "gender": "M",
+      "location": "TH",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "users.userlevel",
+    "pk": 5,
+    "fields": {
+      "user_profile": 7,
+      "level": "Bronze",
+      "xp": 0,
+      "goal_achieved": false
+    }
+  },
+  {
+    "model": "users.fitnessgoal",
+    "pk": 5,
+    "fields": {
+      "user_profile": 7,
+      "goal_type": "weight_loss",
+      "start_date": "2024-01-01"
+    }
+  },
+  {
     "model": "workout.workoutprogram",
     "pk": 1,
     "fields": {

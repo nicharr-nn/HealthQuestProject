@@ -188,16 +188,6 @@
             <div class="font-body w-full">
               <h3 class="font-subtitle text-xl sm:text-2xl text-gray-800">Today's Workout</h3>
               <div class="flex flex-wrap items-center gap-2 mt-2">
-                <span
-                  class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-semibold"
-                >
-                  {{ todayWorkout.duration || '30 min' }}
-                </span>
-                <span
-                  class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-semibold"
-                >
-                  +{{ todayWorkout.xp }} XP
-                </span>
               </div>
             </div>
           </div>
@@ -383,10 +373,6 @@ export default {
     const analytics = computed(
       () => analyticsRaw.value ?? { weeklyImprovement: 0, consistency: 0, current_streak: 0 },
     )
-    const todayWorkout = computed(
-      () => store.profile?.today_workout || { description: 'No workout assigned', xp: 0 },
-    )
-
     async function loadAnalytics() {
       loadingAnalytics.value = true
       analyticsError.value = null
@@ -470,7 +456,6 @@ export default {
       currentLevel,
       nextRequirement,
       progressPercentage,
-      todayWorkout,
       analytics,
       loadingAnalytics,
       analyticsError,

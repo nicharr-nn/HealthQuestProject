@@ -127,7 +127,7 @@
 
         <!-- Empty -->
         <div v-if="filteredPrograms.length === 0" class="text-center py-12 px-6">
-          <div class="text-6xl mb-4">🏋️‍♂️</div>
+          <span class="justify-center flex"><icons.Dumbbell /></span>
           <div class="text-xl font-semibold text-gray-700 mb-3">No programs yet</div>
           <div class="text-gray-500 leading-relaxed max-w-md mx-auto mb-6">
             Start creating your first workout program to help your clients achieve their goals!

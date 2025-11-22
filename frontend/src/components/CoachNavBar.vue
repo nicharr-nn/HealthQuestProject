@@ -45,66 +45,66 @@
             </RouterLink>
           </li>
 
-          <!-- Post Dropdown -->
-          <li class="relative">
-            <button
-              @click="toggleDropdown"
-              class="font-body flex items-center px-3 py-2 rounded-md transition-colors cursor-pointer"
-              :class="showDropdown 
-                ? 'bg-[#88ACEA] text-white' 
-                : 'text-white hover:text-[#c7d2fe]'"
-            >
-              Post
-              <svg
-                class="w-4 h-4 ml-1 transition-transform"
-                :class="showDropdown ? 'rotate-180' : ''"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </button>
+<!-- Post Dropdown -->
+  <li v-if="canPost" class="relative">
+    <button
+      @click="toggleDropdown"
+      class="font-body flex items-center px-3 py-2 rounded-md transition-colors cursor-pointer"
+      :class="showDropdown 
+        ? 'bg-[#88ACEA] text-white' 
+        : 'text-white hover:text-[#c7d2fe]'"
+    >
+      Post
+      <svg
+        class="w-4 h-4 ml-1 transition-transform"
+        :class="showDropdown ? 'rotate-180' : ''"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M19 9l-7 7-7-7"
+        />
+      </svg>
+    </button>
 
-            <!-- Dropdown Menu -->
-            <transition
-              enter-active-class="transition-opacity duration-200"
-              enter-from-class="opacity-0"
-              enter-to-class="opacity-100"
-              leave-active-class="transition-opacity duration-200"
-              leave-from-class="opacity-100"
-              leave-to-class="opacity-0"
-            >
-              <ul
-                v-if="showDropdown"
-                class="absolute left-0 mt-2 w-44 bg-[#88ACEA] rounded-md shadow-lg z-50"
-              >
-                <li>
-                  <RouterLink
-                    to="/food-recipe"
-                    @click="closeDropdown"
-                    class="block px-4 py-2 text-white hover:text-[#c7d2fe] rounded-t-md"
-                  >
-                    Food Recipes
-                  </RouterLink>
-                </li>
-                <li>
-                  <RouterLink
-                    to="/food-diary"
-                    @click="closeDropdown"
-                    class="block px-4 py-2 text-white hover:text-[#c7d2fe] rounded-t-md"
-                  >
-                    Member Posts
-                  </RouterLink>
-                </li>
-              </ul>
-            </transition>
-          </li>
+    <!-- Dropdown Menu -->
+    <transition
+      enter-active-class="transition-opacity duration-200"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition-opacity duration-200"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
+      <ul
+        v-if="showDropdown"
+        class="absolute left-0 mt-2 w-44 bg-[#88ACEA] rounded-md shadow-lg z-50"
+      >
+        <li>
+          <RouterLink
+            to="/food-recipe"
+            @click="closeDropdown"
+            class="block px-4 py-2 text-white hover:text-[#c7d2fe] rounded-t-md"
+          >
+            Food Recipes
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink
+            to="/food-diary"
+            @click="closeDropdown"
+            class="block px-4 py-2 text-white hover:text-[#c7d2fe]"
+          >
+            Member Posts
+          </RouterLink>
+        </li>
+      </ul>
+    </transition>
+  </li>
 
           <li>
             <RouterLink
@@ -186,12 +186,21 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { RouterLink } from 'vue-router'
+import { useUserStore } from '@/stores/user'
 
 const mobileMenuOpen = ref(false)
 const showDropdown = ref(false)
+const userStore = useUserStore()
 
+const canPost = computed(() => {
+  // Only show food dropdown if NOT a coach, OR they ARE approved
+  if (userStore.role === 'coach') {
+    return userStore.approved === true
+  }
+  return true
+})
 function toggleMobileMenu() {
   mobileMenuOpen.value = !mobileMenuOpen.value
 }

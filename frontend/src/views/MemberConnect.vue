@@ -37,11 +37,11 @@
             <div class="grid md:grid-cols-2 gap-4">
               <div>
                 <p class="text-sm text-gray-800 mb-1">Coach Name</p>
-                <p class="text-lg font-semibold text-gray-800">{{ currentCoach.name }}</p>
+                <p class="text-lg font-semibold text-gray-800 cursor-pointer">{{ currentCoach.name }}</p>
               </div>
               <div>
                 <p class="text-sm text-gray-800 mb-1">Coach ID</p>
-                <p class="text-lg font-semibold text-gray-800">{{ currentCoach.coach_id }}</p>
+                <p class="text-lg font-semibold text-gray-800 cursor-pointer">{{ currentCoach.coach_id }}</p>
               </div>
               <div>
                 <p class="text-sm text-gray-800 mb-1">Joined Date</p>
@@ -78,7 +78,7 @@
           <div
             class="bg-yellow-50 border border-yellow-300 text-yellow-800 p-4 rounded-lg inline-block mb-4"
           >
-            ⏳ Pending Acceptance
+            <Hourglass class="inline-block mr-2" /> Pending Acceptance
           </div>
 
           <!-- Cancel Request Button -->
@@ -131,7 +131,7 @@
                   />
                 </div>
                 <p class="text-sm text-gray-500 mt-2">
-                  Enter the Coach ID (starts with C-) or select from available coaches above
+                  Enter the Coach ID (starts with C-)
                 </p>
               </div>
 
@@ -161,10 +161,12 @@
                   id="message"
                   v-model="message"
                   rows="3"
+                  maxlength="300"
                   placeholder="Tell the coach about your fitness goals and expectations..."
                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-300 focus:border-blue-300 outline-none transition-all"
                   :disabled="requestLoading"
                 ></textarea>
+                <p class="text-sm text-gray-500 mt-1">{{ message.length }} / 100 characters</p>
               </div>
 
               <!-- Message Display -->
@@ -217,6 +219,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import DeleteModal from '@/components/DeleteModal.vue'
+import { Hourglass } from 'lucide-vue-next'
 const showCancelModal = ref(false)
 
 // Reactive data
@@ -334,6 +337,13 @@ async function sendRequest() {
     messageDisplay.value = { type: 'error', text: 'Please enter a Coach ID.' }
     return
   }
+  if (message.value.length > 100) {
+    messageDisplay.value = {
+      type: 'error',
+      text: 'Message must be less than 100 characters.',
+    }
+    return
+  }
 
   requestLoading.value = true
   messageDisplay.value = { type: '', text: '' }
@@ -399,7 +409,7 @@ function formatDate(dateString) {
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
   })
 }
 
