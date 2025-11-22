@@ -62,7 +62,7 @@
         }"
       >
         <div class="text-2xl">
-          <icon.Spinner class="animate-spin" v-if="approvalStatus === 'pending'" />
+          <icon.Loader class="animate-spin" v-if="approvalStatus === 'pending'" />
           <icon.XCircle v-else-if="approvalStatus === 'rejected'" />
         </div>
 

@@ -281,14 +281,12 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import AdminSideBar from '@/components/AdminSideBar.vue'
 import AdminNotificationBell from '@/components/AdminNotificationBell.vue'
 import { Menu } from 'lucide-vue-next'
 import { useToastStore } from '@/stores/toast'
 
-const router = useRouter()
 const userStore = useUserStore()
 const toast = useToastStore()
 
@@ -364,10 +362,7 @@ function closeModal() {
   coachModal.value = { open: false, coach: null }
 }
 
-function logout() {
-  userStore.logout?.()
-  router.push('/')
-}
+function logout() { userStore.logout?.(); window.location.href='/' }
 
 async function fetchCoaches() {
   loading.value = true

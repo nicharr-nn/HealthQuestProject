@@ -1,8 +1,8 @@
 <template>
   <div class="max-w-[1400px] mx-auto p-6 font-sans">
     <!-- Header Section -->
-    <div class="mb-8 relative">
-      <div class="mt-4 bg-[#fac3e1] p-8 rounded-xl text-white shadow-lg relative">
+    <div class="elative">
+      <div class="mt-4 bg-[#fac3e1] p-8 rounded-xl text-white shadow-lg relative max-w-5xl mx-auto">
         <h1 class="font-subtitle text-[#9c547b] text-2xl md:text-3xl font-bold">
           {{ memberDisplayName }}'s Food Posts
         </h1>
@@ -17,7 +17,7 @@
         </span>
 
         <!-- Member Selector in right-bottom corner -->
-        <div class="absolute bottom-4 right-4">
+        <div v-if="!props.memberId" class="absolute bottom-4 right-4">
           <div class="group relative">
             <!-- Input -->
             <input
@@ -49,7 +49,7 @@
     <!-- Empty State -->
     <div
       v-else-if="foodPosts.length === 0"
-      class="text-center py-16 bg-white border-2 border-dashed border-gray-200 rounded-xl"
+      class="max-w-5xl w-full mx-auto text-center py-16 bg-white border-2 border-dashed border-gray-200 rounded-2xl mt-8"
     >
       <Utensils class="w-12 h-12 text-gray-400 mx-auto mb-4" />
       <h3 class="text-2xl font-bold text-gray-700 mb-2">No Food Posts Yet</h3>
@@ -57,12 +57,13 @@
     </div>
 
     <!-- Food Posts Grid -->
-    <div v-else class="grid gap-6">
+    <div v-else class="grid gap-6 w-full justify-items-center">
       <div
         v-for="post in foodPosts"
         :key="post.id"
-        class="bg-white rounded-xl overflow-hidden shadow hover:shadow-xl border-2 border-transparent hover:border-blue-500 transition"
+        class="max-w-5xl w-full bg-white rounded-2xl overflow-hidden shadow hover:shadow-xl transition my-8"
       >
+        
         <!-- Post Header: Member Info -->
         <div
           class="px-6 py-5 bg-gray-50 border-b border-gray-200 flex items-center justify-between"
@@ -104,7 +105,7 @@
           <div class="bg-gray-50 border-r border-gray-200">
             <div
               v-if="post.image"
-              class="w-full h-64 md:h-80 lg:h-[480px] overflow-hidden bg-gray-100"
+              class="w-full h-64 md:h-80 lg:h-[480px] overflow-hidden bg-gray-100 cursor-pointer" @click="openImageModal(getImageUrl(post.image))"
             >
               <img
                 :src="getImageUrl(post.image)"
@@ -245,6 +246,20 @@
         </div>
       </div>
     </div>
+    <div v-if="showImageModal" class="fixed inset-0 bg-black/20 flex items-center justify-center z-50 p-4">
+      <div class="relative">
+        <!-- Close button -->
+        <button
+          @click="closeImageModal"
+          class="absolute top-2 right-2 text-white text-3xl hover:bg-black/30 rounded-full p-1 transition"
+        >
+          <X />
+        </button>
+
+        <!-- Full-size image -->
+        <img :src="currentImage" alt="Full size" class="max-h-[90vh] max-w-full rounded-lg shadow-lg" />
+      </div>
+    </div>
   </div>
 </template>
 
@@ -253,7 +268,7 @@ import { ref, onMounted } from 'vue'
 import { useToastStore } from '@/stores/toast'
 
 const toast = useToastStore()
-import { Search, Utensils } from 'lucide-vue-next'
+import { Search, Utensils, X } from 'lucide-vue-next'
 
 // Props
 const props = defineProps({
@@ -273,6 +288,8 @@ const comments = ref({}) // { postId: [comments] }
 const commentTexts = ref({}) // { postId: 'text' }
 const submittingComment = ref({}) // { postId: boolean }
 const loading = ref(false)
+const showImageModal = ref(false)
+const currentImage = ref('')
 
 // Edit Modal State
 const showEditModal = ref(false)
@@ -327,6 +344,16 @@ const getCharCount = (postId) => {
 const canSubmitComment = (postId) => {
   const text = commentTexts.value[postId] || ''
   return text.trim().length > 0
+}
+
+const openImageModal = (imgUrl) => {
+  currentImage.value = imgUrl
+  showImageModal.value = true
+}
+
+const closeImageModal = () => {
+  showImageModal.value = false
+  currentImage.value = ''
 }
 
 // API Calls

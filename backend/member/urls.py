@@ -58,6 +58,14 @@ urlpatterns = [
         uncommented_food_posts,
         name="uncommented-food-posts",
     ),
+
+    # member progress overview for coaches
+    path(
+        "progress-overview/",
+        member_progress_overview,
+        name="member-progress-overview",
+    ),
+
     # coach can remove an accepted member
     path("<str:member_id>/", coach_remove_member, name="coach-remove-member"),
     path(

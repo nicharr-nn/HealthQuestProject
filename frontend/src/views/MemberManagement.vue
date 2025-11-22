@@ -27,7 +27,6 @@
       <div v-if="loading" class="text-center py-16 px-6">Loading members...</div>
 
       <div v-else-if="members.length === 0" class="text-center py-16 px-6">
-        <!-- use file-user symbol from lucid -->
         <FileUser class="w-12 h-12 text-gray-400 mx-auto mb-4" />
         <div class="text-xl font-semibold text-gray-700 mb-3">No active members</div>
         <div class="text-gray-600">Start approving member requests to see them here.</div>
@@ -42,24 +41,22 @@
           <div class="flex flex-col md:flex-row justify-between items-center gap-3 mb-4">
             <div class="flex items-center gap-3 flex-1 min-w-0">
               <div
-                class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 text-white flex items-center justify-center font-semibold text-lg flex-shrink-0"
+                class="w-12 h-12 rounded-full flex items-center justify-center font-semibold text-lg flex-shrink-0"
+                :class="!member.member_photo ? 'bg-gradient-to-br from-purple-500 to-indigo-500 text-white' : ''"
               >
-                {{ member.name.charAt(0).toUpperCase() }}
+                <template v-if="member.member_photo">
+                  <img :src="getImageUrl(member.member_photo)" alt="Profile" class="w-full h-full object-cover rounded-full" />
+                </template>
+                <template v-else>
+                  {{ (member.name || '').charAt(0).toUpperCase() }}
+                </template>
               </div>
               <div class="flex-1 min-w-0">
-                <div class="text-lg font-semibold text-gray-900 mb-1 truncate">
-                  {{ member.name }}
-                </div>
-                <div class="text-sm font-semibold text-blue-500 font-mono truncate">
-                  ID: {{ member.memberId }}
-                </div>
+                <div class="text-lg font-semibold text-gray-900 mb-1 truncate">{{ member.name }}</div>
+                <div class="text-sm font-semibold text-blue-500 font-mono truncate">ID: {{ member.memberId }}</div>
               </div>
             </div>
-            <div
-              class="px-3 py-1.5 rounded-full bg-green-100 text-green-800 text-xs font-semibold self-start"
-            >
-              ACTIVE
-            </div>
+            <div class="px-3 py-1.5 rounded-full bg-green-100 text-green-800 text-xs font-semibold self-start">ACTIVE</div>
           </div>
 
           <div class="grid gap-2 mb-4 p-3 bg-white rounded-lg border border-gray-100 shadow-sm">
@@ -109,6 +106,13 @@
         </div>
       </div>
     </div>
+
+    <!-- Member Detail Modal -->
+    <MemberDetailModal
+      :show="showDetailModal"
+      :member-id="selectedMemberId"
+      @close="closeDetailModal"
+    />
   </div>
 </template>
 
@@ -117,15 +121,34 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowLeft, FileUser } from 'lucide-vue-next'
 import { useToastStore } from '@/stores/toast'
+import MemberDetailModal from '@/components/MemberDetailModal.vue'
 
 const router = useRouter()
 const members = ref([])
 const loading = ref(true)
 const toast = useToastStore()
 const API_BASE = 'http://127.0.0.1:8000/api/member/'
+const showDetailModal = ref(false)
+const selectedMemberId = ref(null)
+
+function getImageUrl(path) {
+  if (!path) return ''
+  if (path.startsWith('http')) return path
+  return `http://127.0.0.1:8000${path}`
+}
 
 function goBackToDashboard() {
   router.push('/coach-dashboard')
+}
+
+function viewDetails(member) {
+  selectedMemberId.value = member.memberId
+  showDetailModal.value = true
+}
+
+function closeDetailModal() {
+  showDetailModal.value = false
+  selectedMemberId.value = null
 }
 
 function formatDate(dateStr) {
