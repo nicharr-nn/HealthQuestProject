@@ -63,13 +63,15 @@ docker-compose exec backend python manage.py loaddata mock_data/data.json
 # Create Django superuser
 docker-compose exec backend python manage.py createsuperuser
 ```
-ึ7. **If using mock data:**
+7. **If using mock data:**
 ```bash
 # To login as a user from the mock data, use the dev-login endpoint
 # Replace <username> with the desired username from the mock data
 curl http://127.0.0.1:8000/dev-login/?username=<username>
 # Then access the dashboard
 curl http://127.0.0.1:5173/dashboard
+# If coach, access coach dashboard
+curl http://127.0.0.1:5173/coach-dashboard
 ```
 
 ### Option 2: Manual Setup & Running the Application
