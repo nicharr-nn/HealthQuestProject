@@ -216,20 +216,22 @@ async function submitProfile() {
       body: JSON.stringify(payload)
     });
 
-if (response.ok) {
-  const res = await response.json()
+    if (response.ok) {
+      const res = await response.json();
 
+      const profile = res.data;
 
-  const profile = res.data
-  userStore.setRole(profile.role) 
+      userStore.setRole(profile.role);
 
-  if (profile.role === "coach") {
-    router.push("/coach-portal")
-  } else {
-    router.push("/dashboard")
-  }
-}
+      await userStore.refreshUserProfile();
 
+      // redirect based on role
+      if (profile.role === "coach") {
+        router.push("/coach-portal");
+      } else {
+        router.push("/dashboard");
+      }
+    }
 
   } catch (error) {
     console.error("Error updating profile:", error);

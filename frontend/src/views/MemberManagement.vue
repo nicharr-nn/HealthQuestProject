@@ -141,11 +141,6 @@ function goBackToDashboard() {
   router.push('/coach-dashboard')
 }
 
-function viewDetails(member) {
-  selectedMemberId.value = member.memberId
-  showDetailModal.value = true
-}
-
 function closeDetailModal() {
   showDetailModal.value = false
   selectedMemberId.value = null

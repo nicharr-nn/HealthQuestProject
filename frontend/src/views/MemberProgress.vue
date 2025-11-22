@@ -85,7 +85,6 @@
 
         <!-- Programs/Assignments -->
         <div v-if="programs.length === 0" class="bg-white rounded-xl shadow-md p-12 text-center">
-          <span class="material-symbols-outlined text-gray-300 text-6xl">assignment</span>
           <p class="text-gray-500 mt-4">No workout programs assigned yet</p>
         </div>
 
@@ -260,7 +259,7 @@ async function fetchMemberProgress() {
     memberInfo.value = {
       member_id: member.memberId,
       name: member.name,
-      photo: getFullPhotoUrl(member.photo),
+      photo: getFullPhotoUrl(member.member_photo),
       experience_level: member.experienceLevel,
     }
 

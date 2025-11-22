@@ -28,7 +28,7 @@
           <div
             class="bg-yellow-300 text-gray-800 px-3 sm:px-4 py-1 rounded-full text-sm font-semibold"
           >
-            {{ streak }} days
+            {{ streak }} day{{ streak !== 1 ? 's' : '' }}
           </div>
         </div>
         <div class="flex items-center gap-2">
@@ -302,14 +302,12 @@ export default {
     const API_URL = 'http://127.0.0.1:8000'
 
     const refreshDashboard = async () => {
-      console.log('🔄 Refreshing dashboard...')
+      // Clear and reload data
       analyticsRaw.value = null
       memberProfile.value = null
-      
-      if (!store.user || !store.profile) {
-        await store.init()
-      }
-      
+
+      await store.refreshUserProfile()
+
       await loadWeeklyActivity()
       await loadAnalytics()
 
@@ -317,19 +315,7 @@ export default {
         await loadMemberProfile()
       }
     }
-
-    // onMounted(async () => {
-    //   if (!store.user || !store.profile) {
-    //     await store.init()
-    //   }
-    //   await loadWeeklyActivity()
-    //   await loadAnalytics()
-
-    //   if (store.profile?.role === 'member') {
-    //     await loadMemberProfile()
-    //   }
-    // })
-        onMounted(() => {
+    onMounted(() => {
       refreshDashboard()
     })
 
@@ -339,7 +325,7 @@ export default {
         if (newPath === '/dashboard') {
           refreshDashboard()
         }
-      }
+      },
     )
 
     const userInitial = computed(() => (store.displayName?.charAt(0) || 'U').toUpperCase())

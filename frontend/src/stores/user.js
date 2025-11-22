@@ -113,6 +113,44 @@ export const useUserStore = defineStore('user', {
       }
     },
 
+    async refreshUserProfile() {
+  try {
+    const res = await fetch('http://127.0.0.1:8000/api/user/user-info/', {
+      credentials: 'include',
+      headers: { Accept: 'application/json' },
+    });
+
+    if (!res.ok) return;
+
+    const data = await res.json();
+
+    // Update only user-identifiable fields
+    this.user = data.user || this.user;
+    this.profile = data.user?.profile || this.profile;
+    this.profile_complete = data.user?.profile_complete ?? this.profile_complete;
+    this.goal = data.user?.goal ?? this.goal;
+
+    // Update level
+    if (data.user?.profile?.current_level) {
+      this.level = data.user.profile.current_level;
+    }
+
+    // Update role
+    if (data.user?.is_admin || data.user?.is_staff) {
+      this.role = "admin";
+      this.isAdmin = true;
+    } else {
+      this.role = data.user?.profile?.role || this.role;
+      this.isAdmin = false;
+    }
+
+    // Do **NOT** fetch coach status here (avoids recursion)
+  } catch (err) {
+    console.error("refreshUserProfile error:", err);
+  }
+}
+,
+
     async logout() {
       try {
         await fetch('http://127.0.0.1:8000/accounts/logout/', {
