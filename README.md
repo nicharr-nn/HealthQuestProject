@@ -85,19 +85,12 @@ cd backend
 2. **Create virtual environment:**
 ```bash
 python -m venv venv
-
-**Activate the virtual environment:**
- **macOS/Linux**
-
-  ```bash
-  source venv/bin/activate
-  ```
-   
-  **Windows**
-
-  ```bash
-  .venv\Scripts\activate
-  ```
+# Activate the virtual environment
+# macOS/Linux
+source venv/bin/activate
+# Windows
+.venv\Scripts\activate
+```
 
 3. **Install dependencies**
 ```bash
@@ -147,17 +140,17 @@ npm run dev
 ## Running the Application
 ### With Docker
 
-# Start all services
+#### Start all services
 ```bash
 docker-compose up
 ```
 
-# Stop all services
+#### Stop all services
 ```bash
 docker-compose down
 ```
 
-# Rebuild after code changes
+#### Rebuild after code changes
 ```bash
 docker-compose up --build
 ```
