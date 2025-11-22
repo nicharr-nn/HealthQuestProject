@@ -572,5 +572,105 @@
       "rating": 5,
       "created_at": "2024-01-18T11:30:00Z"
     }
+  },
+  {
+    "model": "workout.workoutprogram",
+    "pk": 4,
+    "fields": {
+      "coach": 6,
+      "title": "Win's Core Body Plan",
+      "description": "A private core-strengthening program for dedicated members.",
+      "level_access": "all",
+      "difficulty_level": "hard",
+      "is_public": false,
+      "duration": 2,
+      "category": "core",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "workout.workoutassignment",
+    "pk": 4,
+    "fields": {
+      "member": 1,
+      "program": 4,
+      "assigned_date": "2024-01-14",
+      "status": "pending",
+      "due_date": "2025-12-21"
+    }
+  },
+  {
+    "model": "workout.workoutday",
+    "pk": 9,
+    "fields": {
+      "program": 4,
+      "day_number": 1,
+      "title": "Intense Core Workout",
+      "video_links": ["https://youtube.com/videos/intense_core_workout.mp4"],
+      "duration": 40,
+      "type": "core_workout"
+    }
+  },
+    {
+    "model": "workout.workoutprogram",
+    "pk": 5,
+    "fields": {
+      "coach": 6,
+      "title": "Win's Recovery Plan",
+      "description": "A private recovery program for dedicated members.",
+      "level_access": "all",
+      "difficulty_level": "hard",
+      "is_public": false,
+      "duration": 2,
+      "category": "recovery",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "workout.workoutassignment",
+    "pk": 5,
+    "fields": {
+      "member": 1,
+      "program": 5,
+      "assigned_date": "2024-01-14",
+      "status": "in_progress",
+      "due_date": "2025-12-10"
+    }
+  },
+  {
+    "model": "workout.workoutday",
+    "pk": 10,
+    "fields": {
+      "program": 5,
+      "day_number": 1,
+      "title": "Recovery Stretch",
+      "video_links": ["https://youtube.com/videos/recovery_stretch.mp4"],
+      "duration": 10,
+      "type": "recovery"
+    }
+  },
+    {
+    "model": "workout.workoutday",
+    "pk": 11,
+    "fields": {
+      "program": 5,
+      "day_number": 2,
+      "title": "Recovery Stretch",
+      "video_links": ["https://youtube.com/videos/recovery_stretch.mp4"],
+      "duration": 15,
+      "type": "recovery"
+    }
+  },
+    {
+    "model": "workout.workoutdaycompletion",
+    "pk": 1,
+    "fields": {
+      "workout_day": 10,
+      "completed_at": "2024-02-01T15:00:00Z",
+      "xp_earned": 30,
+      "user_profile": 5
+    }
   }
 ]
