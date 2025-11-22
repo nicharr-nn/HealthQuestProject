@@ -20,10 +20,9 @@ class MemberSerializer(serializers.ModelSerializer):
 
 class CoachMemberRelationshipSerializer(serializers.ModelSerializer):
     coach = CoachSerializer(read_only=True)
-    memberName = serializers.CharField(
-        source="member.user.user.username", read_only=True
-    )
+    memberName = serializers.SerializerMethodField()
     memberId = serializers.CharField(source="member.member_id", read_only=True)
+    member_photo = serializers.SerializerMethodField()
     experienceLevel = serializers.CharField(
         source="member.experience_level", read_only=True
     )
@@ -34,10 +33,6 @@ class CoachMemberRelationshipSerializer(serializers.ModelSerializer):
     )
     goals = serializers.SerializerMethodField()
 
-    def get_goals(self, obj):
-        fitness_goals = FitnessGoal.objects.filter(user_profile=obj.member.user)
-        return [goal.get_goal_type_display() for goal in fitness_goals]
-
     class Meta:
         model = CoachMemberRelationship
         fields = [
@@ -46,12 +41,33 @@ class CoachMemberRelationshipSerializer(serializers.ModelSerializer):
             "status",
             "memberName",
             "memberId",
+            "member_photo",
             "experienceLevel",
             "message",
             "programName",
             "submittedAt",
             "goals",
         ]
+
+    def get_memberName(self, obj):
+        user_profile = obj.member.user
+        user = user_profile.user
+        full_name = f"{user.first_name} {user.last_name}".strip()
+        return full_name if full_name else user.username
+
+    def get_memberId(self, obj):
+        return obj.member.member_id
+
+    def get_member_photo(self, obj):
+        user_profile = obj.member.user
+        if hasattr(user_profile, "photo") and user_profile.photo:
+            return user_profile.photo.url
+        return None
+
+    def get_goals(self, obj):
+        user_profile = obj.member.user
+        fitness_goals = FitnessGoal.objects.filter(user_profile=user_profile)
+        return [goal.get_goal_type_display() for goal in fitness_goals]
 
 
 class FoodPostSerializer(serializers.ModelSerializer):

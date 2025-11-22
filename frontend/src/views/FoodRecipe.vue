@@ -9,19 +9,20 @@
     </div>
 
     <!-- Filter Buttons -->
-    <div class="bg-blue-100 p-3 sm:p-4 rounded-lg max-w-5xl mx-auto mb-4 sm:mb-6">
+    <div
+      v-if="userStore.level.level.toLowerCase() === 'gold' || userStore.role.toLowerCase() === 'coach'"
+      class="bg-blue-100 p-3 sm:p-4 rounded-lg max-w-5xl mx-auto mb-4 sm:mb-6"
+    >
       <div class="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-8">
-        <div class="text-base sm:text-lg font-semibold text-center">Choose Recipes to Display:</div>
+        <div class="text-base sm:text-lg font-semibold text-center">
+          Choose Recipes to Display:
+        </div>
         <div class="flex gap-3 sm:gap-4 flex-wrap justify-center">
           <button
-            v-if="
-              userStore.level.level.toLowerCase() === 'gold' ||
-              userStore.role.toLowerCase() === 'coach'
-            "
             @click="showMyRecipes"
             :class="[
               'px-4 sm:px-6 py-2 rounded-lg font-semibold shadow-md transition text-sm sm:text-base',
-              showMine ? 'bg-[#F9B4FF]' : 'bg-gray-200 hover:bg-gray-300',
+              showMine ? 'bg-[#fcc2f6]' : 'bg-gray-100 hover:bg-gray-200',
             ]"
           >
             My Recipes
@@ -30,7 +31,7 @@
             @click="showAllRecipes"
             :class="[
               'px-4 sm:px-6 py-2 rounded-lg font-semibold shadow-md transition text-sm sm:text-base',
-              !showMine ? 'bg-[#F9B4FF]' : 'bg-gray-200 hover:bg-gray-300',
+              !showMine ? 'bg-[#fcc2f6]' : 'bg-gray-100 hover:bg-gray-200',
             ]"
           >
             All Recipes
@@ -43,14 +44,16 @@
     <div
       class="bg-white rounded-xl p-4 sm:p-8 w-full max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 my-4 sm:my-6 shadow-md"
     >
-      <p class="text-lg sm:text-2xl md:text-3xl text-center md:text-left">
-        Let's share our favorite recipes and discover healthy meals from others!
+      <p class="text-lg sm:text-2xl md:text-2xl text-center">
+        {{ userStore.level.level.toLowerCase() === 'gold' || userStore.role.toLowerCase() === 'coach'
+          ? "Let's share your favorite recipes and discovery healthy meals!"
+          : "Let's discover healthy meals from others!" }}
       </p>
 
       <button
         v-if="showMine"
         @click="openModal"
-        class="bg-pink-400 hover:bg-pink-500 text-white font-semibold px-4 sm:px-6 py-2 sm:py-3 rounded-lg shadow-md transition whitespace-nowrap text-sm sm:text-base"
+        class="bg-pink-400 hover:bg-pink-500 text-white font-semibold px-4 sm:px-5 py-2 sm:py-1 rounded-lg shadow-md transition whitespace-nowrap text-sm sm:text-base"
       >
         Upload Recipe
       </button>
@@ -93,9 +96,9 @@
       title="Delete Recipe?"
       message="Are you sure you want to delete"
       :item-name="recipeToDeleteName"
-      additional-text="? This action cannot be undone."
+      additional-text=" This action cannot be undone."
       cancel-text="Cancel"
-      confirm-text="Yes, Delete"
+      confirm-text="Delete"
       @confirm="confirmDelete"
       @close="closeDeleteModal"
     />

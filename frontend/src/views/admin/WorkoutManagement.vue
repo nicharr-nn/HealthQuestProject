@@ -506,6 +506,8 @@ function formatDate(dateString) {
   })
 }
 
+function logout() { userStore.logout?.(); window.location.href='/' }
+
 // Load workouts on mount
 onMounted(() => {
   fetchWorkouts()

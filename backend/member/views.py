@@ -12,7 +12,7 @@ from .serializers import (
     FoodPostCommentSerializer,
 )
 from coach.models import Coach
-from workout.models import WorkoutProgram, WorkoutAssignment
+from workout.models import WorkoutProgram, WorkoutAssignment, WorkoutDayCompletion
 from workout.serializers import WorkoutAssignmentSerializer
 from django.db import models
 
@@ -43,6 +43,32 @@ def coach_member_profile(request, member_id):
     profile = member.user
     user = profile.user
 
+    # Calculate progress if member has assignments
+    total_days = 0
+    completed_days = 0
+    progress = 0
+    assignments = WorkoutAssignment.objects.filter(
+        member=member
+        ).select_related("program")
+    if assignments.exists():
+        for assignment in assignments:
+            program_days = assignment.program.days.values(
+                "day_number"
+                ).distinct().count()
+            total_days += program_days
+            program_completed = (
+                WorkoutDayCompletion.objects.filter(
+                    user_profile=profile,
+                    workout_day__program=assignment.program
+                )
+                .values("workout_day__day_number")
+                .distinct()
+                .count()
+            )
+            completed_days += program_completed
+        if total_days > 0:
+            progress = round((completed_days / total_days) * 100, 1)
+
     data = {
         "user": {
             "id": user.id,
@@ -57,6 +83,11 @@ def coach_member_profile(request, member_id):
         "weight": profile.weight,
         "location": profile.location,
         "photo": profile.photo.url if profile.photo else None,
+        "experienceLevel": member.experience_level,
+        "programName": member.program_name,
+        "joinedAt": member.submitted_at,
+        "message": member.message,
+        "progress": progress,
     }
 
     return Response(data, status=status.HTTP_200_OK)
@@ -125,19 +156,30 @@ def accepted_members(request):
 
     relationships = CoachMemberRelationship.objects.filter(
         coach=coach_profile, status__in=["accepted", "approved"]
-    )
+    ).select_related("member__user__user")
 
-    # convert to frontend format
-    members_data = [
-        {
-            "memberId": r.member.member_id,
-            "name": r.member.user.user.username,
-            "programName": r.member.program_name,
-            "joinedAt": r.member.submitted_at,
-            "experienceLevel": r.member.experience_level,
-        }
-        for r in relationships
-    ]
+    # convert to frontend format (including profile photo)
+    members_data = []
+    for r in relationships:
+        profile = r.member.user  # UserProfile
+        user = profile.user
+        photo_url = None
+        if getattr(profile, "photo", None):
+            if hasattr(profile.photo, "url"):
+                photo_url = profile.photo.url
+            else:
+                photo_url = str(profile.photo)
+
+        members_data.append(
+            {
+                "memberId": r.member.member_id,
+                "name": user.get_full_name() or user.username,
+                "programName": r.member.program_name,
+                "joinedAt": r.member.submitted_at,
+                "experienceLevel": r.member.experience_level,
+                "member_photo": photo_url,
+            }
+        )
 
     return Response(members_data, status=status.HTTP_200_OK)
 
@@ -672,3 +714,83 @@ def uncommented_food_posts(request):
         )
 
     return Response({"count": len(data), "posts": data}, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def member_progress_overview(request):
+    """Get progress overview for all members assigned to this coach"""
+    user_profile = getattr(request.user, "userprofile", None)
+    coach_profile = getattr(user_profile, "coach_profile", None)
+
+    if not coach_profile:
+        return Response(
+            {"error": "You are not a coach"}, status=status.HTTP_403_FORBIDDEN
+        )
+
+    # Get all accepted members for this coach
+    relationships = CoachMemberRelationship.objects.filter(
+        coach=coach_profile, status__in=["accepted", "approved"]
+    ).select_related("member__user__user")
+
+    members_progress = []
+
+    for relationship in relationships:
+        member = relationship.member
+        member_profile = member.user
+
+        # Get assigned programs for this member
+        assignments = WorkoutAssignment.objects.filter(member=member).select_related(
+            "program"
+        )
+
+        total_days = 0
+        completed_days = 0
+        current_program = None
+        completion_rate = 0
+
+        if assignments.exists():
+            # Get the most recent assignment
+            latest_assignment = assignments.first()
+            current_program = latest_assignment.program.title
+
+            # Calculate total days in all assigned programs
+            for assignment in assignments:
+                program_days = assignment.program.days.values(
+                    "day_number"
+                    ).distinct().count()
+                total_days += program_days
+
+                # Count completed days for this program
+                program_completed = (
+                    WorkoutDayCompletion.objects.filter(
+                        user_profile=member_profile,
+                        workout_day__program=assignment.program
+                    )
+                    .values("workout_day__day_number")
+                    .distinct()
+                    .count()
+                )
+                completed_days += program_completed
+
+            # Calculate completion rate
+            if total_days > 0:
+                completion_rate = round((completed_days / total_days) * 100, 1)
+
+        members_progress.append(
+            {
+                "member_id": member.member_id,
+                "name": member.user.user.username,
+                "experience_level": member.experience_level,
+                "program_name": current_program,
+                "total_days": total_days,
+                "completed_days": completed_days,
+                "completion_rate": completion_rate,
+                "joined_at": member.submitted_at,
+            }
+        )
+
+    return Response(
+        {"count": len(members_progress), "members": members_progress},
+        status=status.HTTP_200_OK,
+    )

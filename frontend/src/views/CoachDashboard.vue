@@ -60,7 +60,7 @@
         }"
       >
         <div class="text-2xl">
-          <icon.Spinner class="animate-spin" v-if="approvalStatus === 'pending'" />
+          <icon.Loader class="animate-spin" v-if="approvalStatus === 'pending'" />
           <icon.XCircle v-else-if="approvalStatus === 'rejected'" />
         </div>
 
@@ -209,7 +209,6 @@
   </div>
 </template>
 
-
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
@@ -344,8 +343,8 @@ async function deleteProgram(programId) {
     } else {
       const text = await res.text()
       let body = text
-      try { 
-        body = JSON.parse(text) 
+      try {
+        body = JSON.parse(text)
       } catch (err) {
         console.warn('Failed to parse response as JSON:', err)
       }

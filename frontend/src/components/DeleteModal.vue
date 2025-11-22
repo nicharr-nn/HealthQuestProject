@@ -16,9 +16,12 @@
       </button>
 
       <!-- Title -->
-      <h2 class="text-xl sm:text-2xl font-bold text-center text-black mb-2">
-        {{ title }}
-      </h2>
+      <div class="flex items-center justify-center gap-2 mb-2">
+        <Siren class="w-7 h-7 -mt-1 text-black" />
+        <h2 class="text-xl sm:text-2xl font-bold text-center text-black">
+          {{ title }}
+        </h2>
+      </div>
 
       <!-- Message -->
       <p class="text-center text-gray-600 mb-6">
@@ -52,6 +55,7 @@
 
 <script setup>
 import { defineProps, defineEmits } from 'vue'
+import { Siren } from 'lucide-vue-next'
 
 defineProps({
   show: {
@@ -60,7 +64,7 @@ defineProps({
   },
   title: {
     type: String,
-    default: '🚨',
+    default: '',
   },
   message: {
     type: String,
