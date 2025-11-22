@@ -158,11 +158,6 @@ function closeModal() {
   emit('close')
 }
 
-function viewFoodDiary() {
-  router.push(`/food-diary/${props.memberId}`)
-  closeModal()
-}
-
 function formatGender(gender) {
   if (!gender) return 'Not specified'
   return gender.charAt(0).toUpperCase() + gender.slice(1)
