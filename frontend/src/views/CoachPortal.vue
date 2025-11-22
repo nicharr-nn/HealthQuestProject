@@ -249,9 +249,11 @@
 <script setup>
 import { reactive, ref, computed, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
+import { useToastStore } from '@/stores/toast'
 import DeleteModal from '@/components/DeleteModal.vue'
 
 const userStore = useUserStore()
+const toast = useToastStore()
 
 const coachForm = reactive({ bio: '', height: '', weight: '', location: '' })
 const selectedFile = ref(null)
@@ -359,7 +361,7 @@ const onProfilePictureSelected = async (event) => {
     userStore.profile.photo = data.photo_url;
     profilePicture.value = `http://127.0.0.1:8000${data.photo_url}`;
 
-    alert("Profile picture updated!");
+    toast.success('Profile updated successfully!')
   } catch (error) {
     console.error("Upload failed", error);
   }
@@ -515,7 +517,7 @@ async function saveProfile() {
     if (!response.ok) throw new Error("Failed to update profile")
 
     const data = await response.json()
-    alert("Profile updated successfully!")
+    toast.success('Profile updated successfully!')
 
     // Update form and display values
     coachForm.bio = data.bio || coachForm.bio
@@ -542,13 +544,13 @@ async function saveProfile() {
 // Delete account
 const deleteUserAccount = async () => {
   try {
-    const response = await fetch(`http://127.0.0.1:8000/api/user-info/`, {
+    const response = await fetch(`http://127.0.0.1:8000/api/user/delete-account/${userStore.id}/`, {
       method: 'DELETE',
       credentials: 'include',
       headers: {
         'X-CSRFToken': getCsrfToken(),
       },
-    })
+    });
 
     if (response.ok) {
       toast.success('Account deactivated successfully.')
