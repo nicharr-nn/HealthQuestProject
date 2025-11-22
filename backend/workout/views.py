@@ -561,7 +561,7 @@ def list_my_assignments(request):
             )
             .order_by(
                 "status_priority",
-                models.F("due_date").asc(nulls_last=True), 
+                models.F("due_date").asc(nulls_last=True),
             )
         )
 
