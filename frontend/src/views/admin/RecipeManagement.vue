@@ -15,10 +15,12 @@
       @select="setSection"
     />
 
-     <!-- Main column -->
-     <div :class="sidebarOpen ? 'md:pl-72' : 'md:pl-0'">
+    <!-- Main column -->
+    <div :class="sidebarOpen ? 'md:pl-72' : 'md:pl-0'">
       <!-- Header -->
-      <header class="sticky top-0 left-0 right-0 z-30 z-30 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-sm">
+      <header
+        class="sticky top-0 left-0 right-0 z-30 z-30 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-sm"
+      >
         <div class="flex items-center justify-between px-4 py-3 md:px-8">
           <div class="flex items-center gap-3">
             <button
@@ -43,7 +45,9 @@
             <!-- Header User Info -->
             <div class="flex items-center gap-2">
               <!-- Avatar -->
-              <div class="grid h-10 w-10 place-items-center rounded-full bg-blue-500 font-bold font-subtitle text-white">
+              <div
+                class="grid h-10 w-10 place-items-center rounded-full bg-blue-500 font-bold font-subtitle text-white"
+              >
                 <template v-if="userStore.user?.username">
                   {{ getInitials(userStore.user.username) }}
                 </template>
@@ -56,14 +60,12 @@
                   <template v-if="userStore.user?.username">
                     {{ userStore.user.username }}
                   </template>
-                  <template v-else>
-                    Loading...
-                  </template>
+                  <template v-else> Loading... </template>
                 </div>
                 <div class="text-[11px] text-slate-500 font-subtitle">Administrator</div>
               </div>
-            </div>            
-            <button 
+            </div>
+            <button
               @click="logout"
               class="ml-3 flex items-center py-2 px-3 rounded-md hover:bg-gray-100"
             >
@@ -77,12 +79,16 @@
       <section v-show="activeSection === 'recipes'" class="px-4 py-6 md:px-8 space-y-6">
         <div>
           <h2 class="text-2xl font-bold font-subtitle">Recipe Management</h2>
-          <p class="text-sm text-slate-500 font-subtitle">View and manage all recipes posted on the platform</p>
+          <p class="text-sm text-slate-500 font-subtitle">
+            View and manage all recipes posted on the platform
+          </p>
         </div>
 
         <div class="rounded-xl bg-white p-5 shadow-sm">
           <div class="mb-4 flex items-center justify-between">
-            <h3 class="text-base font-semibold font-subtitle">All Recipes ({{ recipes.length }})</h3>
+            <h3 class="text-base font-semibold font-subtitle">
+              All Recipes ({{ recipes.length }})
+            </h3>
           </div>
 
           <div v-if="loadingRecipes" class="text-center py-8 text-slate-500">
@@ -112,15 +118,27 @@
                   class="border-b border-slate-100 hover:bg-slate-50"
                 >
                   <td class="px-3 py-3 flex items-center gap-3">
-                    <div v-if="recipe.image" class="h-12 w-12 rounded-md bg-slate-200 overflow-hidden">
-                      <img :src="recipe.image" :alt="recipe.title" class="h-full w-full object-cover" />
+                    <div
+                      v-if="recipe.image"
+                      class="h-12 w-12 rounded-md bg-slate-200 overflow-hidden"
+                    >
+                      <img
+                        :src="recipe.image"
+                        :alt="recipe.title"
+                        class="h-full w-full object-cover"
+                      />
                     </div>
-                    <div v-else class="grid h-12 w-12 place-items-center rounded-md bg-amber-100 text-xl">
+                    <div
+                      v-else
+                      class="grid h-12 w-12 place-items-center rounded-md bg-amber-100 text-xl"
+                    >
                       🍽️
                     </div>
                     <div>
                       <div class="font-semibold">{{ recipe.title }}</div>
-                      <div class="text-xs text-slate-500">{{ getIngredientCount(recipe.ingredients) }} ingredients</div>
+                      <div class="text-xs text-slate-500">
+                        {{ getIngredientCount(recipe.ingredients) }} ingredients
+                      </div>
                     </div>
                   </td>
                   <td class="px-3 py-3 font-semibold">{{ recipe.user_profile }}</td>
@@ -174,17 +192,30 @@
 
         <!-- Body -->
         <div class="px-5 py-4 space-y-4 max-h-[70vh] overflow-y-auto">
-          <div v-if="recipeModal.recipe?.image" class="w-full h-48 rounded-lg bg-slate-200 overflow-hidden">
-            <img :src="recipeModal.recipe.image" :alt="recipeModal.recipe.title" class="h-full w-full object-cover" />
+          <div
+            v-if="recipeModal.recipe?.image"
+            class="w-full h-48 rounded-lg bg-slate-200 overflow-hidden"
+          >
+            <img
+              :src="recipeModal.recipe.image"
+              :alt="recipeModal.recipe.title"
+              class="h-full w-full object-cover"
+            />
           </div>
 
           <div>
             <h4 class="text-xl font-subtitle">{{ recipeModal.recipe?.title }}</h4>
             <div class="flex items-center gap-3 mt-2">
-              <span class="text-sm text-slate-600">By {{ recipeModal.recipe?.user_profile.split(' ')[0].toUpperCase() }}</span>
+              <span class="text-sm text-slate-600"
+                >By {{ recipeModal.recipe?.user_profile.split(' ')[0].toUpperCase() }}</span
+              >
               <span
                 class="rounded-full px-2 py-0.5 text-[11px] font-medium capitalize"
-                :class="recipeModal.recipe?.access_level === 'gold' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-800'"
+                :class="
+                  recipeModal.recipe?.access_level === 'gold'
+                    ? 'bg-amber-100 text-amber-800'
+                    : 'bg-slate-100 text-slate-800'
+                "
               >
                 {{ recipeModal.recipe?.access_level }}
               </span>
@@ -215,14 +246,14 @@
               <span class="ml-2 font-medium">{{ formatDate(recipeModal.recipe?.created_at) }}</span>
             </div>
             <div v-if="recipeModal.recipe?.pdf_file" class="flex justify-end">
-            <a
-              :href="recipeModal.recipe.pdf_file"
-              target="_blank"
-              class="rounded-md bg-blue-500 px-3 py-1.5 text-white hover:bg-blue-600 font-bold"
-            >
-              View PDF
-            </a>
-          </div>
+              <a
+                :href="recipeModal.recipe.pdf_file"
+                target="_blank"
+                class="rounded-md bg-blue-500 px-3 py-1.5 text-white hover:bg-blue-600 font-bold"
+              >
+                View PDF
+              </a>
+            </div>
           </div>
         </div>
 
@@ -268,7 +299,12 @@ const recipes = ref([])
 
 function getInitials(name) {
   if (!name) return '?'
-  return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2)
+  return name
+    .split(' ')
+    .map((w) => w[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
 }
 
 // Sidebar nav
@@ -286,7 +322,7 @@ function formatDate(dateString) {
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
-    day: 'numeric'
+    day: 'numeric',
   })
 }
 
@@ -295,22 +331,20 @@ function getIngredientCount(ingredients) {
   if (Array.isArray(ingredients)) return ingredients.length
   return ingredients
     .split(',')
-    .map(i => i.trim())
-    .filter(i => i.length > 0)
-    .length
+    .map((i) => i.trim())
+    .filter((i) => i.length > 0).length
 }
-
 
 // Computed filtered recipes
 const filteredRecipes = computed(() => {
   let result = recipes.value
   if (recipeAccessFilter.value !== 'all') {
-    result = result.filter(r => r.access_level === recipeAccessFilter.value)
+    result = result.filter((r) => r.access_level === recipeAccessFilter.value)
   }
   if (searchQuery.value) {
     const q = searchQuery.value.toLowerCase()
     result = result.filter(
-      r => r.title.toLowerCase().includes(q) || r.user_profile.toLowerCase().includes(q)
+      (r) => r.title.toLowerCase().includes(q) || r.user_profile.toLowerCase().includes(q),
     )
   }
   return result
@@ -346,9 +380,7 @@ const deleteRecipe = async (id) => {
     }
   } catch (err) {
     console.error(err)
-    
   }
-
 }
 
 // Fetch recipes

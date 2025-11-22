@@ -108,6 +108,7 @@ const originalName = ref('')
 const isEditingProfile = ref(false)
 const isResubmitting = ref(false)
 const googleName = ref('')
+const API_URL = 'http://127.0.0.1:8000'
 
 // Called when file input changes
 function onFileSelected(event) {
@@ -120,7 +121,7 @@ function onFileSelected(event) {
 
 // Fetch coach status on mount
 onMounted(async () => {
-  const res = await fetch("http://127.0.0.1:8000/api/coach/status/", { credentials: 'include' })
+  const res = await fetch(`${API_URL}/api/coach/status/`, { credentials: 'include' })
   if (!userStore.user || !userStore.profile) {
     await userStore.init()
   }
@@ -165,7 +166,7 @@ async function submitApplication() {
   }
 
   try {
-    const response = await fetch('http://127.0.0.1:8000/api/coach/upload-cert/', {
+    const response = await fetch(`${API_URL}/api/coach/upload-cert/`, {
       method,
       body: formData,
       credentials: 'include'
@@ -232,7 +233,7 @@ async function saveProfile() {
   }
 
   try {
-    const response = await fetch("http://127.0.0.1:8000/api/coach/edit-profile/", {
+    const response = await fetch(`${API_URL}/api/coach/edit-profile/`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       credentials: "include",

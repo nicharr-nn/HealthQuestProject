@@ -176,17 +176,15 @@ const sortBy = ref('newest')
 
 const menus = ref([])
 const loading = ref(true)
-
+const API_URL = 'http://127.0.0.1:8000'
 // Computed property for filtered menus
 const filteredMenus = computed(() => {
   let filtered = menus.value
-
 
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
     filtered = filtered.filter((menu) => menu.title.toLowerCase().includes(query))
   }
-
 
   if (minRatingFilter.value > 0) {
     filtered = filtered.filter((menu) => (menu.average_rating || 0) >= minRatingFilter.value)
@@ -197,22 +195,22 @@ const filteredMenus = computed(() => {
 
 const getUserRating = (menu) => {
   if (!menu.ratings || !Array.isArray(menu.ratings)) return 0
-  
+
   for (const rating of menu.ratings) {
-  const isUserMatch = rating.user === userStore.user?.username;
-  const isUserIdMatch = rating.user_profile_id === userStore.userId;
-  
-  if (isUserMatch && isUserIdMatch) {
-    return rating.rating;
+    const isUserMatch = rating.user === userStore.user?.username
+    const isUserIdMatch = rating.user_profile_id === userStore.userId
+
+    if (isUserMatch && isUserIdMatch) {
+      return rating.rating
+    }
   }
-}
-return 0;
+  return 0
 }
 
 const hasUserRated = computed(() => {
-  const menu = menus.value.find(m => m.id === selectedRecipeId.value)
+  const menu = menus.value.find((m) => m.id === selectedRecipeId.value)
   if (!menu) return false
-  
+
   return getUserRating(menu) > 0
 })
 
@@ -245,7 +243,6 @@ const openEditModal = (menu) => {
   recipeTitle.value = menu.title
   recipeIngredients.value = menu.ingredients
   recipeSteps.value = menu.steps
-
 }
 
 const closeModal = () => {
@@ -275,18 +272,15 @@ const closeRatingModal = () => {
 
 const submitRating = async (rating) => {
   try {
-    const response = await fetch(
-      `http://127.0.0.1:8000/api/recipe/${selectedRecipeId.value}/give-rating/`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCsrfToken(),
-        },
-        body: JSON.stringify({ rating }),
-        credentials: 'include',
-      }
-    )
+    const response = await fetch(`${API_URL}/api/recipe/${selectedRecipeId.value}/give-rating/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCsrfToken(),
+      },
+      body: JSON.stringify({ rating }),
+      credentials: 'include',
+    })
 
     if (response.ok) {
       toast.success('Rating submitted successfully!')
@@ -307,19 +301,14 @@ const removeRatingFromModal = async () => {
     return
   }
 
-  
-
   try {
-    const response = await fetch(
-      `http://127.0.0.1:8000/api/recipe/${selectedRecipeId.value}/delete-rating/`,
-      {
-        method: 'DELETE',
-        headers: {
-          'X-CSRFToken': getCsrfToken(),
-        },
-        credentials: 'include',
-      }
-    )
+    const response = await fetch(`${API_URL}/api/recipe/${selectedRecipeId.value}/delete-rating/`, {
+      method: 'DELETE',
+      headers: {
+        'X-CSRFToken': getCsrfToken(),
+      },
+      credentials: 'include',
+    })
 
     if (response.ok) {
       toast.success('Rating removed successfully!')
@@ -327,7 +316,11 @@ const removeRatingFromModal = async () => {
       const menuIndex = menus.value.findIndex((m) => m.id === selectedRecipeId.value)
       if (menuIndex !== -1 && menus.value[menuIndex].ratings) {
         menus.value[menuIndex].ratings = menus.value[menuIndex].ratings.filter(
-          rating => !(rating.user === userStore.user?.username || rating.user_profile_id === userStore.userId)
+          (rating) =>
+            !(
+              rating.user === userStore.user?.username ||
+              rating.user_profile_id === userStore.userId
+            ),
         )
       }
 
@@ -358,14 +351,11 @@ const confirmDelete = async () => {
   if (!recipeToDeleteId.value) return
 
   try {
-    const response = await fetch(
-      `http://127.0.0.1:8000/api/recipe/${recipeToDeleteId.value}/delete/`,
-      {
-        method: 'DELETE',
-        headers: { 'X-CSRFToken': getCsrfToken() },
-        credentials: 'include',
-      },
-    )
+    const response = await fetch(`${API_URL}/api/recipe/${recipeToDeleteId.value}/delete/`, {
+      method: 'DELETE',
+      headers: { 'X-CSRFToken': getCsrfToken() },
+      credentials: 'include',
+    })
 
     if (response.ok) {
       toast.success('Recipe deleted successfully!')
@@ -394,8 +384,8 @@ const submitRecipe = async (data) => {
   if (data.imageFile) formData.append('image', data.imageFile)
 
   const url = editMode.value
-    ? `http://127.0.0.1:8000/api/recipe/${editingId.value}/update/`
-    : 'http://127.0.0.1:8000/api/recipe/'
+    ? `${API_URL}/api/recipe/${editingId.value}/update/`
+    : `${API_URL}/api/recipe/`
 
   const method = editMode.value ? 'PUT' : 'POST'
 
@@ -434,13 +424,13 @@ const isOwner = (menu) => {
 
 const fetchRecipeRating = async (recipeId) => {
   try {
-    const response = await fetch(`http://127.0.0.1:8000/api/recipe/${recipeId}/get-rating/`, {
+    const response = await fetch(`${API_URL}/api/recipe/${recipeId}/get-rating/`, {
       credentials: 'include',
     })
 
     if (response.ok) {
       const data = await response.json()
-      
+
       const menuIndex = menus.value.findIndex((m) => m.id === recipeId)
       if (menuIndex !== -1) {
         menus.value[menuIndex].average_rating = data.average_rating
@@ -456,10 +446,7 @@ const fetchRecipeRating = async (recipeId) => {
 async function fetchMenus(onlyMine = false) {
   loading.value = true
   try {
-    const baseUrl = onlyMine
-      ? 'http://127.0.0.1:8000/api/recipe/my-recipes/'
-      : 'http://127.0.0.1:8000/api/recipe'
-
+    const baseUrl = onlyMine ? `${API_URL}/api/recipe/my-recipes/` : `${API_URL}/api/recipe`
 
     const params = new URLSearchParams()
     if (sortBy.value) params.append('sort_by', sortBy.value)
@@ -473,9 +460,7 @@ async function fetchMenus(onlyMine = false) {
     if (!response.ok) throw new Error(`Failed to fetch: ${response.status}`)
     const recipes = await response.json()
 
-
     menus.value = recipes
-
 
     await Promise.all(recipes.map((recipe) => fetchRecipeRating(recipe.id)))
   } catch (err) {
@@ -501,6 +486,4 @@ function getCsrfToken() {
   if (parts.length === 2) return parts.pop().split(';').shift()
   return ''
 }
-
-
 </script>

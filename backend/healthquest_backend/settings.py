@@ -28,12 +28,15 @@ environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-as-o9%=+_86v-7jlm_g+e&r814$*2vjn))_uiz2-ntq5t*l=jr"
+SECRET_KEY = env("SECRET_KEY", default="django-insecure-")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool("DEBUG", default=True)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "localhost",
+]
 
 
 # Application definition
@@ -187,16 +190,19 @@ ACCOUNT_EMAIL_VERIFICATION = "none"
 
 SOCIALACCOUNT_ADAPTER = "users.adapters.CustomSocialAccountAdapter"
 
-LOGIN_REDIRECT_URL = "http://127.0.0.1:5173/select-role"
+LOGIN_REDIRECT_URL = "http://127.0.0.1:5173/select-role" 
 
 LOGOUT_REDIRECT_URL = "http://127.0.0.1:5173/"
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5173",
+    "http://localhost:5173",
 ]
+
 CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:5173",
+    "http://localhost:5173",
 ]
 
 # Session settings for cross-origin requests

@@ -1,0 +1,188 @@
+[
+  {
+    "model": "auth.user",
+    "pk": 1,
+    "fields": {
+      "username": "admin",
+      "email": "admin@healthquest.com",
+      "password": "healthyadmin",
+      "first_name": "Admin",
+      "last_name": "User",
+      "is_superuser": true,
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "users.userprofile",
+    "pk": 1,
+    "fields": {
+      "user": 1,
+      "role": "admin",
+      "height": null,
+      "weight": null,
+      "age": null,
+      "gender": null,
+      "location": null,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "moderation.admin",
+    "pk": 1,
+    "fields": {
+      "user": 1
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 2,
+    "fields": {
+      "username": "john_bronze",
+      "email": "john@example.com",
+      "password": "johnpasswordhash",
+      "first_name": "John",
+      "last_name": "Smith",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "users.userprofile",
+    "pk": 2,
+    "fields": {
+      "user": 2,
+      "role": "normal",
+      "height": 175,
+      "weight": 70,
+      "age": 25,
+      "gender": "M",
+      "location": "US",
+    "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "users.userlevel",
+    "pk": 1,
+    "fields": {
+      "user_profile": 2,
+      "level": "bronze",
+      "level_rank": 1,
+      "xp": 0,
+      "goal_achieved": false
+    }
+  },
+  {
+    "model": "users.fitnessgoal",
+    "pk": 1,
+    "fields": {
+      "user_profile": 2,
+      "goal_type": "weight_loss",
+      "start_date": "2024-01-01"
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 3,
+    "fields": {
+      "username": "sarah_silver",
+      "email": "sarah@example.com",
+      "password": "sarahpasswordhash",
+      "first_name": "Sarah",
+      "last_name": "Davis",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "users.userprofile",
+    "pk": 3,
+    "fields": {
+      "user": 3,
+      "role": "normal",
+      "height": 165,
+      "weight": 60,
+      "age": 28,
+      "gender": "F",
+      "location": "TH",
+        "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "users.userlevel",
+    "pk": 2,
+    "fields": {
+      "user_profile": 3,
+      "level": "silver",
+      "level_rank": 2,
+      "xp": 1000,
+      "goal_achieved": false
+    }
+  },
+  {
+    "model": "users.fitnessgoal",
+    "pk": 2,
+    "fields": {
+      "user_profile": 3,
+      "goal_type": "build_muscle",
+      "start_date": "2024-01-01"
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 4,
+    "fields": {
+      "username": "mike_gold",
+      "email": "mike@example.com",
+      "password": "mikepasswordhash",
+      "first_name": "Mike",
+      "last_name": "Taylor",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "users.userprofile",
+    "pk": 4,
+    "fields": {
+      "user": 4,
+      "role": "normal",
+      "height": 185,
+      "weight": 85,
+      "age": 32,
+      "gender": "M",
+      "location": "O",
+        "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "users.userlevel",
+    "pk": 3,
+    "fields": {
+      "user_profile": 4,
+      "level": "gold",
+      "xp": 5000,
+      "goal_achieved": true
+    }
+  },
+  {
+    "model": "users.fitnessgoal",
+    "pk": 3,
+    "fields": {
+      "user_profile": 4,
+      "goal_type": "improve_endurance",
+        "start_date": "2024-01-01"
+    }
+  }
+]

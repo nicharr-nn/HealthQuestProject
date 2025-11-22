@@ -43,16 +43,56 @@ docker-compose up --build
 docker-compose up -d --build
 ```
 
+5. **Run migrateions and load sample data:**
+```bash
+# Apply database migrations
+docker-compose exec backend python manage.py migrate
+# Load sample data (optional)
+docker-compose exec backend python manage.py flush --no-input
+docker-compose exec backend python manage.py loaddata mock_data/data.json
+```
+
 5. **Access the Application:**
-- Backend API: `http://localhost:8000`
-- Frontend: `http://localhost:5173`
-- PgAdmin: `http://localhost:8081`
-- Django Admin: `http://localhost:8000/admin`
+- Backend API: `http://127.0.0.1:8000`
+- Frontend: `http://127.0.0.1:5173`
+- PgAdmin: `http://127.0.0.1:8081`
+- Django Admin: `http://127.0.0.1:8000/admin`
 
 6. **Create Superuser (First Time Only)**
 ```bash
 # Create Django superuser
 docker-compose exec backend python manage.py createsuperuser
+```
+
+7. **Incase of firstime admin login issues, reset the password:**
+```bash
+docker-compose exec backend python manage.py changepassword <your_admin_username>
+```
+8. **Set admin in Django shell:**
+```bash
+docker-compose exec backend python manage.py shell
+
+from django.contrib.auth.models import User
+from users.models import UserProfile
+from moderation.models import Admin
+
+admin_user = User.objects.get(username='admin')  # Replace 'admin' with your superuser username
+
+# Create UserProfile if it doesn't exist
+user_profile, created = UserProfile.objects.get_or_create(
+    user=admin_user,
+    defaults={'role': 'admin'}
+)
+if created:
+    print(f"UserProfile for {admin_user.username}")
+
+# Create Admin object
+admin_obj, created = Admin.objects.get_or_create(user=admin_user)
+if created:
+    print(f"Admin object for {admin_user.username}")
+
+print(f"Admin ID: {admin_obj.id}")
+exit()
 ```
 
 ### Option 2: Manual Setup & Running the Application
@@ -125,17 +165,22 @@ npm run dev
 
 ## Running the Application
 ### With Docker
-``bash
+
 # Start all services
+```bash
 docker-compose up
+```
 
 # Stop all services
+```bash
 docker-compose down
+```
 
 # Rebuild after code changes
+```bash
 docker-compose up --build
-
 ```
+
 ### Without Docker
 
 #### Run Backend
@@ -143,4 +188,10 @@ docker-compose up --build
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 cd backend
 python manage.py runserver
+```
+
+#### Run Frontend
+```bash
+cd frontend
+npm run dev
 ```

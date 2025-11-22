@@ -12,14 +12,19 @@
 
       <!-- Loading State -->
       <div v-if="loading" class="text-center py-12">
-        <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div
+          class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"
+        ></div>
         <p class="mt-4 text-gray-600">Loading member details...</p>
       </div>
 
       <!-- Error State -->
       <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
         <p class="text-red-600">{{ error }}</p>
-        <button @click="fetchMemberProgress" class="mt-4 px-4 py-2 bg-red-600 text-grey rounded-lg hover:bg-red-700">
+        <button
+          @click="fetchMemberProgress"
+          class="mt-4 px-4 py-2 bg-red-600 text-grey rounded-lg hover:bg-red-700"
+        >
           Retry
         </button>
       </div>
@@ -27,45 +32,56 @@
       <!-- Member Details -->
       <div v-else>
         <!-- Member Header -->
-<div class="bg-[#fac3e1] rounded-xl shadow-md p-8 mb-6 relative overflow-hidden">
-  <!-- Decorative circles -->
-  <div class="absolute -top-10 -right-10 w-32 h-32 sm:w-40 sm:h-40 bg-white/20 rounded-full"></div>
-  <div class="absolute -bottom-10 -left-10 w-32 h-32 sm:w-40 sm:h-40 bg-white/20 rounded-full"></div>
-  <!-- Content (with relative positioning to stay above decorative circles) -->
-  <div class="flex items-center gap-6 relative z-10">
-    <!-- White circle background -->
-      <div class="w-24 h-24 rounded-full bg-gray-200 overflow-hidden">
-        <img
-          v-if="memberInfo.photo"
-          :src="memberInfo.photo"
-          :alt="memberInfo.name"
-          class="w-full h-full object-cover"
-        />
-        <div v-else class="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-400 to-pink-400">
-          <FileUser class="text-white w-12 h-12" />
+        <div class="bg-[#fac3e1] rounded-xl shadow-md p-8 mb-6 relative overflow-hidden">
+          <!-- Decorative circles -->
+          <div
+            class="absolute -top-10 -right-10 w-32 h-32 sm:w-40 sm:h-40 bg-white/20 rounded-full"
+          ></div>
+          <div
+            class="absolute -bottom-10 -left-10 w-32 h-32 sm:w-40 sm:h-40 bg-white/20 rounded-full"
+          ></div>
+          <!-- Content (with relative positioning to stay above decorative circles) -->
+          <div class="flex items-center gap-6 relative z-10">
+            <!-- White circle background -->
+            <div class="w-24 h-24 rounded-full bg-gray-200 overflow-hidden">
+              <img
+                v-if="memberInfo.photo"
+                :src="memberInfo.photo"
+                :alt="memberInfo.name"
+                class="w-full h-full object-cover"
+              />
+              <div
+                v-else
+                class="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-400 to-pink-400"
+              >
+                <FileUser class="text-white w-12 h-12" />
+              </div>
+            </div>
+            <div class="flex-1">
+              <h1 class="text-3xl font-bold text-[#9c547b]">{{ memberInfo.name.toUpperCase() }}</h1>
+              <div class="mt-2 flex gap-2">
+                <span
+                  class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
+                  :class="{
+                    'bg-[#7ED7C1] text-green-800': memberInfo.experience_level === 'beginner',
+                    'bg-[#C2E2FA] text-blue-800': memberInfo.experience_level === 'intermediate',
+                    'bg-[#B7A3E3] text-purple-800': memberInfo.experience_level === 'advanced',
+                  }"
+                >
+                  {{
+                    memberInfo.experience_level?.charAt(0).toUpperCase() +
+                    memberInfo.experience_level?.slice(1)
+                  }}
+                </span>
+                <span
+                  class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800"
+                >
+                  ID: {{ memberInfo.member_id }}
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    <div class="flex-1">
-      <h1 class="text-3xl font-bold text-[#9c547b]">{{ memberInfo.name.toUpperCase() }}</h1>
-      <div class="mt-2 flex gap-2">
-        <span
-          class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
-          :class="{
-            'bg-[#7ED7C1] text-green-800': memberInfo.experience_level === 'beginner',
-            'bg-[#C2E2FA] text-blue-800': memberInfo.experience_level === 'intermediate',
-            'bg-[#B7A3E3] text-purple-800': memberInfo.experience_level === 'advanced',
-          }"
-        >
-          {{ memberInfo.experience_level?.charAt(0).toUpperCase() + memberInfo.experience_level?.slice(1) }}
-        </span>
-        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
-          ID: {{ memberInfo.member_id }}
-        </span>
-      </div>
-    </div>
-  </div>
-</div>
-        
 
         <!-- Programs/Assignments -->
         <div v-if="programs.length === 0" class="bg-white rounded-xl shadow-md p-12 text-center">
@@ -90,7 +106,9 @@
               <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
                   <p class="text-sm">Progress</p>
-                  <p class="font-medium text-lg">{{ program.completed_workouts }} / {{ program.total_workouts }} workouts</p>
+                  <p class="font-medium text-lg">
+                    {{ program.completed_workouts }} / {{ program.total_workouts }} workouts
+                  </p>
                 </div>
                 <div>
                   <p class="text-sm">Completion</p>
@@ -124,7 +142,8 @@
                   class="h-4 rounded-full transition-all duration-500"
                   :class="{
                     'bg-red-200': program.completion_percentage < 30,
-                    'bg-yellow-200': program.completion_percentage >= 30 && program.completion_percentage < 70,
+                    'bg-yellow-200':
+                      program.completion_percentage >= 30 && program.completion_percentage < 70,
                     'bg-green-200': program.completion_percentage >= 70,
                   }"
                   :style="{ width: `${program.completion_percentage}%` }"
@@ -135,7 +154,10 @@
             <!-- Completed Days -->
             <div class="p-6">
               <h3 class="text-lg font-semibold text-gray-800 mb-4">Completed Days</h3>
-              <div v-if="program.completed_day_numbers && program.completed_day_numbers.length > 0" class="flex flex-wrap gap-2">
+              <div
+                v-if="program.completed_day_numbers && program.completed_day_numbers.length > 0"
+                class="flex flex-wrap gap-2"
+              >
                 <span
                   v-for="dayNum in program.completed_day_numbers"
                   :key="dayNum"
@@ -190,17 +212,17 @@ function getCsrfToken() {
 
 function getFullPhotoUrl(photoPath) {
   if (!photoPath) return null
-  
+
   // If already a full URL, return as is
   if (photoPath.startsWith('http://') || photoPath.startsWith('https://')) {
     return photoPath
   }
-  
+
   // If it's a relative path, construct full URL
   if (photoPath.startsWith('/media/')) {
     return `${API_URL}${photoPath}`
   }
-  
+
   return null
 }
 
@@ -227,7 +249,7 @@ async function fetchMemberProgress() {
     }
 
     const members = await memberResponse.json()
-    
+
     // Find member by memberId
     const member = members.find((m) => m.memberId === currentMemberId)
 
@@ -249,7 +271,7 @@ async function fetchMemberProgress() {
         headers: {
           'X-CSRFToken': getCsrfToken(),
         },
-      }
+      },
     )
 
     if (!assignmentsResponse.ok) {
@@ -274,7 +296,7 @@ async function fetchMemberProgress() {
               headers: {
                 'X-CSRFToken': getCsrfToken(),
               },
-            }
+            },
           )
 
           if (!progressResponse.ok) {
@@ -310,11 +332,10 @@ async function fetchMemberProgress() {
         } catch {
           return null
         }
-      })
+      }),
     )
 
     programs.value = programsWithProgress.filter((p) => p !== null)
-    
   } catch {
     toast.error('Failed to load member progress')
   } finally {

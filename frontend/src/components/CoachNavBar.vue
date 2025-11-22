@@ -177,7 +177,6 @@
               class="flex items-center text-white hover:text-[#c7d2fe] py-2"
             >
               <span class="material-symbols-outlined">logout</span>
-              <span class="ml-2">Logout</span>
             </button>
           </li>
         </ul>

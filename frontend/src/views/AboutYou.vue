@@ -99,6 +99,7 @@ import { useRouter } from "vue-router";
 import { useUserStore } from '@/stores/user'
 import { useToastStore } from "@/stores/toast";
 
+const API_URL = 'http://127.0.0.1:8000'
 const router = useRouter();
 const loading = ref(false);
 const userStore = useUserStore();
@@ -205,7 +206,7 @@ async function submitProfile() {
       location: form.location
     };
 
-    const response = await fetch("http://127.0.0.1:8000/api/user/update-profile/", {
+    const response = await fetch(`${API_URL}/api/user/update-profile/`, {
       method: "POST",
       credentials: "include",
       headers: {

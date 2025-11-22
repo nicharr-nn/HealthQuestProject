@@ -14,7 +14,9 @@
         <p class="text-gray-500 text-base">View and manage members who have been accepted</p>
       </div>
       <div class="flex gap-3">
-        <div class="flex flex-col items-center py-3 px-4 rounded-xl bg-green-100 border border-green-500">
+        <div
+          class="flex flex-col items-center py-3 px-4 rounded-xl bg-green-100 border border-green-500"
+        >
           <span class="text-2xl font-bold">{{ members.length }}</span>
           <span class="text-xs uppercase text-gray-600">Active Members</span>
         </div>
@@ -22,9 +24,7 @@
     </div>
 
     <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
-      <div v-if="loading" class="text-center py-16 px-6">
-        Loading members...
-      </div>
+      <div v-if="loading" class="text-center py-16 px-6">Loading members...</div>
 
       <div v-else-if="members.length === 0" class="text-center py-16 px-6">
         <!-- use file-user symbol from lucid -->
@@ -39,24 +39,39 @@
           :key="member.memberId"
           class="border border-gray-200 rounded-xl p-5 bg-gray-50"
         >
-        <div class="flex flex-col md:flex-row justify-between items-center gap-3 mb-4">
-              <div class="flex items-center gap-3 flex-1 min-w-0">
-                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 text-white flex items-center justify-center font-semibold text-lg flex-shrink-0">
-                  {{ member.name.charAt(0).toUpperCase() }}
+          <div class="flex flex-col md:flex-row justify-between items-center gap-3 mb-4">
+            <div class="flex items-center gap-3 flex-1 min-w-0">
+              <div
+                class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 text-white flex items-center justify-center font-semibold text-lg flex-shrink-0"
+              >
+                {{ member.name.charAt(0).toUpperCase() }}
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="text-lg font-semibold text-gray-900 mb-1 truncate">
+                  {{ member.name }}
                 </div>
-                <div class="flex-1 min-w-0">
-                  <div class="text-lg font-semibold text-gray-900 mb-1 truncate">{{ member.name }}</div>
-                  <div class="text-sm font-semibold text-blue-500 font-mono truncate">ID: {{ member.memberId }}</div>
+                <div class="text-sm font-semibold text-blue-500 font-mono truncate">
+                  ID: {{ member.memberId }}
                 </div>
               </div>
-            <div class="px-3 py-1.5 rounded-full bg-green-100 text-green-800 text-xs font-semibold self-start">ACTIVE</div>
+            </div>
+            <div
+              class="px-3 py-1.5 rounded-full bg-green-100 text-green-800 text-xs font-semibold self-start"
+            >
+              ACTIVE
+            </div>
           </div>
 
           <div class="grid gap-2 mb-4 p-3 bg-white rounded-lg border border-gray-100 shadow-sm">
             <div class="flex justify-between text-sm">
               <span class="text-gray-500 font-medium">Level:</span>
               <span class="font-semibold text-gray-800">
-                {{ member.experienceLevel ? member.experienceLevel.charAt(0).toUpperCase()+ member.experienceLevel.slice(1) : 'Not specified' }}
+                {{
+                  member.experienceLevel
+                    ? member.experienceLevel.charAt(0).toUpperCase() +
+                      member.experienceLevel.slice(1)
+                    : 'Not specified'
+                }}
               </span>
             </div>
             <div class="flex justify-between text-sm">
@@ -65,14 +80,31 @@
             </div>
             <div class="flex justify-between text-sm">
               <span class="text-gray-500 font-medium">Assigned Program:</span>
-              <span class="font-semibold text-gray-800">{{ member.programName || 'Not specified' }}</span>
+              <span class="font-semibold text-gray-800">{{
+                member.programName || 'Not specified'
+              }}</span>
             </div>
           </div>
 
           <div class="flex gap-2 flex-wrap pt-4 border-t border-gray-200">
-            <button class="border border-gray-300 rounded-lg px-3 py-1.5 text-xs font-semibold hover:bg-gray-50 transition-all" @click="viewProgress(member)">View Details</button>
-            <button class="border border-gray-300 rounded-lg px-3 py-1.5 text-xs font-semibold hover:bg-gray-50 transition-all" @click="viewFoodDiary(member)">View Food Diary</button>
-            <button class="bg-red-500 text-white border-red-500 rounded-lg px-3 py-1.5 text-xs font-semibold hover:bg-red-600 transition-all" @click="removeMember(member)">Remove</button>
+            <button
+              class="border border-gray-300 rounded-lg px-3 py-1.5 text-xs font-semibold hover:bg-gray-50 transition-all"
+              @click="viewProgress(member)"
+            >
+              View Details
+            </button>
+            <button
+              class="border border-gray-300 rounded-lg px-3 py-1.5 text-xs font-semibold hover:bg-gray-50 transition-all"
+              @click="viewFoodDiary(member)"
+            >
+              View Food Diary
+            </button>
+            <button
+              class="bg-red-500 text-white border-red-500 rounded-lg px-3 py-1.5 text-xs font-semibold hover:bg-red-600 transition-all"
+              @click="removeMember(member)"
+            >
+              Remove
+            </button>
           </div>
         </div>
       </div>
@@ -90,6 +122,7 @@ const router = useRouter()
 const members = ref([])
 const loading = ref(true)
 const toast = useToastStore()
+const API_BASE = 'http://127.0.0.1:8000/api/member/'
 
 function goBackToDashboard() {
   router.push('/coach-dashboard')
@@ -103,8 +136,8 @@ function formatDate(dateStr) {
 async function loadMembers() {
   loading.value = true
   try {
-    const res = await fetch('http://127.0.0.1:8000/api/member/accepted/', {
-      credentials: 'include'
+    const res = await fetch(`${API_BASE}accepted/`, {
+      credentials: 'include',
     })
     if (!res.ok) throw new Error('Failed to fetch members')
     const data = await res.json()
@@ -125,16 +158,15 @@ function viewProgress(member) {
   router.push(`/member-progress?memberId=${member.memberId}`)
 }
 
-
 async function removeMember(member) {
   if (!confirm(`Remove ${member.name} from your members?`)) return
   try {
-    const res = await fetch(`http://127.0.0.1:8000/api/member/${member.memberId}/`, {
+    const res = await fetch(`${API_BASE}${member.memberId}/`, {
       method: 'DELETE',
-      credentials: 'include'
+      credentials: 'include',
     })
     if (!res.ok) throw new Error('Failed to remove')
-    members.value = members.value.filter(m => m.memberId !== member.memberId)
+    members.value = members.value.filter((m) => m.memberId !== member.memberId)
   } catch (err) {
     console.error(err)
     toast.error('Failed to remove member')

@@ -18,7 +18,9 @@
     <!-- Main column -->
     <div :class="sidebarOpen ? 'md:pl-72' : 'md:pl-0'">
       <!-- Header -->
-      <header class="sticky top-0 left-0 right-0 z-30 z-30 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-sm">
+      <header
+        class="sticky top-0 left-0 right-0 z-30 z-30 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-sm"
+      >
         <div class="flex items-center justify-between px-4 py-3 md:px-8">
           <div class="flex items-center gap-3">
             <button
@@ -43,7 +45,9 @@
             <!-- Header User Info -->
             <div class="flex items-center gap-2">
               <!-- Avatar -->
-              <div class="grid h-10 w-10 place-items-center rounded-full bg-blue-500 font-bold font-subtitle text-white">
+              <div
+                class="grid h-10 w-10 place-items-center rounded-full bg-blue-500 font-bold font-subtitle text-white"
+              >
                 <template v-if="userStore.user?.username">
                   {{ getInitials(userStore.user.username) }}
                 </template>
@@ -56,14 +60,12 @@
                   <template v-if="userStore.user?.username">
                     {{ userStore.user.username }}
                   </template>
-                  <template v-else>
-                    Loading...
-                  </template>
+                  <template v-else> Loading... </template>
                 </div>
                 <div class="text-[11px] text-slate-500 font-subtitle">Administrator</div>
               </div>
-            </div>            
-            <button 
+            </div>
+            <button
               @click="logout"
               class="ml-3 flex items-center py-2 px-3 rounded-md hover:bg-gray-100"
             >
@@ -79,14 +81,20 @@
         <section v-show="activeSection === 'coaches'" class="space-y-6">
           <div>
             <h2 class="text-2xl font-bold font-subtitle">Coach Certification Verification</h2>
-            <p class="text-sm text-slate-500 font-subtitle">Review and verify coach certifications</p>
+            <p class="text-sm text-slate-500 font-subtitle">
+              Review and verify coach certifications
+            </p>
           </div>
 
           <div class="rounded-xl bg-white p-5 shadow-sm">
             <div class="mb-4 flex items-center justify-between">
               <h3 class="text-base font-semibold font-subtitle">Coach Applications</h3>
               <div class="flex items-center gap-3 font-subtitle">
-                <select class="rounded-md border border-slate-200 px-3 py-2 text-sm" v-model="coachFilter" @change="fetchCoaches">
+                <select
+                  class="rounded-md border border-slate-200 px-3 py-2 text-sm"
+                  v-model="coachFilter"
+                  @change="fetchCoaches"
+                >
                   <option value="all">All Status</option>
                   <option value="pending">Pending</option>
                   <option value="approved">Approved</option>
@@ -95,9 +103,7 @@
               </div>
             </div>
 
-            <div v-if="loading" class="text-center py-8 text-slate-500">
-              Loading coaches...
-            </div>
+            <div v-if="loading" class="text-center py-8 text-slate-500">Loading coaches...</div>
 
             <div v-else-if="error" class="text-center py-8 text-rose-600">
               {{ error }}
@@ -127,14 +133,20 @@
                   >
                     <td class="px-3 py-3 font-semibold text-slate-800">
                       <div class="flex items-center gap-2">
-                        <div class="grid h-8 w-8 place-items-center rounded-full bg-blue-500 text-xs font-semibold text-white">
+                        <div
+                          class="grid h-8 w-8 place-items-center rounded-full bg-blue-500 text-xs font-semibold text-white"
+                        >
                           {{ getInitials(coach.name) }}
                         </div>
                         {{ coach.name }}
                       </div>
                     </td>
-                    <td class="px-3 py-3 font-semibold text-slate-800">{{ coach.email || 'N/A' }}</td>
-                    <td class="px-3 py-3 font-semibold text-slate-800">{{ formatDate(coach.created_at) }}</td>
+                    <td class="px-3 py-3 font-semibold text-slate-800">
+                      {{ coach.email || 'N/A' }}
+                    </td>
+                    <td class="px-3 py-3 font-semibold text-slate-800">
+                      {{ formatDate(coach.created_at) }}
+                    </td>
                     <td class="px-3 py-3 font-semibold">
                       <span
                         class="rounded-full px-2 py-0.5 text-[11px] font-semibold capitalize"
@@ -209,8 +221,13 @@
           </div>
 
           <div>
-            <div class="text-sm font-medium text-slate-700 mb-2 font-subtitle">Certification Document</div>
-            <div v-if="coachModal.coach?.certification_doc" class="border border-slate-200 rounded-md p-4">
+            <div class="text-sm font-medium text-slate-700 mb-2 font-subtitle">
+              Certification Document
+            </div>
+            <div
+              v-if="coachModal.coach?.certification_doc"
+              class="border border-slate-200 rounded-md p-4"
+            >
               <div class="flex items-center gap-3">
                 <span class="text-3xl">📄</span>
                 <div class="flex-1">
@@ -231,7 +248,9 @@
           </div>
         </div>
 
-        <div class="flex justify-between items-center gap-3 border-t border-slate-200 px-5 py-4 bg-slate-50">
+        <div
+          class="flex justify-between items-center gap-3 border-t border-slate-200 px-5 py-4 bg-slate-50"
+        >
           <div class="flex gap-2">
             <button
               class="rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-700 hover:bg-slate-50"
@@ -289,27 +308,61 @@ const filteredCoaches = computed(() => {
 
   if (searchQuery.value) {
     const q = searchQuery.value.toLowerCase()
-    result = result.filter(c =>
-      c.name.toLowerCase().includes(q) ||
-      c.email?.toLowerCase().includes(q) ||
-      c.bio?.toLowerCase().includes(q)
+    result = result.filter(
+      (c) =>
+        c.name.toLowerCase().includes(q) ||
+        c.email?.toLowerCase().includes(q) ||
+        c.bio?.toLowerCase().includes(q),
     )
   }
 
   return result
 })
 
-function setSection(id) { activeSection.value = id; if(window.innerWidth < 768) sidebarOpen.value = false }
-function getInitials(name) { return name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) || '?' }
-function formatDate(date) { return date ? new Date(date).toLocaleDateString('en-US', {year:'numeric',month:'short',day:'numeric'}) : 'N/A' }
-function getStatusClass(status) {
-  switch(status){case 'pending': return 'bg-amber-100 text-amber-800'; case 'approved': return 'bg-emerald-100 text-emerald-800'; case 'rejected': return 'bg-rose-100 text-rose-800'; default: return 'bg-slate-100 text-slate-800'}
+function setSection(id) {
+  activeSection.value = id
+  if (window.innerWidth < 768) sidebarOpen.value = false
 }
-function getDocumentUrl(doc) { 
+function getInitials(name) {
+  return (
+    name
+      ?.split(' ')
+      .map((w) => w[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2) || '?'
+  )
+}
+function formatDate(date) {
+  return date
+    ? new Date(date).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      })
+    : 'N/A'
+}
+function getStatusClass(status) {
+  switch (status) {
+    case 'pending':
+      return 'bg-amber-100 text-amber-800'
+    case 'approved':
+      return 'bg-emerald-100 text-emerald-800'
+    case 'rejected':
+      return 'bg-rose-100 text-rose-800'
+    default:
+      return 'bg-slate-100 text-slate-800'
+  }
+}
+function getDocumentUrl(doc) {
   return doc.startsWith('http') ? doc : `${API_URL}${doc}`
 }
-function viewCoachDetails(coach) { coachModal.value = { open: true, coach } }
-function closeModal() { coachModal.value = { open: false, coach: null } }
+function viewCoachDetails(coach) {
+  coachModal.value = { open: true, coach }
+}
+function closeModal() {
+  coachModal.value = { open: false, coach: null }
+}
 
 function logout() {
   userStore.logout?.()
@@ -327,10 +380,12 @@ async function fetchCoaches() {
     })
     if (!res.ok) throw new Error('Failed to fetch coaches')
     coaches.value = await res.json()
-  } catch(err) {
+  } catch (err) {
     console.error(err)
     error.value = 'Failed to load coaches'
-  } finally { loading.value = false }
+  } finally {
+    loading.value = false
+  }
 }
 
 async function approveCoach(coach) {
@@ -343,7 +398,7 @@ async function approveCoach(coach) {
     if (!res.ok) throw new Error('Failed to approve coach')
     await fetchCoaches()
     closeModal()
-  } catch(err) {
+  } catch (err) {
     console.error(err)
     toast.error('Failed to approve coach')
   }
@@ -356,12 +411,12 @@ async function rejectCoach(coach) {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify({ reason })
+      body: JSON.stringify({ reason }),
     })
     if (!res.ok) throw new Error('Failed to reject coach')
     await fetchCoaches()
     closeModal()
-  } catch(err) {
+  } catch (err) {
     console.error(err)
     toast.error('Failed to reject coach')
   }
