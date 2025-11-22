@@ -25,7 +25,7 @@
         <div class="flex items-center justify-between px-4 py-3 md:px-8">
           <div class="flex items-center gap-3">
             <button
-              class="inline-flex items-center justify-center rounded-md p-2 text-slate-700 hover:bg-slate-100"
+              class="inline-flex items-center justify-center rounded-md p-2 text-slate-700 hover:bg-slate-100 cursor-pointer"
               @click="sidebarOpen = !sidebarOpen"
               aria-label="Toggle menu"
             >
@@ -68,7 +68,7 @@
 
             <button
               @click="logout"
-              class="ml-3 flex items-center py-2 px-3 rounded-md hover:bg-gray-100"
+              class="ml-3 flex items-center py-2 px-3 rounded-md hover:bg-gray-100 cursor-pointer"
             >
               <span class="material-symbols-outlined">logout</span>
             </button>
@@ -179,13 +179,13 @@
                   <td class="px-3 py-3 font-semibold">{{ formatDate(workout.created_at) }}</td>
                   <td class="px-3 py-3 flex gap-2">
                     <button
-                      class="rounded-md bg-blue-600 px-3 py-1.5 text-white hover:bg-blue-700 text-xs font-bold"
+                      class="rounded-md bg-blue-600 px-3 py-1.5 text-white hover:bg-blue-700 text-xs font-bold cursor-pointer"
                       @click="viewWorkoutDetails(workout)"
                     >
                       View
                     </button>
                     <button
-                      class="rounded-md bg-red-600 px-3 py-1.5 text-white hover:bg-red-700 text-xs font-bold"
+                      class="rounded-md bg-red-600 px-3 py-1.5 text-white hover:bg-red-700 text-xs font-bold cursor-pointer"
                       @click="openDeleteModal(workout.id, workout.title)"
                     >
                       Delete
@@ -208,7 +208,7 @@
           <div class="w-full max-w-3xl overflow-hidden rounded-xl bg-white shadow-lg">
             <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
               <h3 class="text-lg font-subtitle">Workout Program Details</h3>
-              <button class="text-slate-500 hover:text-slate-700" @click="closeWorkoutModal">
+              <button class="text-slate-500 hover:text-slate-700 cursor-pointer" @click="closeWorkoutModal">
                 <X class="w-5 h-5" />
               </button>
             </div>
@@ -297,7 +297,7 @@
                 <!-- Video button -->
                 <button
                   v-if="day.video_links?.length"
-                  class="rounded-md bg-blue-600 px-3 py-1.5 text-white hover:bg-blue-700 text-xs font-bold"
+                  class="rounded-md bg-blue-600 px-3 py-1.5 text-white hover:bg-blue-700 text-xs font-bold cursor-pointer"
                   @click="openVideo(day.video_links[0])"
                 >
                   Video

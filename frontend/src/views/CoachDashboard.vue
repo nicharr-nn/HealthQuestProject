@@ -40,7 +40,7 @@
       <div class="flex items-center gap-4 shrink-0">
         <NotificationBell v-if="isApproved" />
         <button
-          class="px-4 py-2 rounded-lg text-white bg-blue-600 font-semibold hover:bg-blue-700 transition disabled:opacity-50"
+          class="px-4 py-2 rounded-lg text-white bg-blue-600 font-semibold hover:bg-blue-700 transition disabled:opacity-50 cursor-pointer"
           @click="router.push('/create-workout-program')"
           :disabled="!isApproved"
         >
@@ -133,7 +133,7 @@
             Start creating your first workout program to help your clients achieve their goals!
           </div>
           <button
-            class="px-4 py-2 rounded-lg text-white bg-blue-600 font-semibold hover:bg-blue-700 transition"
+            class="px-4 py-2 rounded-lg text-white bg-blue-600 font-semibold hover:bg-blue-700 transition cursor-pointer"
             @click="router.push('/create-workout-program')"
           >
             Create Your First Program
@@ -190,14 +190,14 @@
             <!-- Actions -->
             <div class="flex gap-2 flex-wrap">
               <button
-                class="px-3 py-2 text-xs rounded-md bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
+                class="px-3 py-2 text-xs rounded-md bg-blue-600 text-white font-semibold hover:bg-blue-700 transition cursor-pointer"
                 @click="editProgram(program.id)"
               >
                 Edit
               </button>
 
               <button
-                class="px-3 py-2 text-xs rounded-md bg-red-500 text-white font-semibold hover:bg-red-600 transition"
+                class="px-3 py-2 text-xs rounded-md bg-red-500 text-white font-semibold hover:bg-red-600 transition cursor-pointer"
                 @click="deleteProgram(program.id)"
               >
                 Delete

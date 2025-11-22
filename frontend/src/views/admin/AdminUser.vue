@@ -21,7 +21,7 @@
         <div class="flex items-center justify-between px-4 py-3 md:px-8">
           <div class="flex items-center gap-3">
             <button
-              class="inline-flex items-center justify-center rounded-md p-2 text-slate-700 hover:bg-slate-100"
+              class="inline-flex items-center justify-center rounded-md p-2 text-slate-700 hover:bg-slate-100 cursor-pointer"
               @click="sidebarOpen = !sidebarOpen"
               aria-label="Toggle menu"
             >
@@ -68,7 +68,7 @@
 
             <button 
               @click="logout"
-              class="ml-3 flex items-center py-2 px-3 rounded-md hover:bg-gray-100"
+              class="ml-3 flex items-center py-2 px-3 rounded-md hover:bg-gray-100 cursor-pointer"
             >
               <span class="material-symbols-outlined">logout</span>
             </button>
@@ -155,7 +155,7 @@
 
                 <td class="px-3 py-2 font-semibold">
                   <button 
-                    class="rounded-md bg-red-500 px-3 py-1.5 text-white font-semibold hover:bg-red-600"
+                    class="rounded-md bg-red-500 px-3 py-1.5 text-white font-semibold hover:bg-red-600 cursor-pointer"
                     @click="openDeleteModal(u)"
                     >
                     Delete

@@ -3,7 +3,7 @@
     <!-- Back Button -->
     <button
       @click="goBackToDashboard"
-      class="inline-flex items-center justify-center p-2 border border-gray-300 rounded-lg mb-6 hover:bg-gray-100 transition"
+      class="inline-flex items-center justify-center p-2 border border-gray-300 rounded-lg mb-6 hover:bg-gray-100 transition cursor-pointer"
     >
       <ArrowLeft class="w-5 h-5 text-gray-700 mr-2" />
       Back to Dashboard
@@ -91,25 +91,25 @@
           <!-- Action Buttons -->
           <div class="flex gap-2 flex-wrap pt-4 border-t border-gray-200">
             <button
-              class="border border-gray-300 rounded-lg px-3 py-1.5 text-xs font-semibold hover:bg-gray-50 transition-all"
+              class="border border-gray-300 rounded-lg px-3 py-1.5 text-xs font-semibold hover:bg-gray-50 transition-all cursor-pointer"
               @click="viewDetails(member)"
             >
               View Details
             </button>
             <button
-              class="border border-gray-300 rounded-lg px-3 py-1.5 text-xs font-semibold hover:bg-gray-50 transition-all"
+              class="border border-gray-300 rounded-lg px-3 py-1.5 text-xs font-semibold hover:bg-gray-50 transition-all cursor-pointer"
               @click="viewProgress(member)"
             >
               View Progress
             </button>
             <button
-              class="border border-gray-300 rounded-lg px-3 py-1.5 text-xs font-semibold hover:bg-gray-50 transition-all"
+              class="border border-gray-300 rounded-lg px-3 py-1.5 text-xs font-semibold hover:bg-gray-50 transition-all cursor-pointer"
               @click="viewFoodDiary(member)"
             >
               View Food Diary
             </button>
             <button
-              class="bg-red-500 text-white border-red-500 rounded-lg px-3 py-1.5 text-xs font-semibold hover:bg-red-600 transition-all"
+              class="bg-red-500 text-white border-red-500 rounded-lg px-3 py-1.5 text-xs font-semibold hover:bg-red-600 transition-all cursor-pointer"
               @click="removeMember(member)"
             >
               Remove

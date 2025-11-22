@@ -78,7 +78,7 @@
           <!-- DELETE ACCOUNT BUTTON -->
           <button
             @click="confirmDeleteProfile"
-            class="px-3 py-2 rounded-xl border border-red-300 text-red-600 text-sm font-medium hover:bg-red-50 transition"
+            class="px-3 py-2 rounded-xl border border-red-300 text-red-600 text-sm font-medium hover:bg-red-50 transition cursor-pointer"
           >
             Delete Account
           </button>

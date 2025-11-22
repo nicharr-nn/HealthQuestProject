@@ -1,6 +1,6 @@
 <template>
   <div
-    class="bg-[#B0D3cc] rounded-xl p-6 shadow-lg hover:shadow-2xl transition-shadow cursor-pointer flex flex-col justify-between"
+    class="bg-[#B0D3cc] rounded-xl p-6 shadow-lg hover:shadow-2xl transition-shadow flex flex-col justify-between"
     @click="handleClick"
   >
     <!-- Header Section -->
@@ -53,7 +53,8 @@
       <!-- Action Button - Fixed to match view file -->
       <button
         @click.stop="handleClick"
-        class="mt-4 bg-[#6AA6A0] hover:bg-[#5C938C] text-white px-5 py-2 rounded-lg font-semibold transition-colors w-full"
+        class="mt-4 bg-[#6AA6A0] hover:bg-[#5C938C] text-white px-5 py-2 rounded-lg font-semibold transition-colors w-full 
+        cursor-pointer"
         :disabled="isLocked"
       >
         {{ buttonText }}
