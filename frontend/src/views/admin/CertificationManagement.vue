@@ -171,7 +171,9 @@
       <div class="w-full max-w-2xl overflow-hidden rounded-xl bg-white shadow-lg">
         <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
           <h3 class="text-lg font-semibold font-subtitle">Coach Certification Review</h3>
-          <button class="text-slate-500 hover:text-slate-700" @click="closeModal">✕</button>
+          <button class="text-slate-500 hover:text-slate-700" @click="closeModal">
+            <X class="w-5 h-5" />
+          </button>
         </div>
 
         <div class="px-5 py-4 space-y-4 max-h-[70vh] overflow-y-auto">
@@ -283,7 +285,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
 import AdminSideBar from '@/components/AdminSideBar.vue'
 import AdminNotificationBell from '@/components/AdminNotificationBell.vue'
-import { Menu } from 'lucide-vue-next'
+import { Menu, X } from 'lucide-vue-next'
 import { useToastStore } from '@/stores/toast'
 
 const userStore = useUserStore()

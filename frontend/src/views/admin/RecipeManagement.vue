@@ -169,7 +169,9 @@
         <!-- Header -->
         <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
           <h3 class="text-lg font-subtitle">Recipe Details</h3>
-          <button class="text-slate-500 hover:text-slate-700" @click="closeRecipeModal">✕</button>
+          <button class="text-slate-500 hover:text-slate-700" @click="closeRecipeModal">
+            <X class="w-5 h-5" />
+          </button>
         </div>
 
         <!-- Body -->
@@ -190,7 +192,7 @@
               </span>
               <!-- <div class="flex items-center gap-1">
                 <span class="text-amber-500">⭐</span>
-                <span class="text-sm">{{ recipeModal.recipe?.average_rating || 'N/A' }}</span>
+                <span class="text-sm">{{ recipeModal.recipe?.avg_rating || 'N/A' }}</span>
               </div> -->
             </div>
           </div>
@@ -225,22 +227,6 @@
           </div>
           </div>
         </div>
-
-        <!-- Footer -->
-        <div class="flex justify-end gap-2 border-t border-slate-200 px-5 py-4 bg-slate-50">
-          <button
-            class="rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-700 hover:bg-slate-50"
-            @click="closeRecipeModal"
-          >
-            Close
-          </button>
-          <button
-            class="rounded-md bg-rose-600 px-3 py-1.5 text-white font-semibold hover:bg-rose-700"
-            @click="openDeleteModal(recipeModal.recipe.id, recipeModal.recipe.title)"
-          >
-            Delete
-          </button>
-        </div>
       </div>
     </div>
 
@@ -262,7 +248,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
 import AdminSideBar from '@/components/AdminSideBar.vue'
-import { Menu } from 'lucide-vue-next'
+import { Menu, X } from 'lucide-vue-next'
 import AdminNotificationBell from '@/components/AdminNotificationBell.vue'
 import DeleteModal from '@/components/DeleteModal.vue'
 import { useToastStore } from '@/stores/toast'
