@@ -548,7 +548,6 @@ def list_my_assignments(request):
     if profile.role == "coach":
         assignments = WorkoutAssignment.objects.filter(program__coach=profile)
     elif profile.role == "member":
-        # assignments = WorkoutAssignment.objects.filter(member__user=profile)
         assignments = (
             WorkoutAssignment.objects.filter(member__user=profile)
             .annotate(
@@ -562,7 +561,7 @@ def list_my_assignments(request):
             )
             .order_by(
                 "status_priority",
-                models.F("due_date").asc(nulls_last=True),  # Earliest due date first
+                models.F("due_date").asc(nulls_last=True), 
             )
         )
 
