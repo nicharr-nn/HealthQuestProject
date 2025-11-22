@@ -9,49 +9,164 @@ This app was created as part of the [Individual Software Process](https://cpske.
 git clone https://github.com/nicharr-nn/HealthQuestProject.git
 cd HealthQuestProject
 ```
-**Navigate to the backend directory and create a virtual environment:**
+
+## Installation
+
+### Option 1: Docker (Recommended)
+1. **create a .env file in the root directory:**
 ```bash
-cd backend
+cp .env.example .env
+# Edit .env with your settings
+```
+2. **create a virtual environment**
+```bash
 python -m venv venv
+# Activate the virtual environment
+# macOS/Linux
+source venv/bin/activate
+# Windows
+.venv\Scripts\activate
 ```
 
-**Activate the virtual environment:**
- **macOS/Linux**
+3. **Create a .env file in the backend directory:**
+```bash
+cd backend
+cp .env.example .env
+# Edit .env with your settings
+cd ..
+```
 
-  ```bash
-  source venv/bin/activate
-  ```
-   
-  **Windows**
+4. **Build and run the Docker containers:**
+```bash
+docker-compose up --build
+# Or run in detached mode (background)
+docker-compose up -d --build
+```
 
-  ```bash
-  .venv\Scripts\activate
-  ```
+5. **Run migrateions and load sample data:**
+```bash
+# Apply database migrations
+docker-compose exec backend python manage.py migrate
+# Load sample data (optional)
+docker-compose exec backend python manage.py flush --no-input
+docker-compose exec backend python manage.py loaddata mock_data/data.json
+```
 
+5. **Access the Application:**
+- Backend API: `http://127.0.0.1:8000`
+- Frontend: `http://127.0.0.1:5173`
+- PgAdmin: `http://127.0.0.1:8081`
+- Django Admin: `http://127.0.0.1:8000/admin`
 
-**Install dependencies and load data:**
+6. **Create Superuser (First Time Only)**
+```bash
+# Create Django superuser
+docker-compose exec backend python manage.py createsuperuser
+```
+7. **If using mock data:**
+```bash
+# To login as a user from the mock data, use the dev-login endpoint
+# Replace <username> with the desired username from the mock data
+curl http://127.0.0.1:8000/dev-login/?username=<username>
+# Then access the dashboard
+curl http://127.0.0.1:5173/dashboard
+# If coach, access coach dashboard
+curl http://127.0.0.1:5173/coach-dashboard
+```
+
+### Option 2: Manual Setup & Running the Application
+
+#### Backend Setup
+
+1. **Navigate to backend directory:**
+```bash
+cd backend
+```
+2. **Create virtual environment:**
+```bash
+python -m venv venv
+# Activate the virtual environment
+# macOS/Linux
+source venv/bin/activate
+# Windows
+.venv\Scripts\activate
+```
+
+3. **Install dependencies**
 ```bash
 pip install -r requirements.txt
 ```
-**Run the migrations**
+
+4. **Create .env file:**
+```bash
+cp .env.example .env
+# Edit .env with your settings
+```
+
+5. **Run migrations:**
 ```bash
 python manage.py migrate
 ```
 
-**start the development server:**
+6. **Create superuser:**
+```bash
+python manage.py createsuperuser
+```
+
+7. **Load sample data (optional):**
+```bash
+python manage.py loaddata mock_data/data.json
+curl http://127.0.0.1:8000/dev-login/?username=<username>
+curl http://127.0.0.1:5173/dashboard
+```
+
+8. **Start the development server:**
 ```bash
 python manage.py runserver
 ```
-## Running the Frontend Development Server
+#### Frontend Setup
 
-**Navigate to the frontend directory:**
+1. **Navigate to frontend directory:**
 ```bash
-cd ../frontend
+cd frontend
 ```
 
-**Install dependencies and start the development server:**
+2. **Install dependencies and start the development server:**
 ```bash
 npm install
+npm run dev
+```
+
+## Running the Application
+### With Docker
+
+#### Start all services
+```bash
+docker-compose up
+```
+
+#### Stop all services
+```bash
+docker-compose down
+```
+
+#### Rebuild after code changes
+```bash
+docker-compose up --build
+```
+
+### Without Docker
+
+#### Run Backend
+```bash
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+cd backend
+python manage.py runserver
+```
+
+#### Run Frontend
+```bash
+cd frontend
 npm run dev
 ```
 
