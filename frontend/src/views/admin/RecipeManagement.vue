@@ -24,7 +24,7 @@
         <div class="flex items-center justify-between px-4 py-3 md:px-8">
           <div class="flex items-center gap-3">
             <button
-              class="inline-flex items-center justify-center rounded-md p-2 text-slate-700 hover:bg-slate-100"
+              class="inline-flex items-center justify-center rounded-md p-2 text-slate-700 hover:bg-slate-100 cursor-pointer"
               @click="sidebarOpen = !sidebarOpen"
               aria-label="Toggle menu"
             >
@@ -67,7 +67,7 @@
             </div>
             <button
               @click="logout"
-              class="ml-3 flex items-center py-2 px-3 rounded-md hover:bg-gray-100"
+              class="ml-3 flex items-center py-2 px-3 rounded-md hover:bg-gray-100 cursor-pointer"
             >
               <span class="material-symbols-outlined">logout</span>
             </button>
@@ -154,13 +154,13 @@
                   <td class="px-3 py-3 font-semibold">
                     <div class="flex gap-2">
                       <button
-                        class="rounded-md bg-blue-500 px-3 py-1.5 text-white font-semibold hover:bg-blue-600"
+                        class="rounded-md bg-blue-500 px-3 py-1.5 text-white font-semibold hover:bg-blue-600 cursor-pointer"
                         @click="viewRecipeDetails(recipe)"
                       >
                         View
                       </button>
                       <button
-                        class="rounded-md bg-rose-600 px-3 py-1.5 text-white font-semibold hover:bg-rose-700"
+                        class="rounded-md bg-rose-600 px-3 py-1.5 text-white font-semibold hover:bg-rose-700 cursor-pointer"
                         @click="openDeleteModal(recipe.id, recipe.title)"
                       >
                         Delete
@@ -187,7 +187,7 @@
         <!-- Header -->
         <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
           <h3 class="text-lg font-subtitle">Recipe Details</h3>
-          <button class="text-slate-500 hover:text-slate-700" @click="closeRecipeModal">
+          <button class="text-slate-500 hover:text-slate-700 cursor-pointer" @click="closeRecipeModal">
             <X class="w-5 h-5" />
           </button>
         </div>
