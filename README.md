@@ -68,6 +68,8 @@ docker-compose exec backend python manage.py createsuperuser
 # To login as a user from the mock data, use the dev-login endpoint
 # Replace <username> with the desired username from the mock data
 curl http://127.0.0.1:8000/dev-login/?username=<username>
+# Then access the dashboard
+curl http://127.0.0.1:5173/dashboard
 ```
 
 ### Option 2: Manual Setup & Running the Application
@@ -118,7 +120,9 @@ python manage.py createsuperuser
 
 7. **Load sample data (optional):**
 ```bash
-python manage.py loaddata fixtures/sample_data.json
+python manage.py loaddata mock_data/data.json
+curl http://127.0.0.1:8000/dev-login/?username=<username>
+curl http://127.0.0.1:5173/dashboard
 ```
 
 8. **Start the development server:**
