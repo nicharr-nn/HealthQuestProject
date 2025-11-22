@@ -71,7 +71,7 @@
     "pk": 1,
     "fields": {
       "user_profile": 2,
-      "level": "bronze",
+      "level": "Bronze",
       "level_rank": 1,
       "xp": 0,
       "goal_achieved": false
