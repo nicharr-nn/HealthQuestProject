@@ -24,7 +24,8 @@
         </p>
         <button
           @click="redirectToGoogle"
-          class="bg-[#E99D7D] hover:bg-[#D88C6C] text-[#A75B3A] font-bold text-xl md:text-2xl lg:text-3xl h-16 md:h-20 lg:h-24 w-48 md:w-56 lg:w-64 rounded-full border-2 border-[#A75B3A] transition-colors duration-200 flex items-center justify-center"
+          class="bg-[#E99D7D] hover:bg-[#D88C6C] text-[#A75B3A] font-bold text-xl md:text-2xl lg:text-3xl h-16 md:h-20 lg:h-24 w-48 md:w-56 lg:w-64 rounded-full border-2 border-[#A75B3A] 
+          transition-colors duration-200 flex items-center justify-center cursor-pointer"
         >
           Get Started
         </button>

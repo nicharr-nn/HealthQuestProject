@@ -165,7 +165,7 @@
             </template>
             <template v-else>
               <button
-                class="px-3 py-1.5 text-xs font-semibold rounded bg-transparent border border-gray-300 text-gray-700 hover:bg-gray-100 transition"
+                class="px-3 py-1.5 text-xs font-semibold rounded bg-transparent border border-gray-300 text-gray-700 hover:bg-gray-100 transition cursor-pointer"
                 @click="viewDetails(request)"
               >
                 View Details
