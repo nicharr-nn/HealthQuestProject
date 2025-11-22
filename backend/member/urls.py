@@ -58,7 +58,6 @@ urlpatterns = [
         uncommented_food_posts,
         name="uncommented-food-posts",
     ),
-
     # coach can remove an accepted member
     path("<str:member_id>/", coach_remove_member, name="coach-remove-member"),
     path(

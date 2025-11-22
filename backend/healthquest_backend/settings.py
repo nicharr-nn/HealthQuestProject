@@ -190,7 +190,7 @@ ACCOUNT_EMAIL_VERIFICATION = "none"
 
 SOCIALACCOUNT_ADAPTER = "users.adapters.CustomSocialAccountAdapter"
 
-LOGIN_REDIRECT_URL = "http://127.0.0.1:5173/select-role" 
+LOGIN_REDIRECT_URL = "http://127.0.0.1:5173/select-role"
 
 LOGOUT_REDIRECT_URL = "http://127.0.0.1:5173/"
 

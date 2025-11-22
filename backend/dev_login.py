@@ -1,7 +1,7 @@
 from django.contrib.auth import login
 from django.http import JsonResponse
 from django.contrib.auth.models import User
-from django.contrib.auth.backends import ModelBackend
+
 
 def dev_login(request):
     username = request.GET.get("username")
@@ -11,15 +11,17 @@ def dev_login(request):
 
     try:
         user = User.objects.get(username=username)
-        
-        backend = 'django.contrib.auth.backends.ModelBackend'
+
+        backend = "django.contrib.auth.backends.ModelBackend"
         login(request, user, backend=backend)
-        
-        return JsonResponse({
-            "status": "logged_in", 
-            "username": username,
-            "user_id": user.id,
-            "email": user.email
-        })
+
+        return JsonResponse(
+            {
+                "status": "logged_in",
+                "username": username,
+                "user_id": user.id,
+                "email": user.email,
+            }
+        )
     except User.DoesNotExist:
         return JsonResponse({"error": "User not found"}, status=404)

@@ -6,33 +6,92 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
-        ('coach', '0003_alter_coach_public_id'),
+        ("coach", "0003_alter_coach_public_id"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Admin',
+            name="Admin",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='admin_profile', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="admin_profile",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='AdminModeration',
+            name="AdminModeration",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('content_type', models.CharField(choices=[('post', 'Post'), ('user', 'User'), ('coach_certification', 'Coach Certification')], max_length=30)),
-                ('content_id', models.PositiveIntegerField(blank=True, null=True)),
-                ('action', models.CharField(choices=[('delete_post', 'Delete Post'), ('delete_user', 'Delete User Account'), ('delete_recipe', 'Delete Recipe'), ('approve_certification', 'Approve Coach Certification'), ('reject_certification', 'Reject Coach Certification')], max_length=30)),
-                ('reason', models.TextField()),
-                ('moderated_at', models.DateTimeField(auto_now_add=True)),
-                ('admin', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='moderations', to='moderation.admin')),
-                ('coach', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='coach.coach')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "content_type",
+                    models.CharField(
+                        choices=[
+                            ("post", "Post"),
+                            ("user", "User"),
+                            ("coach_certification", "Coach Certification"),
+                        ],
+                        max_length=30,
+                    ),
+                ),
+                ("content_id", models.PositiveIntegerField(blank=True, null=True)),
+                (
+                    "action",
+                    models.CharField(
+                        choices=[
+                            ("delete_post", "Delete Post"),
+                            ("delete_user", "Delete User Account"),
+                            ("delete_recipe", "Delete Recipe"),
+                            ("approve_certification", "Approve Coach Certification"),
+                            ("reject_certification", "Reject Coach Certification"),
+                        ],
+                        max_length=30,
+                    ),
+                ),
+                ("reason", models.TextField()),
+                ("moderated_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "admin",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="moderations",
+                        to="moderation.admin",
+                    ),
+                ),
+                (
+                    "coach",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="coach.coach",
+                    ),
+                ),
             ],
         ),
     ]
