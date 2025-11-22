@@ -139,8 +139,8 @@
           <!-- Actions -->
           <div class="flex flex-wrap gap-2 pt-4 border-t border-gray-200">
             <template v-if="request.status === 'pending'">
-              <button class="px-3 py-1.5 text-xs font-semibold rounded bg-green-500 text-white hover:bg-green-600 transition" @click="updateRequestStatus(request.relationship_id, 'accepted')">✓ Accept</button>
-              <button class="px-3 py-1.5 text-xs font-semibold rounded bg-red-500 text-white hover:bg-red-600 transition" @click="updateRequestStatus(request.relationship_id, 'rejected')">✕ Reject</button>
+              <button class="px-3 py-1.5 text-xs font-semibold rounded bg-green-500 text-white hover:bg-green-600 transition" @click="updateRequestStatus(request.relationship_id, 'accepted')">Accept</button>
+              <button class="px-3 py-1.5 text-xs font-semibold rounded bg-red-500 text-white hover:bg-red-600 transition" @click="updateRequestStatus(request.relationship_id, 'rejected')">Reject</button>
               <button class="px-3 py-1.5 text-xs font-semibold rounded bg-transparent border border-gray-300 text-gray-700 hover:bg-gray-100 transition" @click="viewDetails(request)">View Details</button>
             </template>
             <template v-else>
