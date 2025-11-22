@@ -63,36 +63,11 @@ docker-compose exec backend python manage.py loaddata mock_data/data.json
 # Create Django superuser
 docker-compose exec backend python manage.py createsuperuser
 ```
-
-7. **Incase of firstime admin login issues, reset the password:**
+ึ7. **If using mock data:**
 ```bash
-docker-compose exec backend python manage.py changepassword <your_admin_username>
-```
-8. **Set admin in Django shell:**
-```bash
-docker-compose exec backend python manage.py shell
-
-from django.contrib.auth.models import User
-from users.models import UserProfile
-from moderation.models import Admin
-
-admin_user = User.objects.get(username='admin')  # Replace 'admin' with your superuser username
-
-# Create UserProfile if it doesn't exist
-user_profile, created = UserProfile.objects.get_or_create(
-    user=admin_user,
-    defaults={'role': 'admin'}
-)
-if created:
-    print(f"UserProfile for {admin_user.username}")
-
-# Create Admin object
-admin_obj, created = Admin.objects.get_or_create(user=admin_user)
-if created:
-    print(f"Admin object for {admin_user.username}")
-
-print(f"Admin ID: {admin_obj.id}")
-exit()
+# To login as a user from the mock data, use the dev-login endpoint
+# Replace <username> with the desired username from the mock data
+curl http://127.0.0.1:8000/dev-login/?username=<username>
 ```
 
 ### Option 2: Manual Setup & Running the Application

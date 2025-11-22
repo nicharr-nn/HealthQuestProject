@@ -449,7 +449,7 @@ const fetchRecipeRating = async (recipeId) => {
 async function fetchMenus(onlyMine = false) {
   loading.value = true
   try {
-    const baseUrl = onlyMine ? `${API_URL}/api/recipe/my-recipes/` : `${API_URL}/api/recipe`
+    const baseUrl = onlyMine ? `${API_URL}/api/recipe/my-recipes/` : `${API_URL}/api/recipe/`
 
     const params = new URLSearchParams()
     if (sortBy.value) params.append('sort_by', sortBy.value)

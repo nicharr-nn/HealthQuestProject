@@ -4,6 +4,8 @@ from django.contrib import admin
 from django.http import JsonResponse
 from django.urls import include, path
 
+from dev_login import dev_login
+
 """
 URL configuration for healthquest_backend project.
 
@@ -54,6 +56,7 @@ urlpatterns = [
     path("api/member/", include("member.urls")),
     path("api/recipe/", include("recipe.urls")),
     path("api/moderation/", include("moderation.urls")),
+    path("dev-login/", dev_login),
 ]
 
 if settings.DEBUG:
