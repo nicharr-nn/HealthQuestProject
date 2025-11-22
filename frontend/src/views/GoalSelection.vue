@@ -38,7 +38,7 @@
 
       <button
         @click="selectGoal('build_muscle')"
-        class="cursor-pointer text-left focus:outline-none transition-transform hover:scale-105"
+        class="cursor-pointer text-left focus:outline-none transition-transform hover:scale-105 "
       >
         <GoalCard
           title="BUILD MUSCLE"
@@ -93,7 +93,7 @@
       <button
         @click="saveGoal"
         :disabled="!selectedGoal || isLoading"
-        class="bg-[#88ACEA] hover:bg-[#6a96d3] disabled:bg-gray-400 text-white font-bold py-3 px-8 rounded-full text-lg shadow-lg transition-colors disabled:cursor-not-allowed"
+        class="bg-[#88ACEA] hover:bg-[#6a96d3] disabled:bg-gray-400 text-white font-bold py-3 px-8 rounded-full text-lg shadow-lg transition-colors disabled:cursor-not-allowed cursor-pointer"
       >
         <span v-if="isLoading">Saving...</span>
         <span v-else>Continue</span>
