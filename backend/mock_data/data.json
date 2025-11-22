@@ -367,7 +367,7 @@
       "program": 1,
       "day_number": 1,
       "title": "Full Body Strength",
-      "video_links": ["https://youtube.com/videos/full_body_strength.mp4"],
+      "video_links": ["https://youtu.be/iX2FUPgd60A?si=ypnhDOOuSyTRd9_t"],
       "duration": 30,
       "type": "full_body"
     }
@@ -379,7 +379,7 @@
       "program": 3,
       "day_number": 1,
       "title": "Cardio Blast",
-      "video_links": ["https://youtube.com/videos/cardio_blast.mp4"],
+      "video_links": ["https://youtu.be/kZDvg92tTMc?si=LiclN1wycseeVKxH"],
       "duration": 30,
       "type": "cardio"
     }
@@ -391,7 +391,7 @@
       "program": 3,
       "day_number": 2,
       "title": "Yoga",
-      "video_links": ["https://youtube.com/videos/yoga.mp4"],
+      "video_links": ["https://youtu.be/2eC7TlC2NLs?si=qBPIPIGuIaGobAVA"],
       "duration": 30,
       "type": "recovery"
     }
@@ -403,7 +403,7 @@
       "program": 3,
       "day_number": 2,
       "title": "Cooling Down Yoga",
-      "video_links": ["https://youtube.com/videos/cooling_down_yoga.mp4"],
+      "video_links": ["https://youtu.be/tXWh-dowiLg?si=OIKhfojBlS6f-2qb"],
       "duration": 10,
       "type": "recovery"
     }
@@ -415,7 +415,7 @@
       "program": 1,
       "day_number": 2,
       "title": "Build Strength",
-      "video_links": ["https://youtube.com/videos/build_strength.mp4"],
+      "video_links": ["https://youtu.be/9FBIaqr7TjQ?si=pME5IvimSlzbQggx"],
       "duration": 30,
       "type": "strength_training"
     }
@@ -427,8 +427,8 @@
       "program": 1,
       "day_number": 3,
       "title": "Core Focus",
-      "video_links": ["https://youtube.com/videos/core_focus.mp4"],
-      "duration": 30,
+      "video_links": ["https://youtu.be/7UI4XbHDpss?si=SvcFCErgPPBDaZeg"],
+      "duration": 40,
       "type": "core_workout"
     }
   },
@@ -455,7 +455,7 @@
       "program": 4,
       "day_number": 1,
       "title": "HIIT Blast",
-      "video_links": ["https://youtube.com/videos/hiit_blast.mp4"],
+      "video_links": ["https://youtu.be/n_cIBBDb9JA?si=oErd1Bn-gre-p3iM"],
       "duration": 20,
       "type": "hiit"
     }
@@ -467,8 +467,8 @@
       "program": 3,
       "day_number": 3,
       "title": "Recovery Stretch",
-      "video_links": ["https://youtube.com/videos/recovery_stretch.mp4"],
-      "duration": 30,
+      "video_links": ["https://youtu.be/sTANio_2E0Q?si=0G11W-r3NWGn0Xlo"],
+      "duration": 20,
       "type": "recovery"
     }
   },
@@ -507,7 +507,7 @@
       "updated_at": "2024-02-01T12:10:00Z"
     }
   },
-    {
+  {
     "model": "recipe.recipe",
     "pk": 1,
     "fields": {
@@ -607,12 +607,12 @@
       "program": 4,
       "day_number": 1,
       "title": "Intense Core Workout",
-      "video_links": ["https://youtube.com/videos/intense_core_workout.mp4"],
+      "video_links": ["https://youtu.be/Cnmy08JgakM?si=4s4-4SrcDEHo8yaW"],
       "duration": 40,
       "type": "core_workout"
     }
   },
-    {
+  {
     "model": "workout.workoutprogram",
     "pk": 5,
     "fields": {
@@ -646,24 +646,24 @@
       "program": 5,
       "day_number": 1,
       "title": "Recovery Stretch",
-      "video_links": ["https://youtube.com/videos/recovery_stretch.mp4"],
-      "duration": 10,
+      "video_links": ["https://youtu.be/sTANio_2E0Q?si=0G11W-r3NWGn0Xlo"],
+      "duration": 20,
       "type": "recovery"
     }
   },
-    {
+  {
     "model": "workout.workoutday",
     "pk": 11,
     "fields": {
       "program": 5,
       "day_number": 2,
       "title": "Recovery Stretch",
-      "video_links": ["https://youtube.com/videos/recovery_stretch.mp4"],
+      "video_links": ["https://youtu.be/sTANio_2E0Q?si=0G11W-r3NWGn0Xlo"],
       "duration": 15,
       "type": "recovery"
     }
   },
-    {
+  {
     "model": "workout.workoutdaycompletion",
     "pk": 1,
     "fields": {
@@ -671,6 +671,18 @@
       "completed_at": "2024-02-01T15:00:00Z",
       "xp_earned": 30,
       "user_profile": 5
+    }
+  },
+  {
+    "model": "workout.workoutday",
+    "pk": 12,
+    "fields": {
+      "program": 2,
+      "day_number": 2,
+      "title": "Cardio",
+      "video_links": ["https://youtu.be/kZDvg92tTMc?si=2HnE3AMG2bQfZI1_"],
+      "duration": 30,
+      "type": "cardio"
     }
   }
 ]
