@@ -143,7 +143,7 @@
                       </button>
                       <button
                         class="rounded-md bg-rose-600 px-3 py-1.5 text-white font-semibold hover:bg-rose-700"
-                        @click="deleteRecipe(recipe.id)"
+                        @click="openDeleteModal(recipe.id, recipe.title)"
                       >
                         Delete
                       </button>
@@ -169,7 +169,9 @@
         <!-- Header -->
         <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
           <h3 class="text-lg font-subtitle">Recipe Details</h3>
-          <button class="text-slate-500 hover:text-slate-700" @click="closeRecipeModal">✕</button>
+          <button class="text-slate-500 hover:text-slate-700" @click="closeRecipeModal">
+            <X class="w-5 h-5" />
+          </button>
         </div>
 
         <!-- Body -->
@@ -190,7 +192,7 @@
               </span>
               <!-- <div class="flex items-center gap-1">
                 <span class="text-amber-500">⭐</span>
-                <span class="text-sm">{{ recipeModal.recipe?.average_rating || 'N/A' }}</span>
+                <span class="text-sm">{{ recipeModal.recipe?.avg_rating || 'N/A' }}</span>
               </div> -->
             </div>
           </div>
@@ -225,24 +227,20 @@
           </div>
           </div>
         </div>
-
-        <!-- Footer -->
-        <div class="flex justify-end gap-2 border-t border-slate-200 px-5 py-4 bg-slate-50">
-          <button
-            class="rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-700 hover:bg-slate-50"
-            @click="closeRecipeModal"
-          >
-            Close
-          </button>
-          <button
-            class="rounded-md bg-rose-600 px-4 py-2 text-white hover:bg-rose-700"
-            @click="deleteRecipe(recipeModal.recipe.id)"
-          >
-            Delete Recipe
-          </button>
-        </div>
       </div>
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    <DeleteModal
+      v-model:show="showDeleteModal"
+      message="Are you sure you want to delete this recipe?"
+      :item-name="selectedRecipeName"
+      cancel-text="Cancel"
+      confirm-text="Delete"
+      confirm-icon="🗑️"
+      @confirm="deleteRecipe(selectedRecipeId)"
+      @close="closeDeleteModal"
+    />
   </div>
 </template>
 
@@ -250,13 +248,17 @@
 import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
 import AdminSideBar from '@/components/AdminSideBar.vue'
-import { Menu } from 'lucide-vue-next'
+import { Menu, X } from 'lucide-vue-next'
 import AdminNotificationBell from '@/components/AdminNotificationBell.vue'
+import DeleteModal from '@/components/DeleteModal.vue'
 import { useToastStore } from '@/stores/toast'
 
 const userStore = useUserStore()
 const toast = useToastStore()
 const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
+const showDeleteModal = ref(false)
+const selectedRecipeId = ref(null)
+const selectedRecipeName = ref(null)
 
 const sidebarOpen = ref(true)
 const activeSection = ref('recipes')
@@ -265,6 +267,18 @@ const recipeAccessFilter = ref('all')
 const loadingRecipes = ref(false)
 const error = ref(null)
 const recipes = ref([])
+
+// Delete modal functions
+const openDeleteModal = (id, title) => {
+  selectedRecipeId.value = id
+  selectedRecipeName.value = title
+  showDeleteModal.value = true
+}
+
+
+const closeDeleteModal = () => {
+  showDeleteModal.value = false
+}
 
 function getInitials(name) {
   if (!name) return '?'
@@ -329,8 +343,6 @@ function closeRecipeModal() {
 
 // Delete recipe
 const deleteRecipe = async (id) => {
-  if (!confirm('Are you sure you want to delete this recipe?')) return
-
   try {
     const response = await fetch(`${API_URL}/api/recipe/${id}/delete/`, {
       method: 'DELETE',

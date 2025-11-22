@@ -8,11 +8,11 @@
     <h1 class="text-xl font-bold text-blue-400">HealthQuest Admin</h1>
     <!-- Close button for mobile -->
     <button
-        class="md:hidden text-white text-xl"
-        @click="$emit('close')"
-        aria-label="Close sidebar"
+      class="md:hidden text-white text-xl"
+      @click="$emit('close')"
+      aria-label="Close sidebar"
     >
-        ✕
+      <icons.X class="w-6 h-6" />
     </button>
     </div>
 

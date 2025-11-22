@@ -162,7 +162,7 @@
                     </button>
                     <button
                       class="rounded-md bg-red-600 px-3 py-1.5 text-white hover:bg-red-700 text-xs font-bold"
-                      @click="deleteWorkout(workout.id)"
+                      @click="openDeleteModal(workout.id, workout.title)"
                     >
                       Delete
                     </button>
@@ -184,7 +184,9 @@
           <div class="w-full max-w-3xl overflow-hidden rounded-xl bg-white shadow-lg">
             <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
               <h3 class="text-lg font-subtitle">Workout Program Details</h3>
-              <button class="text-slate-500 hover:text-slate-700" @click="closeWorkoutModal">✕</button>
+              <button class="text-slate-500 hover:text-slate-700" @click="closeWorkoutModal">
+                <X class="w-5 h-5" />
+              </button>
             </div>
 
             <div class="px-5 py-4 space-y-4 max-h-[70vh] overflow-y-auto">
@@ -258,19 +260,21 @@
                 </button>
               </div>
             </div>
-
-            <div class="flex justify-end gap-3 border-t border-slate-200 px-5 py-4 bg-slate-50">
-              <button
-                class="rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-700 hover:bg-slate-50"
-                @click="closeWorkoutModal"
-              >
-                Close
-              </button>
-            </div>
           </div>
         </div>
       </div>
     </div>
+
+  <!-- Delete Confirmation Modal -->
+  <DeleteModal
+      v-model:show="showDeleteModal"
+      message="Are you sure you want to delete this workout?"
+      cancel-text="Cancel"
+      confirm-text="Delete"
+      confirm-icon="🗑️"
+      @confirm="deleteWorkout(selectedWorkoutID)"
+      @close="closeDeleteModal"
+    />
   </div>
 </template>
 
@@ -278,9 +282,10 @@
 import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
 import AdminSideBar from '@/components/AdminSideBar.vue'
-import { Menu } from 'lucide-vue-next'
+import { Menu, X } from 'lucide-vue-next'
 import AdminNotificationBell from '@/components/AdminNotificationBell.vue'
 import { useToastStore } from '@/stores/toast'
+import DeleteModal from '@/components/DeleteModal.vue'
 
 const toast = useToastStore()
 
@@ -301,6 +306,10 @@ const workoutDifficultyFilter = ref('all')
 const loadingWorkouts = ref(false)
 const error = ref(null)
 
+const showDeleteModal = ref(false)
+const selectedWorkoutID = ref(null)
+const selectedWorkoutName = ref(null)
+
 // Workout modal
 const workoutModal = ref({ open: false, workout: null })
 
@@ -308,6 +317,18 @@ const workoutModal = ref({ open: false, workout: null })
 const nav = ref([{ name: 'Workouts', key: 'workouts' }])
 function setSection(sectionKey) {
   activeSection.value = sectionKey
+}
+
+// Delete modal functions
+const openDeleteModal = (id, title) => {
+  selectedWorkoutID.value = id
+  selectedWorkoutName.value = title
+  showDeleteModal.value = true
+}
+
+
+const closeDeleteModal = () => {
+  showDeleteModal.value = false
 }
 
 // Computed: filtered workouts
@@ -420,8 +441,6 @@ function getCsrfToken() {
 }
 
 async function deleteWorkout(id) {
-  if (!confirm("Are you sure you want to delete this workout program?")) return;
-
   try {
     const res = await fetch(`${API_URL}/api/workout/programs/${id}/delete/`, {
       method: "DELETE",
