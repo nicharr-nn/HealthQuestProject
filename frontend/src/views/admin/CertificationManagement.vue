@@ -378,24 +378,6 @@ async function approveCoach(coach) {
   }
 }
 
-async function rejectCoach(coach) {
-  const reason = prompt('Reason for rejection (optional):')
-  try {
-    const res = await fetch(`${API_URL}/api/moderation/coaches/${coach.coach_id}/reject/`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify({ reason })
-    })
-    if (!res.ok) throw new Error('Failed to reject coach')
-    await fetchCoaches()
-    closeModal()
-  } catch(err) {
-    console.error(err)
-    toast.error('Failed to reject coach')
-  }
-}
-
 async function confirmReject() {
   try {
     const coach = rejectModal.value.coach
