@@ -69,27 +69,20 @@
             </p>
           </div>
         </div>
-
         <!-- Profile Actions -->
-        <div v-if="hasSubmitted" class="mt-6 flex gap-2">
-          <button
-            v-if="coachStatus === 'approved' && !isEditingProfile"
-            @click="startEditProfile"
-            class="flex-1 px-3 py-2 rounded-xl bg-gray-900 text-white text-sm font-medium hover:brightness-105 transition"
-          >
-            Edit Profile
-          </button>
+        <div class="mt-6 flex gap-2 justify-start">
+          <!-- DELETE ACCOUNT BUTTON -->
           <button
             @click="confirmDeleteProfile"
-            class="flex-1 px-3 py-2 rounded-xl border border-red-300 text-red-600 text-sm font-medium hover:bg-red-50 transition"
+            class="px-3 py-2 rounded-xl border border-red-300 text-red-600 text-sm font-medium hover:bg-red-50 transition"
           >
-            Delete Profile
+            Delete Account
           </button>
         </div>
       </div>
 
       <!-- Coach Registration / Details Form -->
-      <div class="bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
+      <div class="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 flex flex-col justify-between h-full">
         <h2 class="text-lg font-semibold text-gray-900 mb-4">
           {{ hasSubmitted ? 'Profile Details' : 'Coach Application' }}
         </h2>
@@ -124,14 +117,22 @@
 
           <div class="grid gap-1">
             <label for="location" class="text-gray-700 font-medium text-sm">Location</label>
-            <input
+            <select
               id="location"
               v-model="coachForm.location"
-              type="text"
-              placeholder="Bangkok, Thailand"
               :disabled="hasSubmitted && !isEditingProfile"
-              class="border border-gray-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-50 disabled:cursor-not-allowed"
-            />
+              class="border border-gray-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2
+                    focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-50 disabled:cursor-not-allowed"
+            >
+              <option value="">Select your location</option>
+              <option value="TH">Thailand</option>
+              <option value="USA">United States</option>
+              <option value="UK">United Kingdom</option>
+              <option value="JP">Japan</option>
+              <option value="LA">Laos</option>
+              <option value="KR">South Korea</option>
+              <option value="O">Other</option>
+            </select>
           </div>
 
           <!-- Bio -->
@@ -170,37 +171,82 @@
             <label class="text-gray-700 font-medium text-sm">Certification Document</label>
             <p class="text-gray-700 text-sm">{{ selectedFileName }}</p>
           </div>
-
-          <!-- Buttons -->
-          <div class="flex flex-wrap gap-2 mt-2">
-            <!-- Not submitted -->
-            <button v-if="!hasSubmitted" type="submit" class="px-4 py-2 rounded-xl bg-gray-900 text-white font-semibold hover:brightness-105 transition">Submit Application</button>
-            <button v-if="!hasSubmitted" type="button" @click="resetForm" class="px-4 py-2 rounded-xl border border-gray-300 font-semibold hover:bg-gray-100 transition">Reset</button>
-
-            <!-- Already submitted and editing -->
-            <template v-if="hasSubmitted && coachStatus === 'approved' && isEditingProfile">
-              <button type="button" @click="saveProfile" class="px-4 py-2 rounded-xl bg-gray-900 text-white font-semibold hover:brightness-105 transition">Save Changes</button>
-              <button type="button" @click="cancelEdit" class="px-4 py-2 rounded-xl border border-gray-300 font-semibold hover:bg-gray-100 transition">Cancel</button>
-            </template>
-
-            <!-- Pending or rejected -->
-            <template v-if="hasSubmitted && coachStatus !== 'approved'">
-              <button v-if="!isResubmitting" type="button" @click="startResubmit" class="px-4 py-2 rounded-xl bg-gray-900 text-white font-semibold hover:brightness-105 transition">Resubmit Certification</button>
-              <template v-else>
-                <button type="submit" class="px-4 py-2 rounded-xl bg-gray-900 text-white font-semibold hover:brightness-105 transition">Submit Application</button>
-                <button type="button" @click="cancelResubmit" class="px-4 py-2 rounded-xl border border-gray-300 font-semibold hover:bg-gray-100 transition">Cancel</button>
-              </template>
-            </template>
-          </div>
         </form>
+
+        <!-- Form Buttons -->
+        <div class="flex justify-end mt-auto gap-2">
+          <!-- Submit new application if not submitted yet -->
+          <button
+            v-if="!hasSubmitted"
+            type="submit"
+            class="px-4 py-2 rounded-xl bg-gray-900 text-white font-semibold hover:brightness-105 transition"
+          >
+            Submit Application
+          </button>
+          <button
+            v-if="!hasSubmitted"
+            type="button"
+            @click="resetForm"
+            class="px-4 py-2 rounded-xl border border-gray-300 font-semibold hover:bg-gray-100 transition"
+          >
+            Reset
+          </button>
+
+          <!-- Edit / Save / Cancel for approved -->
+          <button
+            v-if="hasSubmitted && coachStatus === 'approved'"
+            type="button"
+            @click="toggleEdit"
+            class="px-4 py-2 rounded-xl bg-gray-900 text-white font-semibold hover:brightness-105 transition"
+          >
+            {{ isEditingProfile ? (hasChanges ? 'Save Changes' : 'Cancel') : 'Edit Profile' }}
+          </button>
+
+          <!-- Resubmit for pending/rejected -->
+          <button
+            v-if="hasSubmitted && coachStatus !== 'approved' && !isResubmitting"
+            type="button"
+            @click="startResubmit"
+            class="px-4 py-2 rounded-xl bg-gray-900 text-white font-semibold hover:brightness-105 transition"
+          >
+            Resubmit Certification
+          </button>
+          <template v-if="isResubmitting">
+            <button
+              type="submit"
+              class="px-4 py-2 rounded-xl bg-gray-900 text-white font-semibold hover:brightness-105 transition"
+            >
+              Submit Application
+            </button>
+            <button
+              type="button"
+              @click="cancelResubmit"
+              class="px-4 py-2 rounded-xl border border-gray-300 font-semibold hover:bg-gray-100 transition"
+            >
+              Cancel
+            </button>
+          </template>
+        </div>
       </div>
     </div>
+    <DeleteModal
+      :show="showDeleteAccountModal"
+      title="Delete Account"
+      message="Are you sure you want to delete your entire account?"
+      additionalText="This action cannot be undone."
+      confirmText="Delete"
+      cancelText="Cancel"
+      @confirm="deleteUserAccount"
+      @update:show="val => (showDeleteAccountModal = val)"
+    />
   </div>
 </template>
 
 <script setup>
 import { reactive, ref, computed, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
+import { Trash } from 'lucide-vue-next'
+import DeleteModal from '@/components/DeleteModal.vue'
 
 const userStore = useUserStore()
 
@@ -223,6 +269,37 @@ const profileHeight = ref('')
 const profileWeight = ref('')
 const profileLocation = ref('')
 const joinedDate = ref('')
+
+const showDeleteAccountModal = ref(false)
+
+function confirmDeleteProfile() {
+  showDeleteAccountModal.value = true
+}
+
+const hasChanges = computed(() => {
+  return (
+    coachForm.bio !== originalBio.value ||
+    coachForm.height !== originalHeight.value ||
+    coachForm.weight !== originalWeight.value ||
+    coachForm.location !== originalLocation.value
+  );
+});
+
+function toggleEdit() {
+  // When not editing
+  if (!isEditingProfile.value) {
+    isEditingProfile.value = true;
+    return;
+  }
+  // When editing
+  if (!hasChanges.value) {
+    // cancel
+    cancelEdit();
+    return;
+  }
+  // save
+  saveProfile();
+}
 
 // Computed for status badge styling
 const statusBadgeClass = computed(() => {
@@ -248,29 +325,45 @@ function onFileSelected(event) {
   }
 }
 
-// Called when profile picture is selected
-async function onProfilePictureSelected(event) {
-  const file = event.target.files?.[0]
-  if (!file) return
+function getCsrfToken() {
+  return document.cookie
+    .split('; ')
+    .find(row => row.startsWith('csrftoken='))
+    ?.split('=')[1] || '';
+}
 
-  const formData = new FormData()
-  formData.append('profile_picture', file)
+async function onProfilePictureSelected(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  const formData = new FormData();
+  formData.append('photo', file);
 
   try {
-    const response = await fetch('http://127.0.0.1:8000/api/profile/upload-picture/', {
+    const response = await fetch('http://127.0.0.1:8000/api/upload-photo/', {
       method: 'POST',
       body: formData,
-      credentials: 'include'
-    })
+      credentials: 'include',
+      headers: {
+        'X-CSRFToken': getCsrfToken()
+      }
+    });
 
-    if (!response.ok) throw new Error('Upload failed')
+    const data = await response.json();
+    console.log('Upload response:', data);
 
-    const data = await response.json()
-    profilePicture.value = data.profile_picture
-    alert('Profile picture updated!')
+    if (!response.ok) {
+      const errorMsg = data.detail || 'Failed to upload photo.';
+      alert(`Upload failed: ${errorMsg}`);
+      return;
+    }
+
+    // Update profile picture only after successful upload
+    profilePicture.value = data.photo_url || profilePicture.value;
+    alert('Profile picture updated!');
   } catch (err) {
-    console.error(err)
-    alert('Failed to upload profile picture')
+    console.error('Error uploading profile picture:', err);
+    alert('An error occurred while uploading the photo.');
   }
 }
 
@@ -447,29 +540,28 @@ async function saveProfile() {
   }
 }
 
-// Delete coach profile
-async function confirmDeleteProfile() {
-  const confirmed = confirm('Are you sure you want to delete your coach profile? This action cannot be undone.')
-  if (!confirmed) return
-
+// Delete account
+const deleteUserAccount = async () => {
   try {
-    const response = await fetch('http://127.0.0.1:8000/api/coach/delete-profile/', {
+    const response = await fetch(`http://127.0.0.1:8000/api/user-info/`, {
       method: 'DELETE',
-      credentials: 'include'
+      credentials: 'include',
+      headers: {
+        'X-CSRFToken': getCsrfToken(),
+      },
     })
 
-    if (!response.ok) throw new Error('Failed to delete profile')
-
-    alert('Coach profile deleted successfully.')
-    // Reset state
-    hasSubmitted.value = false
-    coachStatus.value = 'not_submitted'
-    coachForm.bio = ''
-    selectedFile.value = null
-    selectedFileName.value = null
+    if (response.ok) {
+      toast.success('Account deactivated successfully.')
+      userStore.clearAuthStatus()
+      window.location.href = '/'
+    } else {
+      const data = await response.json().catch(() => ({}))
+      toast.error(`Failed: ${response.status} ${data.detail || ''}`)
+    }
   } catch (err) {
-    console.error(err)
-    alert('Could not delete profile')
+    console.error('Error deleting account:', err)
+    toast.error('Error connecting to server')
   }
 }
 </script>
