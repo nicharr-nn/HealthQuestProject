@@ -15,19 +15,23 @@
         <!-- Profile Picture -->
         <div class="flex justify-center mb-4">
           <div class="relative">
-            <img
-              v-if="profilePicture"
-              :src="profilePicture"
-              alt="Profile"
-              class="w-24 h-24 rounded-full object-cover border-2 border-indigo-200"
-            />
-            <div v-else class="w-24 h-24 bg-indigo-100 rounded-full flex items-center justify-center">
-              <span class="text-3xl font-bold text-indigo-600">{{ googleName.charAt(0).toUpperCase() }}</span>
+            <div class="w-24 h-24 rounded-full bg-gray-200 overflow-hidden shadow-sm">
+              <img
+                v-if="profilePicture"
+                :src="profilePicture"
+                alt="Profile Photo"
+                class="w-full h-full object-cover"
+              />
+              <span v-else class="text-gray-500 flex items-center justify-center h-full text-sm">
+                No Photo
+              </span>
             </div>
+            <!-- Upload Button -->
             <label class="absolute bottom-0 right-0 bg-gray-900 text-white p-1.5 rounded-full cursor-pointer hover:bg-gray-700 transition">
               <input type="file" accept="image/*" @change="onProfilePictureSelected" class="hidden" />
               <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
             </label>
@@ -333,38 +337,31 @@ function getCsrfToken() {
     ?.split('=')[1] || '';
 }
 
-async function onProfilePictureSelected(event) {
-  const file = event.target.files?.[0];
+const onProfilePictureSelected = async (event) => {
+  const file = event.target.files[0];
   if (!file) return;
 
   const formData = new FormData();
-  formData.append('photo', file);
+  formData.append("photo", file);
 
   try {
-    const response = await fetch('http://127.0.0.1:8000/api/user/upload-photo/', {
-      method: 'POST',
+    const response = await fetch("http://127.0.0.1:8000/api/user/upload-photo/", {
+      method: "POST",
       body: formData,
-      credentials: 'include',
+      credentials: "include",
       headers: {
-        'X-CSRFToken': getCsrfToken()
-      }
+        "X-CSRFToken": getCsrfToken(),
+      },
     });
 
     const data = await response.json();
-    console.log('Upload response:', data);
 
-    if (!response.ok) {
-      const errorMsg = data.detail || 'Failed to upload photo.';
-      alert(`Upload failed: ${errorMsg}`);
-      return;
-    }
+    userStore.profile.photo = data.photo_url;
+    profilePicture.value = `http://127.0.0.1:8000${data.photo_url}`;
 
-    // Update profile picture only after successful upload
-    profilePicture.value = data.photo_url || profilePicture.value;
-    alert('Profile picture updated!');
-  } catch (err) {
-    console.error('Error uploading profile picture:', err);
-    alert('An error occurred while uploading the photo.');
+    alert("Profile picture updated!");
+  } catch (error) {
+    console.error("Upload failed", error);
   }
 }
 
@@ -377,10 +374,12 @@ onMounted(async () => {
 
   googleName.value = userStore.user?.name || userStore.displayName || ''
   userEmail.value = userStore.user?.email || userStore.profile?.email || ''
-  profilePicture.value = userStore.profile?.profile_picture || userStore.user?.picture || ''
   profileHeight.value = userStore.profile?.height || ''
   profileWeight.value = userStore.profile?.weight || ''
   profileLocation.value = userStore.profile?.location || ''
+  profilePicture.value = userStore.profile?.photo
+  ? `http://127.0.0.1:8000${userStore.profile.photo}`
+  : '';
 
   // Load into form
   coachForm.height = profileHeight.value
