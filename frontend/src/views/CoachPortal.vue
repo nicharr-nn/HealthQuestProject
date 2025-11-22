@@ -233,6 +233,25 @@
       @confirm="deleteUserAccount"
       @update:show="val => (showDeleteAccountModal = val)"
     />
+    <div
+      v-if="showResubmitConfirm"
+      class="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4"
+      @click.self="showResubmitConfirm = false"
+    >
+      <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
+        <h3 class="text-lg font-semibold mb-4">Confirm Resubmit</h3>
+        <p class="mb-4">Are you sure you want to resubmit your certification? This will overwrite your previous submission.</p>
+        <div class="flex justify-end gap-3">
+          <button @click="showResubmitConfirm = false" class="px-4 py-2 border rounded cursor-pointer">Cancel</button>
+          <button
+            @click="confirmResubmitAction"
+            class="px-4 py-2 bg-gray-900 text-white rounded hover:brightness-105 cursor-pointer"
+          >
+            Resubmit
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -266,6 +285,9 @@ const profileLocation = ref('')
 const joinedDate = ref('')
 
 const showDeleteAccountModal = ref(false)
+const showResubmitConfirm = ref(false)
+
+const API_URL = 'http://127.0.0.1:8000';
 
 function confirmDeleteProfile() {
   showDeleteAccountModal.value = true
@@ -359,7 +381,7 @@ const onProfilePictureSelected = async (event) => {
 
 // Fetch coach status on mount
 onMounted(async () => {
-  const res = await fetch(`${API_URL}/api/coach/status/`, { credentials: 'include' })
+  const res = await fetch("http://127.0.0.1:8000/api/coach/status/", { credentials: 'include' })
   if (!userStore.user || !userStore.profile) {
     await userStore.init()
   }
@@ -430,7 +452,7 @@ async function submitApplication() {
   const method = hasSubmitted.value ? 'PATCH' : 'POST'
 
   try {
-    const response = await fetch(`${API_URL}/api/coach/upload-cert/`, {
+    const response = await fetch('http://127.0.0.1:8000/api/coach/upload-cert/', {
       method,
       body: formData,
       credentials: 'include'
@@ -460,26 +482,18 @@ function resetForm() {
 }
 
 function startResubmit() {
+  // Show confirmation modal first
+  showResubmitConfirm.value = true
+}
+
+function confirmResubmitAction() {
+  // User confirmed resubmit
   isResubmitting.value = true
   selectedFile.value = null
   selectedFileName.value = null
+  showResubmitConfirm.value = false
 }
 
-
-function confirmResubmit() {
-  isResubmitting.value = true
-  selectedFile.value = null
-  showResubmitModal.value = false
-}
-
-function cancelResubmitModal() {
-  showResubmitModal.value = false
-}
-
-// Start editing profile
-function startEditProfile() {
-  isEditingProfile.value = true
-}
 
 function cancelEdit() {
   isEditingProfile.value = false
@@ -503,7 +517,7 @@ async function saveProfile() {
   }
 
   try {
-    const response = await fetch(`${API_URL}/api/coach/edit-profile/`, {
+    const response = await fetch("http://127.0.0.1:8000/api/coach/edit-profile/", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
