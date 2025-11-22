@@ -231,29 +231,47 @@
           </div>
         </div>
 
-        <div class="flex justify-between items-center gap-3 border-t border-slate-200 px-5 py-4 bg-slate-50">
-          <div class="flex gap-2">
+        <div class="flex justify-end items-center gap-3 border-t border-slate-200 px-5 py-4 bg-slate-50">
+        <!-- Only show Approve/Reject when pending -->
+          <div
+            v-if="coachModal.coach?.status_approval === 'pending'"
+            class="flex gap-2"
+          >
             <button
-              class="rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-700 hover:bg-slate-50"
-              @click="closeModal"
-            >
-              Cancel
-            </button>
-            <button
-              v-if="coachModal.coach?.status_approval !== 'rejected'"
-              class="rounded-md bg-rose-600 px-4 py-2 text-white hover:bg-rose-700"
-              @click="rejectCoach(coachModal.coach)"
-            >
-              Reject
-            </button>
-            <button
-              v-if="coachModal.coach?.status_approval !== 'approved'"
               class="rounded-md bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700"
               @click="approveCoach(coachModal.coach)"
             >
               Approve Certification
             </button>
+            <button
+              class="rounded-md bg-rose-600 px-4 py-2 text-white hover:bg-rose-700"
+              @click="openRejectModal(coachModal.coach)"
+            >
+              Reject
+            </button>
           </div>
+        </div>
+      </div>
+    </div>
+    <div
+      v-if="rejectModal.open"
+      class="fixed inset-0 z-[70] grid place-items-center bg-black/50 p-4"
+      role="dialog"
+      aria-modal="true"
+      @click.self="closeRejectModal"
+    >
+      <div class="w-full max-w-md rounded-xl bg-white shadow-lg p-6">
+        <h3 class="text-lg font-semibold mb-4">Reject Coach</h3>
+        <p class="mb-2">Reason for rejection (optional):</p>
+        <textarea
+          v-model="rejectModal.reason"
+          rows="3"
+          class="w-full border rounded p-2 mb-4"
+          placeholder="Type a reason..."
+        ></textarea>
+        <div class="flex justify-end gap-3">
+          <button @click="closeRejectModal" class="px-4 py-2 border rounded">Cancel</button>
+          <button @click="confirmReject" class="px-4 py-2 bg-rose-600 text-white rounded hover:bg-rose-700">Reject</button>
         </div>
       </div>
     </div>
@@ -281,6 +299,22 @@ const error = ref(null)
 
 const coaches = ref([])
 const coachModal = ref({ open: false, coach: null })
+const rejectModal = ref({
+  open: false,
+  coach: null,
+  reason: ''
+})
+
+function openRejectModal(coach) {
+  rejectModal.value.coach = coach
+  rejectModal.value.reason = ''
+  rejectModal.value.open = true
+}
+
+function closeRejectModal() {
+  rejectModal.value = { open: false, coach: null, reason: '' }
+}
+
 
 const filteredCoaches = computed(() => {
   let result = [...coaches.value]
@@ -361,6 +395,26 @@ async function rejectCoach(coach) {
     toast.error('Failed to reject coach')
   }
 }
+
+async function confirmReject() {
+  try {
+    const coach = rejectModal.value.coach
+    const res = await fetch(`${API_URL}/api/moderation/coaches/${coach.coach_id}/reject/`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ reason: rejectModal.value.reason })
+    })
+    if (!res.ok) throw new Error('Failed to reject coach')
+    await fetchCoaches()
+    closeRejectModal()
+    closeModal() // optionally close the review modal too
+  } catch(err) {
+    console.error(err)
+    toast.error('Failed to reject coach')
+  }
+}
+
 
 onMounted(async () => {
   if (!userStore.profile) {

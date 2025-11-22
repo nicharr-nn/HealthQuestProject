@@ -191,11 +191,23 @@
         </div>
       </div>
     </div>
+
+    <!-- Cancel Coach Modal -->
+    <DeleteModal
+      v-model:show="showCancelModal"
+      title="Cancel Coach Connection"
+      message="Are you sure you want to cancel your coach connection?"
+      confirmText="Yes, Cancel"
+      cancelText="Cancel"
+      @confirm="confirmCancelCoach"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import DeleteModal from '@/components/DeleteModal.vue'
+const showCancelModal = ref(false)
 
 // Reactive data
 const coachStatus = ref('') // 'pending' | 'accepted' | 'rejected' | ''
@@ -373,10 +385,19 @@ async function sendRequest() {
 }
 
 async function cancelCoachRequest() {
-  if (!confirm('Are you sure you want to cancel this coach connection?')) {
-    return
-  }
+  showCancelModal.value = true
+}
 
+function formatDate(dateString) {
+  if (!dateString) return 'N/A'
+  return new Date(dateString).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  })
+}
+
+async function confirmCancelCoach() {
   requestLoading.value = true
 
   try {
@@ -400,15 +421,6 @@ async function cancelCoachRequest() {
   } finally {
     requestLoading.value = false
   }
-}
-
-function formatDate(dateString) {
-  if (!dateString) return 'N/A'
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  })
 }
 </script>
 

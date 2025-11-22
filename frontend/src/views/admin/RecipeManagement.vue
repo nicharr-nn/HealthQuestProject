@@ -143,7 +143,7 @@
                       </button>
                       <button
                         class="rounded-md bg-rose-600 px-3 py-1.5 text-white font-semibold hover:bg-rose-700"
-                        @click="deleteRecipe(recipe.id)"
+                        @click="openDeleteModal(recipe.id, recipe.title)"
                       >
                         Delete
                       </button>
@@ -235,14 +235,26 @@
             Close
           </button>
           <button
-            class="rounded-md bg-rose-600 px-4 py-2 text-white hover:bg-rose-700"
-            @click="deleteRecipe(recipeModal.recipe.id)"
+            class="rounded-md bg-rose-600 px-3 py-1.5 text-white font-semibold hover:bg-rose-700"
+            @click="openDeleteModal(recipeModal.recipe.id, recipeModal.recipe.title)"
           >
-            Delete Recipe
+            Delete
           </button>
         </div>
       </div>
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    <DeleteModal
+      v-model:show="showDeleteModal"
+      message="Are you sure you want to delete this recipe?"
+      :item-name="selectedRecipeName"
+      cancel-text="Cancel"
+      confirm-text="Delete"
+      confirm-icon="🗑️"
+      @confirm="deleteRecipe(selectedRecipeId)"
+      @close="closeDeleteModal"
+    />
   </div>
 </template>
 
@@ -252,11 +264,15 @@ import { useUserStore } from '@/stores/user'
 import AdminSideBar from '@/components/AdminSideBar.vue'
 import { Menu } from 'lucide-vue-next'
 import AdminNotificationBell from '@/components/AdminNotificationBell.vue'
+import DeleteModal from '@/components/DeleteModal.vue'
 import { useToastStore } from '@/stores/toast'
 
 const userStore = useUserStore()
 const toast = useToastStore()
 const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
+const showDeleteModal = ref(false)
+const selectedRecipeId = ref(null)
+const selectedRecipeName = ref(null)
 
 const sidebarOpen = ref(true)
 const activeSection = ref('recipes')
@@ -265,6 +281,18 @@ const recipeAccessFilter = ref('all')
 const loadingRecipes = ref(false)
 const error = ref(null)
 const recipes = ref([])
+
+// Delete modal functions
+const openDeleteModal = (id, title) => {
+  selectedRecipeId.value = id
+  selectedRecipeName.value = title
+  showDeleteModal.value = true
+}
+
+
+const closeDeleteModal = () => {
+  showDeleteModal.value = false
+}
 
 function getInitials(name) {
   if (!name) return '?'
@@ -329,8 +357,6 @@ function closeRecipeModal() {
 
 // Delete recipe
 const deleteRecipe = async (id) => {
-  if (!confirm('Are you sure you want to delete this recipe?')) return
-
   try {
     const response = await fetch(`${API_URL}/api/recipe/${id}/delete/`, {
       method: 'DELETE',

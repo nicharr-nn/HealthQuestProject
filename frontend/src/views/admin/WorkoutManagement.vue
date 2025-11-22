@@ -162,7 +162,7 @@
                     </button>
                     <button
                       class="rounded-md bg-red-600 px-3 py-1.5 text-white hover:bg-red-700 text-xs font-bold"
-                      @click="deleteWorkout(workout.id)"
+                      @click="openDeleteModal(workout.id, workout.title)"
                     >
                       Delete
                     </button>
@@ -271,6 +271,18 @@
         </div>
       </div>
     </div>
+
+  <!-- Delete Confirmation Modal -->
+  <DeleteModal
+      v-model:show="showDeleteModal"
+      message="Are you sure you want to delete this recipe?"
+      :item-name="selectedRecipeName"
+      cancel-text="Cancel"
+      confirm-text="Delete"
+      confirm-icon="🗑️"
+      @confirm="deleteWorkout(selectedWorkoutID)"
+      @close="closeDeleteModal"
+    />
   </div>
 </template>
 
@@ -281,6 +293,7 @@ import AdminSideBar from '@/components/AdminSideBar.vue'
 import { Menu } from 'lucide-vue-next'
 import AdminNotificationBell from '@/components/AdminNotificationBell.vue'
 import { useToastStore } from '@/stores/toast'
+import DeleteModal from '@/components/DeleteModal.vue'
 
 const toast = useToastStore()
 
@@ -301,6 +314,10 @@ const workoutDifficultyFilter = ref('all')
 const loadingWorkouts = ref(false)
 const error = ref(null)
 
+const showDeleteModal = ref(false)
+const selectedWorkoutID = ref(null)
+const selectedWorkoutName = ref(null)
+
 // Workout modal
 const workoutModal = ref({ open: false, workout: null })
 
@@ -308,6 +325,18 @@ const workoutModal = ref({ open: false, workout: null })
 const nav = ref([{ name: 'Workouts', key: 'workouts' }])
 function setSection(sectionKey) {
   activeSection.value = sectionKey
+}
+
+// Delete modal functions
+const openDeleteModal = (id, title) => {
+  selectedWorkoutID.value = id
+  selectedWorkoutName.value = title
+  showDeleteModal.value = true
+}
+
+
+const closeDeleteModal = () => {
+  showDeleteModal.value = false
 }
 
 // Computed: filtered workouts
@@ -420,8 +449,6 @@ function getCsrfToken() {
 }
 
 async function deleteWorkout(id) {
-  if (!confirm("Are you sure you want to delete this workout program?")) return;
-
   try {
     const res = await fetch(`${API_URL}/api/workout/programs/${id}/delete/`, {
       method: "DELETE",
