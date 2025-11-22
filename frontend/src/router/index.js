@@ -99,9 +99,12 @@ router.beforeEach(async (to, from, next) => {
   }
 
   // --- Redirect approved coaches away from onboarding pages ---
-  if (isCoach && profileComplete && ['/select-role', '/about-you'].includes(to.path)) {
-    if (isApproved) return next('/coach-dashboard')
-    return next('/coach-portal')
+  if (isCoach) {
+    if (profileComplete && ['/select-role', '/about-you'].includes(to.path)) {
+      if (isApproved) return next('/coach-dashboard')
+      return next('/coach-portal')
+    }
+    if (to.path === '/profile') return next('/coach-portal')
   }
 
   // --- Redirect regular users away from onboarding pages if profile complete ---
