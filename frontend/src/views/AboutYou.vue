@@ -85,7 +85,7 @@
 
       <button
         type="submit"
-        class="w-full bg-[#88ACEA] text-white font-body py-2 rounded-lg hover:bg-indigo-700"
+        class="w-full bg-[#88ACEA] text-white font-body py-2 rounded-lg hover:bg-indigo-700 cursor-pointer"
       >
         Save & Continue
       </button>

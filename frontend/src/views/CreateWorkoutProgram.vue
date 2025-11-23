@@ -264,7 +264,7 @@
                     v-for="suggestion in dueDateSuggestions"
                     :key="suggestion.days"
                     type="button"
-                    class="text-xs bg-white border border-gray-300 rounded-full px-3 py-1 hover:bg-gray-50 transition-colors"
+                    class="text-xs bg-white border border-gray-300 rounded-full px-3 py-1 hover:bg-gray-50 transition-colors cursor-pointer"
                     @click="setSuggestedDueDate(suggestion.days)"
                   >
                     {{ suggestion.label }}
@@ -401,14 +401,14 @@
                     <div class="flex gap-2">
                       <button
                         type="button"
-                        class="px-3 py-1.5 text-xs font-semibold bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all"
+                        class="px-3 py-1.5 text-xs font-semibold bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all cursor-pointer"
                         @click="editWorkout(Number(day), workoutIndex)"
                       >
                         Edit
                       </button>
                       <button
                         type="button"
-                        class="px-3 py-1.5 text-xs font-semibold bg-red-500 text-white border border-red-500 rounded-lg hover:bg-red-600 transition-all"
+                        class="px-3 py-1.5 text-xs font-semibold bg-red-500 text-white border border-red-500 rounded-lg hover:bg-red-600 transition-all cursor-pointer"
                         @click="removeWorkout(Number(day), workoutIndex)"
                       >
                         Remove
@@ -527,7 +527,7 @@
             <div class="flex gap-3">
               <button
                 type="button"
-                class="flex-1 bg-blue-500 text-white font-semibold px-4 py-3 rounded-lg transition-all hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                class="flex-1 bg-blue-500 text-white font-semibold px-4 py-3 rounded-lg transition-all hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 @click="saveDayWorkout"
                 :disabled="
                   !currentWorkout.title ||
@@ -540,7 +540,7 @@
               </button>
               <button
                 type="button"
-                class="flex-1 bg-white text-gray-700 border border-gray-300 font-semibold px-4 py-3 rounded-lg transition-all hover:bg-gray-50"
+                class="flex-1 bg-white text-gray-700 border border-gray-300 font-semibold px-4 py-3 rounded-lg transition-all hover:bg-gray-50 cursor-pointer"
                 @click="cancelWorkoutEdit"
               >
                 Cancel
@@ -571,7 +571,7 @@
     <div class="flex flex-col sm:flex-row gap-4 justify-center pt-6 border-t border-gray-200">
       <button
         type="button"
-        class="bg-blue-500 text-white font-semibold px-6 py-3.5 rounded-lg text-base transition-all hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+        class="bg-blue-500 text-white font-semibold px-6 py-3.5 rounded-lg text-base transition-all hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm cursor-pointer"
         @click="submitProgram"
         :disabled="!canSubmitProgram"
       >
@@ -579,14 +579,14 @@
       </button>
       <button
         type="button"
-        class="bg-white text-gray-700 border border-gray-300 font-semibold px-6 py-3.5 rounded-lg text-base transition-all hover:bg-gray-50 shadow-sm"
+        class="bg-white text-gray-700 border border-gray-300 font-semibold px-6 py-3.5 rounded-lg text-base transition-all hover:bg-gray-50 shadow-sm cursor-pointer"
         @click="resetProgram"
       >
         Reset All
       </button>
       <button
         type="button"
-        class="bg-white text-gray-700 border border-gray-300 font-semibold px-6 py-3.5 rounded-lg text-base transition-all hover:bg-gray-50 shadow-sm"
+        class="bg-white text-gray-700 border border-gray-300 font-semibold px-6 py-3.5 rounded-lg text-base transition-all hover:bg-gray-50 shadow-sm cursor-pointer"
         @click="handleCancel"
       >
         Cancel
