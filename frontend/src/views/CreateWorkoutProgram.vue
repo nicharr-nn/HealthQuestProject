@@ -423,7 +423,7 @@
                       v-if="workout.video_link"
                       class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded text-[10px] font-medium"
                     >
-                      📹 Video
+                      <span class="justify-center flex"><Video /></span>
                     </span>
                   </div>
                 </div>
@@ -558,7 +558,7 @@
           "
           class="text-center py-10 px-5 text-gray-600"
         >
-          <div class="text-5xl mb-3">📅</div>
+          <div class="text-5xl mb-3 justify-center flex"><CalendarDays /></div>
           <div class="text-base font-semibold text-gray-700 mb-2">No daily workouts added yet</div>
           <div class="text-sm leading-relaxed">
             Select a day above to start building your workout program schedule.
@@ -599,6 +599,7 @@
 import { reactive, ref, computed, watch, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useToastStore } from '@/stores/toast'
+import { Video, CalendarDays } from 'lucide-vue-next';
 
 const router = useRouter()
 const route = useRoute()

@@ -21,7 +21,7 @@
           <button
             @click="showMyRecipes"
             :class="[
-              'px-4 sm:px-6 py-2 rounded-lg font-semibold shadow-md transition text-sm sm:text-base',
+              'px-4 sm:px-6 py-2 rounded-lg font-semibold shadow-md transition text-sm sm:text-base cursor-pointer',
               showMine ? 'bg-[#fcc2f6]' : 'bg-gray-100 hover:bg-gray-200',
             ]"
           >
@@ -30,7 +30,7 @@
           <button
             @click="showAllRecipes"
             :class="[
-              'px-4 sm:px-6 py-2 rounded-lg font-semibold shadow-md transition text-sm sm:text-base',
+              'px-4 sm:px-6 py-2 rounded-lg font-semibold shadow-md transition text-sm sm:text-base cursor-pointer',
               !showMine ? 'bg-[#fcc2f6]' : 'bg-gray-100 hover:bg-gray-200',
             ]"
           >
@@ -53,7 +53,7 @@
       <button
         v-if="showMine"
         @click="openModal"
-        class="bg-pink-400 hover:bg-pink-500 text-white font-semibold px-4 sm:px-5 py-2 sm:py-1 rounded-lg shadow-md transition whitespace-nowrap text-sm sm:text-base"
+        class="bg-pink-400 hover:bg-pink-500 text-white font-semibold px-4 sm:px-5 py-2 sm:py-1 rounded-lg shadow-md transition whitespace-nowrap text-sm sm:text-base cursor-pointer"
       >
         Upload Recipe
       </button>

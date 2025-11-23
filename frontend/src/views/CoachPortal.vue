@@ -78,7 +78,7 @@
           <!-- DELETE ACCOUNT BUTTON -->
           <button
             @click="confirmDeleteProfile"
-            class="px-3 py-2 rounded-xl border border-red-300 text-red-600 text-sm font-medium hover:bg-red-50 transition"
+            class="px-3 py-2 rounded-xl border border-red-300 text-red-600 text-sm font-medium hover:bg-red-50 transition cursor-pointer"
           >
             Delete Account
           </button>
@@ -166,13 +166,13 @@
               />
               <span class="px-4 py-2 border border-gray-300 rounded-xl text-sm font-semibold hover:bg-gray-100 transition">Choose File</span>
             </label>
-            <span class="text-gray-700 text-sm">{{ selectedFile?.name || 'No file chosen' }}</span>
+            <span class="text-gray-700 text-sm max-w-full truncate">{{ selectedFile?.name || 'No file chosen' }}</span>
           </div>
 
           <!-- Show submitted file info -->
           <div v-else-if="hasSubmitted && selectedFileName" class="grid gap-1">
             <label class="text-gray-700 font-medium text-sm">Certification Document</label>
-            <p class="text-gray-700 text-sm">{{ selectedFileName }}</p>
+            <p class="text-gray-700 text-sm max-w-full truncate">{{ selectedFileName }}</p>
           </div>
 
           <!-- Form Buttons -->
@@ -268,7 +268,7 @@ const coachForm = reactive({ bio: '', height: '', weight: '', location: '' })
 const selectedFile = ref(null)
 const selectedFileName = ref(null)
 const hasSubmitted = ref(false)
-const coachStatus = ref('not_submitted')
+const coachStatus = ref('not submitted')
 const originalBio = ref('')
 const originalName = ref('')
 const originalHeight = ref('')
@@ -336,8 +336,20 @@ function onFileSelected(event) {
   const files = event.target.files
   if (files && files.length > 0) {
     selectedFile.value = files[0]
-    selectedFileName.value = files[0].name
+    // Truncate filename if too long
+    selectedFileName.value = truncateFileName(files[0].name, 50)
   }
+}
+
+// Function to truncate long filenames
+function truncateFileName(filename, maxLength = 50) {
+  if (filename.length <= maxLength) return filename
+  
+  const extension = filename.split('.').pop()
+  const nameWithoutExt = filename.substring(0, filename.lastIndexOf('.'))
+  const truncatedName = nameWithoutExt.substring(0, maxLength - extension.length - 3) // -3 for "..."
+  
+  return `${truncatedName}...${extension}`
 }
 
 function getCsrfToken() {
@@ -400,7 +412,7 @@ onMounted(async () => {
   originalLocation.value = profileLocation.value
 
   // Format joined date
-  const dateJoined = userStore.profile?.date_joined || userStore.user?.created_at
+  const dateJoined = userStore.user.profile.created_at
   if (dateJoined) {
     joinedDate.value = new Date(dateJoined).toLocaleDateString('en-US', {
       year: 'numeric', month: 'short', day: 'numeric'
@@ -416,7 +428,9 @@ onMounted(async () => {
       originalBio.value = coachForm.bio
       originalName.value = googleName.value
       if (data.coach.certification_doc) {
-        selectedFileName.value = data.coach.certification_doc.split('/').pop()
+        // Truncate existing filename on load
+        const fileName = data.coach.certification_doc.split('/').pop()
+        selectedFileName.value = truncateFileName(fileName, 50)
       }
     }
   }
@@ -461,7 +475,8 @@ async function submitApplication() {
     coachStatus.value = newStatus
     hasSubmitted.value = true
     isResubmitting.value = false
-    selectedFileName.value = selectedFile.value?.name || selectedFileName.value
+    // Truncate filename when setting after submission
+    selectedFileName.value = selectedFile.value ? truncateFileName(selectedFile.value.name, 50) : selectedFileName.value
     selectedFile.value = null
     toast.info('Application submitted! Status is now pending.')
   } catch (err) {

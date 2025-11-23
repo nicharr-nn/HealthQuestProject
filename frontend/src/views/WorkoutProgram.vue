@@ -149,7 +149,7 @@
                     <button
                       v-if="workout.video_link"
                       @click="openYouTube(workout.video_link)"
-                      class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
+                      class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 cursor-pointer"
                     >
                       ▶ Watch on YouTube
                     </button>
@@ -162,8 +162,8 @@
                         dayCompletionStates[selectedDay]
                           ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                           : workoutStates[`${selectedDay}-${workout.id}`]?.completed
-                            ? 'bg-green-600 hover:bg-green-700 text-white'
-                            : 'bg-indigo-600 hover:bg-indigo-700 text-white',
+                            ? 'bg-green-600 hover:bg-green-700 text-white cursor-pointer'
+                            : 'bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer',
                       ]"
                     >
                       <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">

@@ -271,7 +271,7 @@
                   <template v-else>
                     <button
                       @click="isEditing = true"
-                      class="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-full font-semibold text-lg transition-colors shadow-lg"
+                      class="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-full font-semibold text-lg transition-colors shadow-lg cursor-pointer"
                     >
                       Edit Profile
                     </button>
@@ -280,7 +280,7 @@
 
                 <button
                   @click="openDeleteModal"
-                  class="bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-full font-semibold text-lg transition-colors shadow-lg"
+                  class="bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-full font-semibold text-lg transition-colors shadow-lg cursor-pointer"
                 >
                   Delete Account
                 </button>
